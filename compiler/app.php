@@ -6,20 +6,39 @@ require_once 'lib/init.php';
 
 
 // Read the file specified in the command line args
-$data = file( $path );
+$json = file( $path );
 
-stdNotice( 'Found ', count($data) . ' lines. Parsing...' );
+stdNotice( 'Found ' . count($json) . ' lines. Parsing...' );
 
-$data = implode( PHP_EOL, $data );
-$o = json_decode( $data );
+$json = implode( PHP_EOL, $json );
+$o = json_decode( $json );
 
-stdNotice(sprintf( 'Generating %s classe(s) for model %s.', count($o->classes), $o->name ));
+stdNotice( 'Generating model for ' . $o->name );
+echo PHP_EOL;
 
-foreach ( $o->classes as $class ) {
-    
-    
-    
+#print_r($o);
+
+$iOS = array();
+$iOS[] = '//';
+$iOS[] = '// Food.h';
+$iOS[] = '// FoodTweekModel';
+$iOS[] = '//';
+
+foreach ( $o->comments as $comment ) {
+    $iOS[] = '// ' . $comment;
+}
+
+$iOS[] = '//';
+$iOS[] = '';
+
+foreach ( $o->imports as $import ) {
+    $iOS[] = '#import <' . $import . '>';
 }
 
 
+
+stdOut( implode(PHP_EOL, $iOS) );
+
+stdOut( '' );
 stdNotice( 'Model generation complete.' );
+stdOutCompact( '' );

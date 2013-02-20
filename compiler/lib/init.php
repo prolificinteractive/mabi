@@ -36,3 +36,21 @@ if ( defined('REQUIRES_ARG') && !!REQUIRES_ARG ) {
 if ( !file_exists($path) ) {
     stdError( 'Invalid file path.' );
 }
+
+// iOS output files
+$pathBase = substr( $path, 0, strrpos(
+    $path, DIRECTORY_SEPARATOR
+)) . DIRECTORY_SEPARATOR;
+
+// Get base filename
+$fileName = array_shift(
+    explode( '.',
+        array_pop(
+            explode( DIRECTORY_SEPARATOR, $path)
+        )
+    )
+);
+
+// iOS file paths
+$pathH = ( $pathBase . $fileName . '.h' );
+$pathM = ( $pathBase . $fileName . '.m' );

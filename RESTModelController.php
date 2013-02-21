@@ -30,16 +30,11 @@ class RESTModelController extends Controller {
      * @var $model Model
      */
     $model = call_user_func($this->modelClass . '::init', $this->app);
-    $model->getAll();
+    return $model->findAll();
   }
 
   protected function postCollection() {
-    /**
-     * @var $model Model
-     */
-    $model = call_user_func($this->modelClass . '::init', $this->app);
     // todo: get post data to insert
-    $model->insert();
   }
 
   protected function putCollection() {
@@ -51,7 +46,12 @@ class RESTModelController extends Controller {
   }
 
   protected function getObject($id) {
-    // todo: implement
+    /**
+     * @var $model Model
+     */
+    $model = call_user_func($this->modelClass . '::init', $this->app);
+    $model->findById($id);
+        // todo: implement
   }
 
   protected function putObject($id) {
@@ -76,12 +76,14 @@ class RESTModelController extends Controller {
      * DELETE   /<model>/<id>     deletes the model
      */
 
-    $slim->get("/{$this->base}", $this->deleteObject);
-    $slim->post("/{$this->base}", $this->postCollection);
-    $slim->put("/{$this->base}", $this->putCollection);
-    $slim->delete("/{$this->base}", $this->deleteCollection);
-    $slim->get("/{$this->base}/:id", $this->getObject);
-    $slim->put("/{$this->base}/:id", $this->putObject);
-    $slim->delete("/{$this->base}/:id", $this->deleteObject);
+    // todo: add API versioning
+
+    $slim->get("/{$this->base}", array($this, 'deleteObject'));
+    $slim->post("/{$this->base}", array($this, 'postCollection'));
+    $slim->put("/{$this->base}", array($this, 'putCollection'));
+    $slim->delete("/{$this->base}", array($this, 'deleteCollection'));
+    $slim->get("/{$this->base}/:id", array($this, 'getObject'));
+    $slim->put("/{$this->base}/:id", array($this, 'putObject'));
+    $slim->delete("/{$this->base}/:id", array($this, 'deleteObject'));
   }
 }

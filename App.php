@@ -6,6 +6,8 @@ include_once dirname(__FILE__) . '/DataConnection.php';
 include_once dirname(__FILE__) . '/ModelLoader.php';
 include_once dirname(__FILE__) . '/Slim/Slim.php';
 
+\Slim\Slim::registerAutoloader();
+
 /**
  * todo: docs
  */
@@ -40,8 +42,8 @@ class App {
    * todo: docs
    */
   static function getApp() {
-    if(empty(self::$singletonApp)) {
-      self::$singletonApp= new App();
+    if (empty(self::$singletonApp)) {
+      self::$singletonApp = new App();
     }
 
     return self::$singletonApp;
@@ -80,9 +82,9 @@ class App {
     $this->modelLoaders = $modelLoaders;
 
     $this->modelClasses = array();
-    foreach($modelLoaders as $modelLoader) {
+    foreach ($modelLoaders as $modelLoader) {
       $modelClasses = $modelLoader->loadModels();
-      foreach($modelClasses as $modelClass) {
+      foreach ($modelClasses as $modelClass) {
         $this->modelClasses[] = $modelClass;
       }
     }
@@ -98,9 +100,9 @@ class App {
    * @param $controllerLoaders ControllerLoader[]
    */
   public function setControllerLoaders($controllerLoaders) {
-    foreach($controllerLoaders as $controllerLoader) {
+    foreach ($controllerLoaders as $controllerLoader) {
       $controllers = $controllerLoader->loadControllers();
-      foreach($controllers as $controller) {
+      foreach ($controllers as $controller) {
         $controller->loadRoutes($this->slim);
       }
     }

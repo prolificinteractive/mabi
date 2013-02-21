@@ -2,6 +2,8 @@
 
 namespace MABI;
 
+include_once __DIR__ . '/DataConnection.php';
+
 /**
  * todo: docs
  */
@@ -21,7 +23,7 @@ class MongoDataConnection extends DataConnection {
     else {
       $connectionName = '';
     }
-    $hostname = $host . ':' . $port;
+    $hostname = $host . (!empty($port) ? ':' . $port : '');
 
     if (!empty($user)) {
       $connectionName .= $user . ':' . $password . '@' . $hostname . '/' . $database;
@@ -47,11 +49,14 @@ class MongoDataConnection extends DataConnection {
   public static function create($host, $port, $database, $user = NULL, $password = NULL) {
     $connection = new MongoDataConnection();
     $connectionName = self::createConnectionName($host, $port, $user, $password, $database, \Mongo::VERSION);
-    var_dump($connectionName);
     $mongo = new \Mongo($connectionName);
     $connection->db = $mongo->selectDB($database);
 
     return $connection;
+  }
+
+  public function getDefaultIdColumn() {
+    return '_id';
   }
 
   public function findAll($table) {
@@ -76,5 +81,22 @@ class MongoDataConnection extends DataConnection {
 
   public function clearAll($table) {
     $this->db->selectCollection($table)->drop();
+  }
+
+  private function serializeMongoId(&$item, $key) {
+    if(is_object($item) && get_class($item) == 'MongoId')
+    {
+      $item = $item->__toString();
+    }
+  }
+
+  public function findOneByField($field, $value, $table) {
+    if($field == "_id") {
+      $value = new \MongoId($value);
+    }
+    $result = $this->db->selectCollection($table)->findOne(array($field => $value));
+
+    array_walk_recursive($result, array($this, 'serializeMongoId'));
+    return $result;
   }
 }

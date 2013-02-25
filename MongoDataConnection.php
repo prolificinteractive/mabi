@@ -84,17 +84,19 @@ class MongoDataConnection extends DataConnection {
   }
 
   private function serializeMongoId(&$item, $key) {
-    if(is_object($item) && get_class($item) == 'MongoId')
-    {
+    if (is_object($item) && get_class($item) == 'MongoId') {
       $item = $item->__toString();
     }
   }
 
   public function findOneByField($field, $value, $table) {
-    if($field == "_id") {
+    if ($field == "_id") {
       $value = new \MongoId($value);
     }
     $result = $this->db->selectCollection($table)->findOne(array($field => $value));
+    if (empty($result)) {
+      return NULL;
+    }
 
     array_walk_recursive($result, array($this, 'serializeMongoId'));
     return $result;

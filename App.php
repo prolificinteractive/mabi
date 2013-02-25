@@ -94,6 +94,10 @@ class App {
     return $this->dataConnections[$name];
   }
 
+  public function getModelClasses() {
+    return $this->modelClasses;
+  }
+
   /**
    * todo: docs
    *

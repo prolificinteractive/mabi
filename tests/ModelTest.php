@@ -1,46 +1,44 @@
 <?php
 
-namespace abcd;
-
 include_once 'PHPUnit/Autoload.php';
 include_once __DIR__ . '/../App.php';
 include_once __DIR__ . '/../Model.php';
+include_once __DIR__ . '/../DirectoryModelLoader.php';
 include_once __DIR__ . '/../MongoDataConnection.php';
-
-class ATestModel extends \MABI\Model {
-  /**
-   * @var string
-   */
-  public $init_id;
-
-  /**
-   * @var \abcd\BTestModel
-   */
-  public $description;
-
-  protected $table = 'tweeks';
-}
-
-class BTestModel extends ATestModel {
-
-}
 
 class ModelTest extends \PHPUnit_Framework_TestCase {
 
-  public function testInit() {
-    \Slim\Environment::mock();
+  /**
+   * @var \MABI\App
+   */
+  protected $app;
 
-    $app = new \MABI\App();
-    $app->addDataConnection('default', \MABI\MongoDataConnection::create('localhost', '27017', 'foodTweeks'));
-    $amodel = ATestModel::init($app);
+  public function setUp() {
+    \Slim\Environment::mock();
+    $this->app = new \MABI\App();
+    $this->app->addDataConnection('default', \MABI\MongoDataConnection::create('localhost', '27017', 'test'));
+  }
+
+  public function testModelLoader() {
+    $modelLoader = new \MABI\DirectoryModelLoader('TestModelDir', 'mabiTesting');
+    $models = $modelLoader->loadModels();
+    $this->assertContains('\mabiTesting\ModelA', $models);
+    $this->assertContains('\mabiTesting\ModelB', $models);
+  }
+
+  public function testInit() {
+    $amodel = \mabiTesting\ModelA::init($this->app);
     $this->assertNotEmpty($amodel);
   }
 
   public function testFindById() {
-    $app = new \MABI\App();
-    $app->addDataConnection('default', \MABI\MongoDataConnection::create('localhost', '27017', 'foodTweeks'));
-    $amodel = ATestModel::init($app);
-    $amodel->findById(new \MongoId('511d07c4cfc422868a000016'));
-//    var_dump($amodel);
+    /**
+     * @var $amodel \mabiTesting\ModelA
+     */
+    $amodel = \mabiTesting\ModelA::init($this->app);
+    $amodel->findById(new \MongoId('5127ef4f20cb24af1c4557de'));
+    $this->assertNotEmpty($amodel);
+    $this->assertNotEmpty($amodel->partner);
+    $this->assertNotEmpty($amodel->partner->name);
   }
 }

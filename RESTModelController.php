@@ -4,25 +4,30 @@ namespace MABI;
 
 include_once dirname(__FILE__) . '/Inflector.php';
 include_once dirname(__FILE__) . '/Utilities.php';
+include_once dirname(__FILE__) . '/ModelController.php';
 
 /**
  * todo: docs
  */
-class RESTModelController extends Controller {
+class RESTModelController extends ModelController {
   protected $base = NULL;
-  protected $modelClass = NULL;
 
   /**
-   * @param $modelClass string
    * @param $app App
    */
-  public function __construct($modelClass, $app) {
+  public function __construct($app) {
     parent::__construct($app);
 
-    $this->modelClass = $modelClass;
     if (empty($this->base)) {
-      $controllerClass = get_called_class();
+      $this->base = strtolower(ReflectionHelper::stripClassName($this->modelClass));
     }
+  }
+
+  public static function generate($modelClass, $app) {
+    $newController = new RESTModelController($app);
+    $newController->modelClass = $modelClass;
+    $newController->base = strtolower(ReflectionHelper::stripClassName($modelClass));
+    return $newController;
   }
 
   protected function getCollection() {
@@ -51,7 +56,7 @@ class RESTModelController extends Controller {
      */
     $model = call_user_func($this->modelClass . '::init', $this->app);
     $model->findById($id);
-        // todo: implement
+    // todo: implement
   }
 
   protected function putObject($id) {

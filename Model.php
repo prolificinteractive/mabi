@@ -44,6 +44,11 @@ class Model {
   protected $writeAccess;
 
   /**
+   * @var array
+   */
+  protected $remainingReadResults;
+
+  /**
    * @param string $table
    */
   public function setTable($table) {
@@ -74,7 +79,7 @@ class Model {
     $newModelObj->modelClass = get_called_class();
     $newModelObj->app = $app;
     if (empty($newModelObj->table)) {
-      $newModelObj->table = Inflector::tableize(ReflectionHelper::stripClassName($modelClass));
+      $newModelObj->table = strtolower(Inflector::pluralize(ReflectionHelper::stripClassName($modelClass)));
     }
 
     if (empty($newModelObj->idColumn)) {
@@ -98,6 +103,60 @@ class Model {
     return array();
   }
 
+  /**
+   * Sets a parameter based on its type
+   *
+   * @param $type
+   * @param $parameter
+   * @param $result
+   *
+   * @throws \Exception
+   */
+  protected function loadParameter($type, &$parameter, $result) {
+    switch ($type) {
+      case 'string':
+        $parameter = $result;
+        break;
+      case 'int':
+        $parameter = intval($result);
+        break;
+      case 'float':
+        $parameter = floatval($result);
+        break;
+      case 'DateTime':
+        $parameter = new \DateTime('@' . $result);
+        break;
+      case '':
+      case 'array':
+        $parameter = $result;
+        break;
+      default:
+        try {
+          $rClass = new \ReflectionClass($type);
+          if ($rClass->isSubclassOf('\MABI\Model')) {
+            /**
+             * @var $model \MABI\Model
+             */
+            $model = call_user_func($type . '::init', $this->app);
+            $model->loadParameters($result);
+            $parameter = $model;
+          }
+          else {
+            throw New \Exception('Class ' . $type . ' does not derive from \MABI\Model');
+          }
+        } catch (\ReflectionException $ex) {
+          $parameter = $result;
+        }
+    }
+  }
+
+  /**
+   * Loads parameters from a PHP database into the model object using reflection
+   *
+   * @param $resultArray array
+   *
+   * @throws \Exception
+   */
   protected function loadParameters($resultArray) {
     $rClass = new \ReflectionClass($this);
     $myProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
@@ -105,35 +164,38 @@ class Model {
       $rProp = new \ReflectionProperty($this, $property->name);
       $propComment = $rProp->getDocComment();
       $matches = array();
-      preg_match('/\@var\s(.*)\s/', $propComment, $matches);
-      if (empty($matches)) {
+      // Pulls out the type following the pattern @var <TYPE> from the doc comments of the property
+      if (!preg_match('/\@var\s(.*)\s/', $propComment, $matches)) {
         $this->{$property->name} = $resultArray[$property->name];
       }
       else {
         $type = $matches[1];
-        switch ($type) {
-          case 'string':
-            break;
-          case 'int':
-            break;
-          case 'DateTime':
-            break;
-          default:
-            $rClass = new \ReflectionClass($type);
-            if ($rClass->isSubclassOf('\MABI\Model')) {
-              var_dump('recognized model');
-            }
-            else {
-              throw New \Exception('Property ' . $property->name . ' does not derive from \MABI\Model');
-            }
+        $matches = array();
+
+        if (preg_match('/(.*)\[\]/', $type, $matches)) {
+          // If the type follows the list of type pattern (<TYPE>[]), an array will be generated and filled
+          // with that type
+          $type = $matches[1];
+          $outArr = array();
+          foreach ($resultArray[$property->name] as $listResult) {
+            $this->loadParameter($type, $parameter, $listResult);
+            $outArr[] = $parameter;
+          }
+          $this->{$property->name} = $outArr;
+        }
+        else {
+          $this->loadParameter($type, $this->{$property->name}, $resultArray[$property->name]);
         }
       }
+      unset($resultArray[$property->name]);
     }
+    $this->remainingReadResults = $resultArray;
   }
 
-// php -r "\$matches = array(); preg_match('@var abcd ',\$matches);"
   /**
    * todo: docs
+   *
+   * @param $id
    *
    * @return Model
    */

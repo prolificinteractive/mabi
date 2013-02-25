@@ -120,6 +120,9 @@ class Model {
       case 'int':
         $parameter = intval($result);
         break;
+      case 'bool':
+        $parameter = $result == TRUE;
+        break;
       case 'float':
         $parameter = floatval($result);
         break;

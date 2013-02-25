@@ -30,7 +30,7 @@ class RESTModelController extends ModelController {
     return $newController;
   }
 
-  protected function getCollection() {
+  public function getCollection() {
     /**
      * @var $model Model
      */
@@ -38,19 +38,19 @@ class RESTModelController extends ModelController {
     return $model->findAll();
   }
 
-  protected function postCollection() {
+  public function postCollection() {
     // todo: get post data to insert
   }
 
-  protected function putCollection() {
+  public function putCollection() {
     // todo: implement
   }
 
-  protected function deleteCollection() {
+  public function deleteCollection() {
     // todo: implement
   }
 
-  protected function getObject($id) {
+  public function getObject($id) {
     /**
      * @var $model Model
      */
@@ -59,11 +59,11 @@ class RESTModelController extends ModelController {
     // todo: implement
   }
 
-  protected function putObject($id) {
+  public function putObject($id) {
     // todo: implement
   }
 
-  protected function deleteObject($id) {
+  public function deleteObject($id) {
     // todo: implement
   }
 
@@ -83,7 +83,7 @@ class RESTModelController extends ModelController {
 
     // todo: add API versioning
 
-    $slim->get("/{$this->base}", array($this, 'deleteObject'));
+    $slim->get("/{$this->base}", array($this, 'getCollection'));
     $slim->post("/{$this->base}", array($this, 'postCollection'));
     $slim->put("/{$this->base}", array($this, 'putCollection'));
     $slim->delete("/{$this->base}", array($this, 'deleteCollection'));

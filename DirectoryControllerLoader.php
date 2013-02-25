@@ -30,7 +30,7 @@ class DirectoryControllerLoader extends ControllerLoader {
   /**
    * @var string[]
    */
-  protected $modelControllerClasses = array();
+  protected $overriddenModelClasses = array();
 
   /**
    * @var \MABI\Controller[]
@@ -41,17 +41,7 @@ class DirectoryControllerLoader extends ControllerLoader {
     $this->app = $app;
     $this->directory = $directory;
     $this->namespace = empty($namespace) ? '' : $namespace;
-  }
 
-  public function getModelControllerClasses() {
-    return $this->modelControllerClasses;
-  }
-
-  /**
-   * @return Controller[]
-   */
-  public function loadControllers() {
-    // TODO: Implement loadControllers() method.
     $controllerClassFiles = DirectoryHelper::directoryToArray($this->directory, TRUE, '.php');
 
     foreach ($controllerClassFiles as $controllerClassFile) {
@@ -60,13 +50,27 @@ class DirectoryControllerLoader extends ControllerLoader {
       $controllerClass = ReflectionHelper::createClassName($this->namespace, basename($controllerClassFile, '.php'));
       $this->controllerClasses[] = $controllerClass;
 
-      $rclass = new \ReflectionClass($controllerClass);
+      $controller = new $controllerClass($this->app);
+      $rclass = new \ReflectionClass($controller);
       if ($rclass->isSubclassOf('\MABI\ModelController')) {
-        $this->modelControllerClasses[] = $controllerClass;
+        /**
+         * @var $controller \MABI\ModelController
+         */
+        $this->overriddenModelClasses[] = $controller->getModelClass();
       }
-      $this->controllers[] = new $controllerClass($this->app);
+      $this->controllers[] = $controller;
     }
+  }
 
+  public function getOverriddenModelClasses() {
+    return $this->overriddenModelClasses;
+  }
+
+  /**
+   * @return Controller[]
+   */
+  public function getControllers() {
+    // TODO: Implement getControllers() method.
     return $this->controllers;
   }
 

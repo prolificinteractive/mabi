@@ -23,7 +23,7 @@ class ReflectionHelper {
   }
 
   public static function createClassName($namespace, $className) {
-    return (empty($namespace) ? '' : "\\{$namespace}") . "\\{$className}";
+    return (empty($namespace) ? '' : $namespace) . "\\{$className}";
   }
 }
 

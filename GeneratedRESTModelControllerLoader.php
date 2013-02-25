@@ -37,18 +37,17 @@ class GeneratedRESTModelControllerLoader extends ControllerLoader {
   public function __construct($modelClasses, $app) {
     $this->app = $app;
     $this->modelClasses = $modelClasses;
+
+    foreach ($this->modelClasses as $modelClass) {
+      $this->controllers[] = RESTModelController::generate($modelClass, $this->app);
+    }
   }
 
   /**
    * @return Controller[]
    */
-  function loadControllers() {
-    // TODO: Implement loadControllers() method.
-
-    foreach ($this->modelClasses as $modelClass) {
-      $this->controllers[] = RESTModelController::generate($modelClass, $this->app);
-    }
-
+  function getControllers() {
+    // TODO: Implement getControllers() method.
     return $this->controllers;
   }
 

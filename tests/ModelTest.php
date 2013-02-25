@@ -22,8 +22,8 @@ class ModelTest extends \PHPUnit_Framework_TestCase {
   public function testModelLoader() {
     $modelLoader = new \MABI\DirectoryModelLoader('TestModelDir', 'mabiTesting');
     $models = $modelLoader->loadModels();
-    $this->assertContains('\mabiTesting\ModelA', $models);
-    $this->assertContains('\mabiTesting\ModelB', $models);
+    $this->assertContains('mabiTesting\ModelA', $models);
+    $this->assertContains('mabiTesting\ModelB', $models);
   }
 
   public function testInit() {

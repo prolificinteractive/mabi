@@ -105,7 +105,7 @@ class App {
    */
   public function setControllerLoaders($controllerLoaders) {
     foreach ($controllerLoaders as $controllerLoader) {
-      $controllers = $controllerLoader->loadControllers();
+      $controllers = $controllerLoader->getControllers();
       foreach ($controllers as $controller) {
         $controller->loadRoutes($this->slim);
       }

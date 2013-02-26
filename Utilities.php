@@ -8,15 +8,9 @@ class ReflectionHelper {
     return $components[count($components) - 1];
   }
 
-  public static function getModelClassFromController($controllerClass) {
+  public static function getPrefixFromControllerClass($controllerClass) {
     if (substr($controllerClass, -strlen('Controller')) === 'Controller') {
       return substr($controllerClass, 0, strlen($controllerClass) - strlen('Controller'));
-    }
-
-    $rclass = new \ReflectionClass($controllerClass);
-    $docComment = $rclass->getDocComment();
-    if (preg_match('/\@model\s(.*)\s/', $docComment, $matches)) {
-      return $matches[1];
     }
 
     throw new \Exception('Cannot find model for model controller ' . $controllerClass);

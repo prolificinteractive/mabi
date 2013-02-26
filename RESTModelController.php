@@ -10,27 +10,16 @@ include_once dirname(__FILE__) . '/ModelController.php';
  * todo: docs
  */
 class RESTModelController extends ModelController {
-  protected $base = NULL;
-
   /**
    * @param $app App
    */
   public function __construct($app) {
     parent::__construct($app);
-
-    if (empty($this->base)) {
-      $this->base = strtolower(ReflectionHelper::stripClassName($this->modelClass));
-    }
   }
 
-  public static function generate($modelClass, $app) {
-    $newController = new RESTModelController($app);
-    $newController->modelClass = $modelClass;
-    $newController->base = strtolower(ReflectionHelper::stripClassName($modelClass));
-    return $newController;
-  }
+  protected $model = NULL;
 
-  public function getCollection() {
+  public function _restGetCollection() {
     /**
      * @var $model Model
      */
@@ -38,41 +27,47 @@ class RESTModelController extends ModelController {
     echo json_encode($model->findAll());
   }
 
-  public function postCollection() {
+  public function _restPostCollection() {
     // todo: get post data to insert
   }
 
-  public function putCollection() {
+  public function _restPutCollection() {
     // todo: implement
   }
 
-  public function deleteCollection() {
+  public function _restDeleteCollection() {
     // todo: implement
   }
 
-  public function getObject($id) {
+  public function _restGetObject($id) {
     /**
      * @var $model Model
      */
-    $model = call_user_func($this->modelClass . '::init', $this->app);
-    $model->findById($id);
-    echo json_encode($model);
+    echo json_encode($this->model);
     // todo: implement
   }
 
-  public function putObject($id) {
+  public function _restPutObject($id) {
     // todo: implement
   }
 
-  public function deleteObject($id) {
+  public function _restDeleteObject($id) {
     // todo: implement
+  }
+
+  public function _readModel($id) {
+    $this->model = call_user_func($this->modelClass . '::init', $this->app);
+    $this->model->findById($id);
   }
 
   /**
    * @param $slim \Slim\Slim
    */
   public function loadRoutes($slim) {
-    /*
+    parent::loadRoutes($slim);
+    /**
+     * Automatically generates routes for the following
+     *
      * GET      /<model>          get all models by id
      * POST     /<model>          creates a new model
      * PUT      /<model>          bulk creates full new model collection
@@ -83,13 +78,38 @@ class RESTModelController extends ModelController {
      */
 
     // todo: add API versioning
+    $slim->get("/{$this->base}", array($this, '_restGetCollection'));
+    $slim->post("/{$this->base}", array($this, '_restPostCollection'));
+    $slim->put("/{$this->base}", array($this, '_restPutCollection'));
+    $slim->delete("/{$this->base}", array($this, '_restDeleteCollection'));
+    $slim->get("/{$this->base}/:id", array($this, '_readModel'), array($this, '_restGetObject'));
+    $slim->put("/{$this->base}/:id", array($this, '_readModel'), array($this, '_restPutObject'));
+    $slim->delete("/{$this->base}/:id", array($this, '_readModel'), array($this, '_restDeleteObject'));
 
-    $slim->get("/{$this->base}", array($this, 'getCollection'));
-    $slim->post("/{$this->base}", array($this, 'postCollection'));
-    $slim->put("/{$this->base}", array($this, 'putCollection'));
-    $slim->delete("/{$this->base}", array($this, 'deleteCollection'));
-    $slim->get("/{$this->base}/:id", array($this, 'getObject'));
-    $slim->put("/{$this->base}/:id", array($this, 'putObject'));
-    $slim->delete("/{$this->base}/:id", array($this, 'deleteObject'));
+    /**
+     * Gets other automatically generated routes following the pattern:
+     * /BASE/:id/ACTION(/:param+) from methods named rest<METHOD><ACTION>()
+     * where <METHOD> is GET, PUT, POST, or DELETE
+     */
+    $rclass = new \ReflectionClass($this);
+    $methods = $rclass->getMethods(\ReflectionMethod::IS_PUBLIC);
+    foreach ($methods as $method) {
+      if (strpos($method, 'restGet', 0) === 0) {
+        $action = substr($method, 3);
+        $slim->get("/{$this->base}/:id/{$action}(/:param+)", array($this, '_readModel'), array($this, $method));
+      }
+      elseif (strpos($method, 'restPut', 0) === 0) {
+        $action = substr($method, 3);
+        $slim->put("/{$this->base}/:id/{$action}(/:param+)", array($this, '_readModel'), array($this, $method));
+      }
+      elseif (strpos($method, 'restPost', 0) === 0) {
+        $action = substr($method, 4);
+        $slim->post("/{$this->base}/:id/{$action}(/:param+)", array($this, '_readModel'), array($this, $method));
+      }
+      elseif (strpos($method, 'restDelete', 0) === 0) {
+        $action = substr($method, 6);
+        $slim->delete("/{$this->base}/:id/{$action}(/:param+)", array($this, '_readModel'), array($this, $method));
+      }
+    }
   }
 }

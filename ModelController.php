@@ -8,7 +8,7 @@ include_once dirname(__FILE__) . '/Controller.php';
 /**
  * todo: docs
  */
-abstract class ModelController extends Controller {
+class ModelController extends Controller {
   protected $modelClass = NULL;
 
   public function getModelClass() {
@@ -22,7 +22,18 @@ abstract class ModelController extends Controller {
     parent::__construct($app);
 
     if (empty($this->modelClass)) {
-      $this->modelClass = ReflectionHelper::getModelClassFromController(get_called_class());
+      $this->modelClass = ReflectionHelper::getPrefixFromControllerClass(get_called_class());
     }
+
+    if (empty($this->base)) {
+      $this->base = strtolower(ReflectionHelper::stripClassName($this->modelClass));
+    }
+  }
+
+  public static function generate($modelClass, $app) {
+    $newController = new RESTModelController($app);
+    $newController->modelClass = $modelClass;
+    $newController->base = strtolower(ReflectionHelper::stripClassName($modelClass));
+    return $newController;
   }
 }

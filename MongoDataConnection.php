@@ -64,7 +64,8 @@ class MongoDataConnection extends DataConnection {
 
     $mongodata = array();
     while ($return->hasNext()) {
-      $mongodata[] = $return->getNext();
+      $return->getNext();
+      $mongodata[] = $return->current();
       /* todo: review if needed
       if ($this->config['set_string_id'] && !empty($mongodata['_id']) && is_object($mongodata['_id'])) {
         $mongodata['_id'] = $mongodata['_id']->__toString();

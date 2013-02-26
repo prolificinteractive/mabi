@@ -98,9 +98,17 @@ class Model {
   public function findAll() {
     // todo: implement
     $dataConnection = $this->app->getDataConnection($this->connection);
-    $dataConnection->findAll($this->table);
-
-    return array();
+    $foundObjects = $dataConnection->findAll($this->table);
+    $foundModels = array();
+    foreach ($foundObjects as $foundObject) {
+      /**
+       * @var $model \MABI\Model
+       */
+      $model = call_user_func($this->modelClass . '::init', $this->app);
+      $model->loadParameters($foundObject);
+      $foundModels[] = $model;
+    }
+    return $foundModels;
   }
 
   /**

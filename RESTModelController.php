@@ -35,7 +35,7 @@ class RESTModelController extends ModelController {
      * @var $model Model
      */
     $model = call_user_func($this->modelClass . '::init', $this->app);
-    return $model->findAll();
+    echo json_encode($model->findAll());
   }
 
   public function postCollection() {
@@ -56,6 +56,7 @@ class RESTModelController extends ModelController {
      */
     $model = call_user_func($this->modelClass . '::init', $this->app);
     $model->findById($id);
+    echo json_encode($model);
     // todo: implement
   }
 

@@ -32,21 +32,22 @@ class Controller {
     $rclass = new \ReflectionClass($this);
     $methods = $rclass->getMethods(\ReflectionMethod::IS_PUBLIC);
     foreach ($methods as $method) {
-      if (strpos($method, 'get', 0) === 0) {
-        $action = substr($method,3);
-        $slim->get("/{$this->base}/{$action}(/:param+)", array($this, $method));
+      $methodName = $method->name;
+      if (strpos($methodName, 'get', 0) === 0) {
+        $action = strtolower(substr($methodName,3));
+        $slim->get("/{$this->base}/{$action}", array($this, $methodName));
       }
-      elseif (strpos($method, 'put', 0) === 0) {
-        $action = substr($method,3);
-        $slim->put("/{$this->base}/{$action}(/:param+)", array($this, $method));
+      elseif (strpos($methodName, 'put', 0) === 0) {
+        $action = strtolower(substr($methodName,3));
+        $slim->put("/{$this->base}/{$action}", array($this, $methodName));
       }
-      elseif (strpos($method, 'post', 0) === 0) {
-        $action = substr($method,4);
-        $slim->post("/{$this->base}/{$action}(/:param+)", array($this, $method));
+      elseif (strpos($methodName, 'post', 0) === 0) {
+        $action = strtolower(substr($methodName,4));
+        $slim->post("/{$this->base}/{$action}", array($this, $methodName));
       }
-      elseif (strpos($method, 'delete', 0) === 0) {
-        $action = substr($method,6);
-        $slim->delete("/{$this->base}/{$action}(/:param+)", array($this, $method));
+      elseif (strpos($methodName, 'delete', 0) === 0) {
+        $action = strtolower(substr($methodName,6));
+        $slim->delete("/{$this->base}/{$action}", array($this, $methodName));
       }
     }
   }

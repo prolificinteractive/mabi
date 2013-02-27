@@ -55,9 +55,12 @@ class RESTModelController extends ModelController {
     // todo: implement
   }
 
-  public function _readModel($id) {
+  /**
+   * @param $route \Slim\Route
+   */
+  public function _readModel($route) {
     $this->model = call_user_func($this->modelClass . '::init', $this->app);
-    $this->model->findById($id);
+    $this->model->findById($route->getParam('id'));
   }
 
   /**
@@ -94,21 +97,22 @@ class RESTModelController extends ModelController {
     $rclass = new \ReflectionClass($this);
     $methods = $rclass->getMethods(\ReflectionMethod::IS_PUBLIC);
     foreach ($methods as $method) {
-      if (strpos($method, 'restGet', 0) === 0) {
-        $action = substr($method, 3);
-        $slim->get("/{$this->base}/:id/{$action}(/:param+)", array($this, '_readModel'), array($this, $method));
+      $methodName = $method->name;
+      if (strpos($methodName, 'restGet', 0) === 0) {
+        $action = strtolower(substr($methodName, 7));
+        $slim->get("/{$this->base}/:id/{$action}", array($this, '_readModel'), array($this, $methodName));
       }
-      elseif (strpos($method, 'restPut', 0) === 0) {
-        $action = substr($method, 3);
-        $slim->put("/{$this->base}/:id/{$action}(/:param+)", array($this, '_readModel'), array($this, $method));
+      elseif (strpos($methodName, 'restPut', 0) === 0) {
+        $action = strtolower(substr($methodName, 7));
+        $slim->put("/{$this->base}/:id/{$action}(/:param+)", array($this, '_readModel'), array($this, $methodName));
       }
-      elseif (strpos($method, 'restPost', 0) === 0) {
-        $action = substr($method, 4);
-        $slim->post("/{$this->base}/:id/{$action}(/:param+)", array($this, '_readModel'), array($this, $method));
+      elseif (strpos($methodName, 'restPost', 0) === 0) {
+        $action = strtolower(substr($methodName, 8));
+        $slim->post("/{$this->base}/:id/{$action}(/:param+)", array($this, '_readModel'), array($this, $methodName));
       }
-      elseif (strpos($method, 'restDelete', 0) === 0) {
-        $action = substr($method, 6);
-        $slim->delete("/{$this->base}/:id/{$action}(/:param+)", array($this, '_readModel'), array($this, $method));
+      elseif (strpos($methodName, 'restDelete', 0) === 0) {
+        $action = strtolower(substr($methodName, 10));
+        $slim->delete("/{$this->base}/:id/{$action}(/:param+)", array($this, '_readModel'), array($this, $methodName));
       }
     }
   }

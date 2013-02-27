@@ -172,6 +172,7 @@ class Model {
     $rClass = new \ReflectionClass($this);
     $myProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
     foreach ($myProperties as $property) {
+      if(!isset($resultArray[$property->name])) continue;
       $rProp = new \ReflectionProperty($this, $property->name);
       $propComment = $rProp->getDocComment();
       $matches = array();

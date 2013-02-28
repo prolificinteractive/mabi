@@ -12,5 +12,6 @@ abstract class DataConnection {
   abstract function findOneByField($field, $value, $table);
 
   abstract function clearAll($table);
-//  abstract function query($table);
+
+  abstract function query($table, $query);
 }

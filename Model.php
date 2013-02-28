@@ -112,6 +112,25 @@ class Model {
   }
 
   /**
+   * @param $query array
+   *
+   * @return Model[]
+   */
+  public function query($query) {
+    $dataConnection = $this->app->getDataConnection($this->connection);
+    $foundObjects = $dataConnection->query($this->table, $query);
+    $foundModels = array();
+    foreach ($foundObjects as $foundObject) {
+      /**
+       * @var $model \MABI\Model
+       */
+      $model = call_user_func($this->modelClass . '::init', $this->app);
+      $model->loadParameters($foundObject);
+      $foundModels[] = $model;
+    }
+    return $foundModels;
+  }
+  /**
    * Sets a parameter based on its type
    *
    * @param $type

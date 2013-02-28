@@ -102,4 +102,21 @@ class MongoDataConnection extends DataConnection {
     array_walk_recursive($result, array($this, 'serializeMongoId'));
     return $result;
   }
+
+  function query($table, $query) {
+    $return = $this->db->selectCollection($table)->find($query);
+
+    $mongodata = array();
+    while ($return->hasNext()) {
+      $return->getNext();
+      $mongodata[] = $return->current();
+      /* todo: review if needed
+      if ($this->config['set_string_id'] && !empty($mongodata['_id']) && is_object($mongodata['_id'])) {
+        $mongodata['_id'] = $mongodata['_id']->__toString();
+      }
+      */
+    }
+
+    return $mongodata;
+  }
 }

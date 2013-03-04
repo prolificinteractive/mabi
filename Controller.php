@@ -16,6 +16,11 @@ class Controller {
    */
   protected $app;
 
+  /**
+   * @var \Slim\Http\Request
+   */
+  protected $request;
+
   public function __construct($app) {
     $this->app = $app;
 
@@ -29,6 +34,8 @@ class Controller {
    * @param $slim \Slim\Slim
    */
   public function loadRoutes($slim) {
+    $this->request = $slim->request();
+
     $rclass = new \ReflectionClass($this);
     $methods = $rclass->getMethods(\ReflectionMethod::IS_PUBLIC);
     foreach ($methods as $method) {
@@ -36,18 +43,22 @@ class Controller {
       if (strpos($methodName, 'get', 0) === 0) {
         $action = strtolower(substr($methodName,3));
         $slim->get("/{$this->base}/{$action}", array($this, $methodName));
+        $slim->get("/{$this->base}/{$action}(/:param+)", array($this, $methodName));
       }
       elseif (strpos($methodName, 'put', 0) === 0) {
         $action = strtolower(substr($methodName,3));
         $slim->put("/{$this->base}/{$action}", array($this, $methodName));
+        $slim->put("/{$this->base}/{$action}(/:param+)", array($this, $methodName));
       }
       elseif (strpos($methodName, 'post', 0) === 0) {
         $action = strtolower(substr($methodName,4));
         $slim->post("/{$this->base}/{$action}", array($this, $methodName));
+        $slim->post("/{$this->base}/{$action}(/:param+)", array($this, $methodName));
       }
       elseif (strpos($methodName, 'delete', 0) === 0) {
         $action = strtolower(substr($methodName,6));
         $slim->delete("/{$this->base}/{$action}", array($this, $methodName));
+        $slim->delete("/{$this->base}/{$action}(/:param+)", array($this, $methodName));
       }
     }
   }

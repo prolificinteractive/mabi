@@ -101,18 +101,22 @@ class RESTModelController extends ModelController {
       if (strpos($methodName, 'restGet', 0) === 0) {
         $action = strtolower(substr($methodName, 7));
         $slim->get("/{$this->base}/:id/{$action}", array($this, '_readModel'), array($this, $methodName));
+        $slim->get("/{$this->base}/:id/{$action}(/:param)", array($this, '_readModel'), array($this, $methodName));
       }
       elseif (strpos($methodName, 'restPut', 0) === 0) {
         $action = strtolower(substr($methodName, 7));
-        $slim->put("/{$this->base}/:id/{$action}(/:param+)", array($this, '_readModel'), array($this, $methodName));
+        $slim->put("/{$this->base}/:id/{$action}", array($this, '_readModel'), array($this, $methodName));
+        $slim->put("/{$this->base}/:id/{$action}(/:param)", array($this, '_readModel'), array($this, $methodName));
       }
       elseif (strpos($methodName, 'restPost', 0) === 0) {
         $action = strtolower(substr($methodName, 8));
-        $slim->post("/{$this->base}/:id/{$action}(/:param+)", array($this, '_readModel'), array($this, $methodName));
+        $slim->post("/{$this->base}/:id/{$action}", array($this, '_readModel'), array($this, $methodName));
+        $slim->post("/{$this->base}/:id/{$action}(/:param)", array($this, '_readModel'), array($this, $methodName));
       }
       elseif (strpos($methodName, 'restDelete', 0) === 0) {
         $action = strtolower(substr($methodName, 10));
-        $slim->delete("/{$this->base}/:id/{$action}(/:param+)", array($this, '_readModel'), array($this, $methodName));
+        $slim->delete("/{$this->base}/:id/{$action}", array($this, '_readModel'), array($this, $methodName));
+        $slim->delete("/{$this->base}/:id/{$action}(/:param)", array($this, '_readModel'), array($this, $methodName));
       }
     }
   }

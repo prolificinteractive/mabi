@@ -104,7 +104,11 @@ class MongoDataConnection extends DataConnection {
   }
 
   function query($table, $query) {
-    $return = $this->db->selectCollection($table)->find($query);
+    $mquery = $query['query'];
+    $return = $this->db->selectCollection($table)->find($mquery);
+    if (!empty($query['limit'])) {
+      $return = $return->limit($query['limit']);
+    }
 
     $mongodata = array();
     while ($return->hasNext()) {

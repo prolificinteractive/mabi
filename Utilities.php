@@ -16,6 +16,12 @@ class ReflectionHelper {
     throw new \Exception('Cannot find model for model controller ' . $controllerClass);
   }
 
+  public static function getDocProperty($docComments, $property) {
+    $matches = array();
+    preg_match_all('/\@' . $property . '\s(.*)\s/', $docComments, $matches);
+    return $matches[1];
+  }
+
   public static function createClassName($namespace, $className) {
     return (empty($namespace) ? '' : $namespace) . "\\{$className}";
   }

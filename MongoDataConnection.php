@@ -76,8 +76,11 @@ class MongoDataConnection extends DataConnection {
     return $mongodata;
   }
 
-  public function insert($table, $data) {
-    $return = $this->db->selectCollection($table)->insert($data);
+  public function insert($table, &$data) {
+    if (empty($data['_id'])) {
+      $data['_id'] = new \MongoId();
+    }
+    return $this->db->selectCollection($table)->insert($data);
   }
 
   public function clearAll($table) {
@@ -123,4 +126,20 @@ class MongoDataConnection extends DataConnection {
 
     return $mongodata;
   }
+
+  /**
+   * todo: docs
+   *
+   * @param $field
+   * @param $value
+   * @param $table
+   */
+  function deleteByField($field, $value, $table) {
+    if ($field == "_id") {
+      $value = new \MongoId( $value);
+    }
+    $this->db->selectCollection($table)->remove(array($field => $value));
+  }
+
+
 }

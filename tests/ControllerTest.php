@@ -18,7 +18,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase {
   public function setUp() {
     \Slim\Environment::mock();
     $this->app = new \MABI\App();
-    $this->app->addDataConnection('default', \MABI\MongoDataConnection::create('localhost', '27017', 'test'));
+    $this->app->addDataConnection('default', \MABI\MongoDataConnection::create('localhost', '27017', 'mabiTest'));
     $this->app->setModelLoaders(new \MABI\DirectoryModelLoader('TestModelDir', 'mabiTesting'));
   }
 

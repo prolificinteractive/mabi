@@ -39,7 +39,11 @@ class GeneratedRESTModelControllerLoader extends ControllerLoader {
     $this->modelClasses = $modelClasses;
 
     foreach ($this->modelClasses as $modelClass) {
-      $this->controllers[] = RESTModelController::generate($modelClass, $this->app);
+      $rclass = new \ReflectionClass($modelClass);
+      $properties = ReflectionHelper::getDocProperty($rclass->getDocComment(), 'restful');
+      if (!in_array('NoController', $properties)) {
+        $this->controllers[] = RESTModelController::generate($modelClass, $this->app);
+      }
     }
   }
 

@@ -15,7 +15,7 @@ class AppTest extends PHPUnit_Framework_TestCase {
 
   public function testNew() {
     $app = new \MABI\App();
-    $connection = \MABI\MongoDataConnection::create('localhost', '27017', 'foodTweeks');
+    $connection = \MABI\MongoDataConnection::create('localhost', '27017', 'mabiTest');
     $app->addDataConnection('default', $connection);
     $this->assertNotEmpty($app->getDataConnection('default'));
     $this->assertInstanceOf('MABI\MongoDataConnection', $app->getDataConnection('default'));

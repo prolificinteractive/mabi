@@ -5,11 +5,13 @@ namespace MABI;
 abstract class DataConnection {
   abstract function getDefaultIdColumn();
 
-  abstract function insert($table, $data);
+  abstract function insert($table, &$data);
 
   abstract function findAll($table);
 
   abstract function findOneByField($field, $value, $table);
+
+  abstract function deleteByField($field, $value, $table);
 
   abstract function clearAll($table);
 

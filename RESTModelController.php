@@ -17,6 +17,9 @@ class RESTModelController extends ModelController {
     parent::__construct($app);
   }
 
+  /**
+   * @var \Mabi\Model
+   */
   protected $model = NULL;
 
   public function _restGetCollection() {

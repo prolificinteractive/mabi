@@ -130,6 +130,7 @@ class Model {
     }
     return $foundModels;
   }
+
   /**
    * Sets a parameter based on its type
    *
@@ -191,16 +192,18 @@ class Model {
     $rClass = new \ReflectionClass($this);
     $myProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
     foreach ($myProperties as $property) {
-      if(!isset($resultArray[$property->name])) continue;
+      if (!isset($resultArray[$property->name])) {
+        continue;
+      }
       $rProp = new \ReflectionProperty($this, $property->name);
       $propComment = $rProp->getDocComment();
-      $matches = array();
       // Pulls out the type following the pattern @var <TYPE> from the doc comments of the property
-      if (!preg_match('/\@var\s(.*)\s/', $propComment, $matches)) {
-        $this->{$property->name} = $resultArray[$property->name];
+      $varDocs = ReflectionHelper::getDocProperty($propComment, 'var');
+      if (empty($varDocs)) {
+        $this->{$property->getName()} = $resultArray[$property->getName()];
       }
       else {
-        $type = $matches[1];
+        $type = $varDocs[0];
         $matches = array();
 
         if (preg_match('/(.*)\[\]/', $type, $matches)) {
@@ -208,18 +211,22 @@ class Model {
           // with that type
           $type = $matches[1];
           $outArr = array();
-          foreach ($resultArray[$property->name] as $listResult) {
+          foreach ($resultArray[$property->getName()] as $listResult) {
             $this->loadParameter($type, $parameter, $listResult);
             $outArr[] = $parameter;
           }
-          $this->{$property->name} = $outArr;
+          $this->{$property->getName()} = $outArr;
         }
         else {
-          $this->loadParameter($type, $this->{$property->name}, $resultArray[$property->name]);
+          $this->loadParameter($type, $this->{$property->getName()}, $resultArray[$property->getName()]);
         }
       }
-      unset($resultArray[$property->name]);
+      unset($resultArray[$property->getName()]);
     }
+
+    $this->{$this->idProperty} = $resultArray[$this->idColumn];
+    unset($resultArray[$this->idColumn]);
+
     $this->remainingReadResults = $resultArray;
   }
 
@@ -228,24 +235,63 @@ class Model {
    *
    * @param $id
    *
-   * @return Model
+   * @return bool
    */
   public function findById($id) {
     // todo: implement
     $dataConnection = $this->app->getDataConnection($this->connection);
     $result = $dataConnection->findOneByField($this->idColumn, $id, $this->table);
+    if ($result == NULL) {
+      return FALSE;
+    }
     $this->{$this->idProperty} = $id;
     $this->loadParameters($result);
+    return TRUE;
+  }
+
+  protected function getPropertyArray() {
+    $rClass = new \ReflectionClass($this);
+
+    $outArr = array();
+    $myProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
+    foreach ($myProperties as $property) {
+      if (!is_object($this->{$property->getName()})) {
+        $outArr[$property->getName()] = $this->{$property->getName()};
+      }
+      else {
+        $propClass = new \ReflectionClass($this->{$property->getName()});
+        if ($propClass->isSubclassOf('\MABI\Model')) {
+          /**
+           * @var $subModel \MABI\Model
+           */
+          $subModel = $this->{$property->getName()};
+          $outArr[$property->getName()] = $subModel->getPropertyArray();
+        }
+      }
+    }
+    if (!empty($this->{$this->idProperty})) {
+      $outArr[$this->idColumn] = $this->{$this->idProperty};
+    }
+
+    return $outArr;
   }
 
   /**
    * todo: docs
-   *
-   * @param $values Array|NULL
    */
-  public function insert($values = NULL) {
+  public function insert() {
     $dataConnection = $this->app->getDataConnection($this->connection);
-    $dataConnection->insert($this->table, $values);
+    $propArray = $this->getPropertyArray();
+    $dataConnection->insert($this->table, $propArray);
+    $this->loadParameters($propArray);
+  }
+
+  /**
+   * todo: docs
+   */
+  public function delete() {
+    $dataConnection = $this->app->getDataConnection($this->connection);
+    $dataConnection->deleteByField($this->idColumn, $this->{$this->idProperty}, $this->table);
   }
 
   /**

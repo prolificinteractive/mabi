@@ -17,6 +17,11 @@ class Controller {
   protected $app;
 
   /**
+   * @var \Slim\Middleware
+   */
+  protected $middlewares = array();
+
+  /**
    * @var \Slim\Http\Request
    */
   protected $request;
@@ -31,6 +36,13 @@ class Controller {
   }
 
   /**
+   * @param $route \Slim\Route
+   */
+  protected function _controllerMiddlewares($route) {
+    // todo: implement
+  }
+
+  /**
    * @param $slim \Slim\Slim
    */
   public function loadRoutes($slim) {
@@ -42,23 +54,23 @@ class Controller {
       $methodName = $method->name;
       if (strpos($methodName, 'get', 0) === 0) {
         $action = strtolower(substr($methodName,3));
-        $slim->get("/{$this->base}/{$action}", array($this, $methodName));
-        $slim->get("/{$this->base}/{$action}(/:param+)", array($this, $methodName));
+        $slim->get("/{$this->base}/{$action}", array($this, '_controllerMiddlewares'), array($this, $methodName));
+        $slim->get("/{$this->base}/{$action}(/:param+)", array($this, '_controllerMiddlewares'), array($this, $methodName));
       }
       elseif (strpos($methodName, 'put', 0) === 0) {
         $action = strtolower(substr($methodName,3));
-        $slim->put("/{$this->base}/{$action}", array($this, $methodName));
-        $slim->put("/{$this->base}/{$action}(/:param+)", array($this, $methodName));
+        $slim->put("/{$this->base}/{$action}", array($this, '_controllerMiddlewares'), array($this, $methodName));
+        $slim->put("/{$this->base}/{$action}(/:param+)", array($this, '_controllerMiddlewares'), array($this, $methodName));
       }
       elseif (strpos($methodName, 'post', 0) === 0) {
         $action = strtolower(substr($methodName,4));
-        $slim->post("/{$this->base}/{$action}", array($this, $methodName));
-        $slim->post("/{$this->base}/{$action}(/:param+)", array($this, $methodName));
+        $slim->post("/{$this->base}/{$action}", array($this, '_controllerMiddlewares'), array($this, $methodName));
+        $slim->post("/{$this->base}/{$action}(/:param+)", array($this, '_controllerMiddlewares'), array($this, $methodName));
       }
       elseif (strpos($methodName, 'delete', 0) === 0) {
         $action = strtolower(substr($methodName,6));
-        $slim->delete("/{$this->base}/{$action}", array($this, $methodName));
-        $slim->delete("/{$this->base}/{$action}(/:param+)", array($this, $methodName));
+        $slim->delete("/{$this->base}/{$action}", array($this, '_controllerMiddlewares'), array($this, $methodName));
+        $slim->delete("/{$this->base}/{$action}(/:param+)", array($this, '_controllerMiddlewares'), array($this, $methodName));
       }
     }
   }

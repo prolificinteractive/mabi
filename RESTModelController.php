@@ -67,10 +67,18 @@ class RESTModelController extends ModelController {
   }
 
   /**
+   * @param $route \Slim\Route
+   */
+  protected function _restControllerMiddlewares($route) {
+    // todo: implement
+  }
+
+  /**
    * @param $slim \Slim\Slim
    */
   public function loadRoutes($slim) {
     parent::loadRoutes($slim);
+
     /**
      * Automatically generates routes for the following
      *
@@ -84,13 +92,37 @@ class RESTModelController extends ModelController {
      */
 
     // todo: add API versioning
-    $slim->get("/{$this->base}", array($this, '_restGetCollection'));
-    $slim->post("/{$this->base}", array($this, '_restPostCollection'));
-    $slim->put("/{$this->base}", array($this, '_restPutCollection'));
-    $slim->delete("/{$this->base}", array($this, '_restDeleteCollection'));
-    $slim->get("/{$this->base}/:id", array($this, '_readModel'), array($this, '_restGetObject'));
-    $slim->put("/{$this->base}/:id", array($this, '_readModel'), array($this, '_restPutObject'));
-    $slim->delete("/{$this->base}/:id", array($this, '_readModel'), array($this, '_restDeleteObject'));
+    $slim->get("/{$this->base}",
+      array($this, '_restControllerMiddlewares'),
+      array($this, '_controllerMiddlewares'),
+      array($this, '_restGetCollection'));
+    $slim->post("/{$this->base}",
+      array($this, '_restControllerMiddlewares'),
+      array($this, '_controllerMiddlewares'),
+      array($this, '_restPostCollection'));
+    $slim->put("/{$this->base}",
+      array($this, '_restControllerMiddlewares'),
+      array($this, '_controllerMiddlewares'),
+      array($this, '_restPutCollection'));
+    $slim->delete("/{$this->base}",
+      array($this, '_restControllerMiddlewares'),
+      array($this, '_controllerMiddlewares'),
+      array($this, '_restDeleteCollection'));
+    $slim->get("/{$this->base}/:id",
+      array($this, '_restControllerMiddlewares'),
+      array($this, '_readModel'),
+      array($this, '_controllerMiddlewares'),
+      array($this, '_restGetObject'));
+    $slim->put("/{$this->base}/:id",
+      array($this, '_restControllerMiddlewares'),
+      array($this, '_readModel'),
+      array($this, '_controllerMiddlewares'),
+      array($this, '_restPutObject'));
+    $slim->delete("/{$this->base}/:id",
+      array($this, '_restControllerMiddlewares'),
+      array($this, '_readModel'),
+      array($this, '_controllerMiddlewares'),
+      array($this, '_restDeleteObject'));
 
     /**
      * Gets other automatically generated routes following the pattern:
@@ -103,23 +135,55 @@ class RESTModelController extends ModelController {
       $methodName = $method->name;
       if (strpos($methodName, 'restGet', 0) === 0) {
         $action = strtolower(substr($methodName, 7));
-        $slim->get("/{$this->base}/:id/{$action}", array($this, '_readModel'), array($this, $methodName));
-        $slim->get("/{$this->base}/:id/{$action}(/:param)", array($this, '_readModel'), array($this, $methodName));
+        $slim->get("/{$this->base}/:id/{$action}",
+          array($this, '_restControllerMiddlewares'),
+          array($this, '_readModel'),
+          array($this, '_controllerMiddlewares'),
+          array($this, $methodName));
+        $slim->get("/{$this->base}/:id/{$action}(/:param)",
+          array($this, '_restControllerMiddlewares'),
+          array($this, '_readModel'),
+          array($this, '_controllerMiddlewares'),
+          array($this, $methodName));
       }
       elseif (strpos($methodName, 'restPut', 0) === 0) {
         $action = strtolower(substr($methodName, 7));
-        $slim->put("/{$this->base}/:id/{$action}", array($this, '_readModel'), array($this, $methodName));
-        $slim->put("/{$this->base}/:id/{$action}(/:param)", array($this, '_readModel'), array($this, $methodName));
+        $slim->put("/{$this->base}/:id/{$action}",
+          array($this, '_restControllerMiddlewares'),
+          array($this, '_readModel'),
+          array($this, '_controllerMiddlewares'),
+          array($this, $methodName));
+        $slim->put("/{$this->base}/:id/{$action}(/:param)",
+          array($this, '_restControllerMiddlewares'),
+          array($this, '_readModel'),
+          array($this, '_controllerMiddlewares'),
+          array($this, $methodName));
       }
       elseif (strpos($methodName, 'restPost', 0) === 0) {
         $action = strtolower(substr($methodName, 8));
-        $slim->post("/{$this->base}/:id/{$action}", array($this, '_readModel'), array($this, $methodName));
-        $slim->post("/{$this->base}/:id/{$action}(/:param)", array($this, '_readModel'), array($this, $methodName));
+        $slim->post("/{$this->base}/:id/{$action}",
+          array($this, '_restControllerMiddlewares'),
+          array($this, '_readModel'),
+          array($this, '_controllerMiddlewares'),
+          array($this, $methodName));
+        $slim->post("/{$this->base}/:id/{$action}(/:param)",
+          array($this, '_restControllerMiddlewares'),
+          array($this, '_readModel'),
+          array($this, '_controllerMiddlewares'),
+          array($this, $methodName));
       }
       elseif (strpos($methodName, 'restDelete', 0) === 0) {
         $action = strtolower(substr($methodName, 10));
-        $slim->delete("/{$this->base}/:id/{$action}", array($this, '_readModel'), array($this, $methodName));
-        $slim->delete("/{$this->base}/:id/{$action}(/:param)", array($this, '_readModel'), array($this, $methodName));
+        $slim->delete("/{$this->base}/:id/{$action}",
+          array($this, '_restControllerMiddlewares'),
+          array($this, '_readModel'),
+          array($this, '_controllerMiddlewares'),
+          array($this, $methodName));
+        $slim->delete("/{$this->base}/:id/{$action}(/:param)",
+          array($this, '_restControllerMiddlewares'),
+          array($this, '_readModel'),
+          array($this, '_controllerMiddlewares'),
+          array($this, $methodName));
       }
     }
   }

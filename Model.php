@@ -46,7 +46,12 @@ class Model {
   /**
    * @var array
    */
-  protected $remainingReadResults;
+  public $remainingReadResults;
+
+  /**
+   * @var array
+   */
+  protected $readFields = array();
 
   /**
    * @param string $table
@@ -98,7 +103,7 @@ class Model {
   public function findAll() {
     // todo: implement
     $dataConnection = $this->app->getDataConnection($this->connection);
-    $foundObjects = $dataConnection->findAll($this->table);
+    $foundObjects = $dataConnection->findAll($this->table, $this->readFields);
     $foundModels = array();
     foreach ($foundObjects as $foundObject) {
       /**
@@ -238,9 +243,8 @@ class Model {
    * @return bool
    */
   public function findById($id) {
-    // todo: implement
     $dataConnection = $this->app->getDataConnection($this->connection);
-    $result = $dataConnection->findOneByField($this->idColumn, $id, $this->table);
+    $result = $dataConnection->findOneByField($this->idColumn, $id, $this->table, $this->readFields);
     if ($result == NULL) {
       return FALSE;
     }
@@ -255,6 +259,12 @@ class Model {
     $outArr = array();
     $myProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
     foreach ($myProperties as $property) {
+      /*
+       * Ignores writing any model property with 'internal' option
+       */
+      if (in_array('internal', ReflectionHelper::getDocProperty($property->getDocComment(), 'options'))) {
+        continue;
+      }
       if (!is_object($this->{$property->getName()})) {
         $outArr[$property->getName()] = $this->{$property->getName()};
       }

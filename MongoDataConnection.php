@@ -93,11 +93,11 @@ class MongoDataConnection extends DataConnection {
     }
   }
 
-  public function findOneByField($field, $value, $table) {
+  public function findOneByField($field, $value, $table, array $fields = array()) {
     if ($field == "_id") {
       $value = new \MongoId($value);
     }
-    $result = $this->db->selectCollection($table)->findOne(array($field => $value));
+    $result = $this->db->selectCollection($table)->findOne(array($field => $value), $fields);
     if (empty($result)) {
       return NULL;
     }
@@ -136,7 +136,7 @@ class MongoDataConnection extends DataConnection {
    */
   function deleteByField($field, $value, $table) {
     if ($field == "_id") {
-      $value = new \MongoId( $value);
+      $value = new \MongoId($value);
     }
     $this->db->selectCollection($table)->remove(array($field => $value));
   }

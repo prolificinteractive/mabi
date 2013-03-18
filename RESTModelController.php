@@ -22,6 +22,11 @@ class RESTModelController extends ModelController {
    */
   protected $model = NULL;
 
+  /**
+   * @var \Slim\Middleware[]
+   */
+  protected $restMiddlewares = array();
+
   public function _restGetCollection() {
     /**
      * @var $model Model
@@ -70,7 +75,7 @@ class RESTModelController extends ModelController {
    * @param $route \Slim\Route
    */
   protected function _restControllerMiddlewares($route) {
-    // todo: implement
+    $this->middlewares[0]->call();
   }
 
   /**
@@ -78,6 +83,8 @@ class RESTModelController extends ModelController {
    */
   public function loadRoutes($slim) {
     parent::loadRoutes($slim);
+
+    self::configureMiddlewares($slim, $this->restMiddlewares);
 
     /**
      * Automatically generates routes for the following

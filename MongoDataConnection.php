@@ -83,6 +83,14 @@ class MongoDataConnection extends DataConnection {
     return $this->db->selectCollection($table)->insert($data);
   }
 
+  function save($table, $data, $field, $value) {
+    if ($field == "_id") {
+      $value = new \MongoId($value);
+      $data[$field] = $value;
+    }
+    $this->db->selectCollection($table)->update(array($field => $value), $data);
+  }
+
   public function clearAll($table) {
     $this->db->selectCollection($table)->drop();
   }
@@ -140,6 +148,4 @@ class MongoDataConnection extends DataConnection {
     }
     $this->db->selectCollection($table)->remove(array($field => $value));
   }
-
-
 }

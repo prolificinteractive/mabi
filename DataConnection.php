@@ -7,6 +7,8 @@ abstract class DataConnection {
 
   abstract function insert($table, &$data);
 
+  abstract function save($table, $data, $field, $value);
+
   abstract function findAll($table);
 
   abstract function findOneByField($field, $value, $table, array $fields = array());

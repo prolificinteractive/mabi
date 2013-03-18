@@ -260,9 +260,9 @@ class Model {
     $myProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
     foreach ($myProperties as $property) {
       /*
-       * Ignores writing any model property with 'internal' option
+       * Ignores writing any model property with 'external' option
        */
-      if (in_array('internal', ReflectionHelper::getDocProperty($property->getDocComment(), 'options'))) {
+      if (in_array('external', ReflectionHelper::getDocProperty($property->getDocComment(), 'options'))) {
         continue;
       }
       if (!is_object($this->{$property->getName()})) {
@@ -282,6 +282,7 @@ class Model {
     if (!empty($this->{$this->idProperty})) {
       $outArr[$this->idColumn] = $this->{$this->idProperty};
     }
+    $outArr = array_merge($outArr,$this->remainingReadResults);
 
     return $outArr;
   }
@@ -293,6 +294,16 @@ class Model {
     $dataConnection = $this->app->getDataConnection($this->connection);
     $propArray = $this->getPropertyArray();
     $dataConnection->insert($this->table, $propArray);
+    $this->loadParameters($propArray);
+  }
+
+  /**
+   * todo: docs
+   */
+  public function save() {
+    $dataConnection = $this->app->getDataConnection($this->connection);
+    $propArray = $this->getPropertyArray();
+    $dataConnection->save($this->table, $propArray, $this->idColumn, $this->{$this->idProperty});
     $this->loadParameters($propArray);
   }
 

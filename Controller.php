@@ -38,8 +38,10 @@ class Controller {
   /**
    * @param $route \Slim\Route
    */
-  protected function _controllerMiddlewares($route) {
-    $this->middlewares[0]->call();
+  public function _controllerMiddlewares($route) {
+if(empty($this->middlewares)) return;
+$middleware =    reset($this->middlewares);
+$middleware->call();
   }
 
   /**

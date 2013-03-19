@@ -44,6 +44,7 @@ class Model {
   protected $writeAccess;
 
   /**
+   * @options internal
    * @var array
    */
   public $remainingReadResults;
@@ -282,6 +283,7 @@ class Model {
     if (!empty($this->{$this->idProperty})) {
       $outArr[$this->idColumn] = $this->{$this->idProperty};
     }
+if(!empty($this->remainingReadResults))
     $outArr = array_merge($outArr,$this->remainingReadResults);
 
     return $outArr;

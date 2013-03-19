@@ -15,7 +15,7 @@ class AnonymousIdentifier extends \Slim\Middleware {
    */
   public function call() {
     $this->anonymousId = $this->app->request()->headers('anonuuid');
-
+if(!empty($this->next))
     $this->next->call();
   }
 }

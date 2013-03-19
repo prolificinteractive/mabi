@@ -74,8 +74,9 @@ class RESTModelController extends ModelController {
   /**
    * @param $route \Slim\Route
    */
-  protected function _restControllerMiddlewares($route) {
-    $this->middlewares[0]->call();
+  public function _restControllerMiddlewares($route) {
+if(empty($this->restMiddlewares)) return;
+    $this->restMiddlewares[0]->call();
   }
 
   /**

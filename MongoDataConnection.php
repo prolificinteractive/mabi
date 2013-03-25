@@ -117,6 +117,14 @@ class MongoDataConnection extends DataConnection {
   }
 
   function query($table, $query) {
+    if(isset($query['group'])) {
+    $return = $this->db->selectCollection($table)->group(
+      $query['group']['_id'],
+      $query['group']['initial'],
+      $query['group']['reduce']);
+      return $return;
+    }
+
     $mquery = $query['query'];
     $return = $this->db->selectCollection($table)->find($mquery);
     if (!empty($query['limit'])) {

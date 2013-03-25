@@ -80,7 +80,9 @@ class MongoDataConnection extends DataConnection {
     if (empty($data['_id'])) {
       $data['_id'] = new \MongoId();
     }
-    return $this->db->selectCollection($table)->insert($data);
+    $this->db->selectCollection($table)->insert($data);
+    $data['_id'] = (string) $data['_id'];
+    return TRUE;
   }
 
   function save($table, $data, $field, $value) {

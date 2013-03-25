@@ -198,7 +198,7 @@ class Model {
     $rClass = new \ReflectionClass($this);
     $myProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
     foreach ($myProperties as $property) {
-      if (!isset($resultArray[$property->name])) {
+      if (!array_key_exists($property->name, $resultArray)) {
         continue;
       }
       $rProp = new \ReflectionProperty($this, $property->name);

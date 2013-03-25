@@ -42,7 +42,23 @@ class GeneratedRESTModelControllerLoader extends ControllerLoader {
       $rclass = new \ReflectionClass($modelClass);
       $properties = ReflectionHelper::getDocProperty($rclass->getDocComment(), 'restful');
       if (!in_array('NoController', $properties)) {
-        $this->controllers[] = RESTModelController::generate($modelClass, $this->app);
+        /**
+         * @var $controller Controller
+         */
+        $controller = RESTModelController::generate($modelClass, $this->app);
+
+        $middlewares = ReflectionHelper::getDocProperty($rclass->getDocComment(), 'middleware');
+        foreach ($middlewares as $middlewareClass) {
+          $middlewareFile = ReflectionHelper::stripClassName($middlewareClass) . '.php';
+          include_once dirname(__FILE__) . '/middleware/' . $middlewareFile;
+
+          /**
+           * @var $middleware \Slim\Middleware
+           */
+          $middleware = new $middlewareClass();
+          $controller->addMiddleware($middleware);
+        }
+        $this->controllers[] = $controller;
       }
     }
   }

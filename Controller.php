@@ -38,10 +38,12 @@ class Controller {
   /**
    * @param $route \Slim\Route
    */
-  public function _controllerMiddlewares($route) {
-if(empty($this->middlewares)) return;
-$middleware =    reset($this->middlewares);
-$middleware->call();
+  public function _runControllerMiddlewares($route) {
+    if (empty($this->middlewares)) {
+      return;
+    }
+    $middleware = reset($this->middlewares);
+    $middleware->call();
   }
 
   /**
@@ -54,12 +56,17 @@ $middleware->call();
      */
     $prevMiddelware = NULL;
     foreach ($middlewares as $currMiddelware) {
-      if($prevMiddelware != NULL) {
+      if ($prevMiddelware != NULL) {
         $prevMiddelware->setNextMiddleware($currMiddelware);
       }
       $prevMiddelware = $currMiddelware;
       $currMiddelware->setApplication($slim);
     }
+  }
+
+  public function addMiddleware(\Slim\Middleware $newMiddleware)
+  {
+    array_unshift($this->middlewares, $newMiddleware);
   }
 
   /**
@@ -76,10 +83,10 @@ $middleware->call();
       $methodName = $method->name;
       if (strpos($methodName, 'get', 0) === 0) {
         $action = strtolower(substr($methodName, 3));
-        $slim->get("/{$this->base}/{$action}", array($this, '_controllerMiddlewares'), array($this, $methodName));
+        $slim->get("/{$this->base}/{$action}", array($this, '_runControllerMiddlewares'), array($this, $methodName));
         $slim->get("/{$this->base}/{$action}(/:param+)", array(
           $this,
-          '_controllerMiddlewares'
+          '_runControllerMiddlewares'
         ), array(
           $this,
           $methodName
@@ -87,10 +94,10 @@ $middleware->call();
       }
       elseif (strpos($methodName, 'put', 0) === 0) {
         $action = strtolower(substr($methodName, 3));
-        $slim->put("/{$this->base}/{$action}", array($this, '_controllerMiddlewares'), array($this, $methodName));
+        $slim->put("/{$this->base}/{$action}", array($this, '_runControllerMiddlewares'), array($this, $methodName));
         $slim->put("/{$this->base}/{$action}(/:param+)", array(
           $this,
-          '_controllerMiddlewares'
+          '_runControllerMiddlewares'
         ), array(
           $this,
           $methodName
@@ -98,10 +105,10 @@ $middleware->call();
       }
       elseif (strpos($methodName, 'post', 0) === 0) {
         $action = strtolower(substr($methodName, 4));
-        $slim->post("/{$this->base}/{$action}", array($this, '_controllerMiddlewares'), array($this, $methodName));
+        $slim->post("/{$this->base}/{$action}", array($this, '_runControllerMiddlewares'), array($this, $methodName));
         $slim->post("/{$this->base}/{$action}(/:param+)", array(
           $this,
-          '_controllerMiddlewares'
+          '_runControllerMiddlewares'
         ), array(
           $this,
           $methodName
@@ -109,10 +116,10 @@ $middleware->call();
       }
       elseif (strpos($methodName, 'delete', 0) === 0) {
         $action = strtolower(substr($methodName, 6));
-        $slim->delete("/{$this->base}/{$action}", array($this, '_controllerMiddlewares'), array($this, $methodName));
+        $slim->delete("/{$this->base}/{$action}", array($this, '_runControllerMiddlewares'), array($this, $methodName));
         $slim->delete("/{$this->base}/{$action}(/:param+)", array(
           $this,
-          '_controllerMiddlewares'
+          '_runControllerMiddlewares'
         ), array(
           $this,
           $methodName

@@ -44,10 +44,10 @@ class Model {
   protected $writeAccess;
 
   /**
-   * @options internal
+   * @options system
    * @var array
    */
-  public $remainingReadResults;
+  public $_remainingReadResults;
 
   /**
    * @var array
@@ -194,7 +194,7 @@ class Model {
    *
    * @throws \Exception
    */
-  protected function loadParameters($resultArray) {
+  public function loadParameters($resultArray) {
     $rClass = new \ReflectionClass($this);
     $myProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
     foreach ($myProperties as $property) {
@@ -230,10 +230,12 @@ class Model {
       unset($resultArray[$property->getName()]);
     }
 
-    $this->{$this->idProperty} = $resultArray[$this->idColumn];
-    unset($resultArray[$this->idColumn]);
+    if (!empty($resultArray[$this->idColumn])) {
+      $this->{$this->idProperty} = $resultArray[$this->idColumn];
+      unset($resultArray[$this->idColumn]);
+    }
 
-    $this->remainingReadResults = $resultArray;
+    $this->_remainingReadResults = $resultArray;
   }
 
   /**
@@ -254,7 +256,7 @@ class Model {
     return TRUE;
   }
 
-  protected function getPropertyArray() {
+  protected function getPropertyArray($removeInternal = FALSE) {
     $rClass = new \ReflectionClass($this);
 
     $outArr = array();
@@ -263,9 +265,16 @@ class Model {
       /*
        * Ignores writing any model property with 'external' option
        */
-      if (in_array('external', ReflectionHelper::getDocProperty($property->getDocComment(), 'options'))) {
+      if (!$removeInternal && in_array('external', ReflectionHelper::getDocProperty($property->getDocComment(), 'options'))) {
         continue;
       }
+      if ($removeInternal && in_array('internal', ReflectionHelper::getDocProperty($property->getDocComment(), 'options'))) {
+        continue;
+      }
+      if (in_array('system', ReflectionHelper::getDocProperty($property->getDocComment(), 'options'))) {
+        continue;
+      }
+
       if (!is_object($this->{$property->getName()})) {
         $outArr[$property->getName()] = $this->{$property->getName()};
       }
@@ -283,8 +292,9 @@ class Model {
     if (!empty($this->{$this->idProperty})) {
       $outArr[$this->idColumn] = $this->{$this->idProperty};
     }
-if(!empty($this->remainingReadResults))
-    $outArr = array_merge($outArr,$this->remainingReadResults);
+    if (!empty($this->_remainingReadResults)) {
+      $outArr = array_merge($outArr, $this->_remainingReadResults);
+    }
 
     return $outArr;
   }
@@ -323,5 +333,9 @@ if(!empty($this->remainingReadResults))
   public function clearAll() {
     $dataConnection = $this->app->getDataConnection($this->connection);
     return $dataConnection->clearAll($this->table);
+  }
+
+  public function outputJSON() {
+    return json_encode($this->getPropertyArray(TRUE));
   }
 }

@@ -290,9 +290,14 @@ class Model {
       }
     }
     if (!empty($this->{$this->idProperty})) {
-      $outArr[$this->idColumn] = $this->{$this->idProperty};
+      if (!$removeInternal) {
+        $outArr[$this->idColumn] = $this->{$this->idProperty};
+      }
+      else {
+        $outArr[$this->idProperty] = $this->{$this->idProperty};
+      }
     }
-    if (!empty($this->_remainingReadResults)) {
+    if (!empty($this->_remainingReadResults) && !$removeInternal) {
       $outArr = array_merge($outArr, $this->_remainingReadResults);
     }
 

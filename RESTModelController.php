@@ -34,8 +34,9 @@ class RESTModelController extends ModelController {
     // todo: get post data to insert
 
     $this->model = call_user_func($this->modelClass . '::init', $this->app);
-    $this->model->loadParameters($this->request->post());
+    $this->model->loadParameters($this->getApp()->getSlim()->request()->post());
     $this->model->insert();
+    echo $this->model->outputJSON();
   }
 
   public function _restPutCollection() {

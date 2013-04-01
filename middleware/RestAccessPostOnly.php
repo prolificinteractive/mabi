@@ -2,7 +2,7 @@
 
 namespace MABI\Middleware;
 
-class RESTAccessPostOnly extends \Slim\Middleware {
+class RESTAccessPostOnly extends \MABI\Middleware {
   public $anonymousId = NULL;
 
   /**
@@ -14,17 +14,11 @@ class RESTAccessPostOnly extends \Slim\Middleware {
    * call the next downstream middleware.
    */
   public function call() {
-    $methods = $this->getApplication()->router()->getCurrentRoute()->getHttpMethods();
+    $methods = $this->getController()->getApp()->getSlim()->router()->getCurrentRoute()->getHttpMethods();
     if(empty($methods) || $methods[0] != 'POST') {
-      $this->getApplication()->response()->status(401);
+      $this->getController()->getApp()->getSlim()->response()->status(401);
       throw new \Slim\Exception\Stop();
     }
-
-/*    if($this->getApplication()->router()->getCurrentRoute()->getHttpMethods())
-    var_dump($this->getApplication()->router()->getCurrentRoute()->getHttpMethods());
-    die();
-*/
-//    $this->anonymousId = $this->app->request()->headers('anonuuid');
 
     if(!empty($this->next)) $this->next->call();
   }

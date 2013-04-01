@@ -2,7 +2,7 @@
 
 namespace MABI\Middleware;
 
-class AnonymousIdentifier extends \Slim\Middleware {
+class AnonymousIdentifier extends \MABI\Middleware {
   public $anonymousId = NULL;
 
   /**
@@ -14,8 +14,10 @@ class AnonymousIdentifier extends \Slim\Middleware {
    * call the next downstream middleware.
    */
   public function call() {
-    $this->anonymousId = $this->app->request()->headers('anonuuid');
-if(!empty($this->next))
-    $this->next->call();
+    $this->anonymousId = $this->getController()->getApp()->getSlim()->request()->headers('anonuuid');
+    $this->getController()->getApp()->getSlim()->request()->anonymousId = $this->anonymousId;
+    if (!empty($this->next)) {
+      $this->next->call();
+    }
   }
 }

@@ -34,6 +34,13 @@ class App {
   protected $slim;
 
   /**
+   * @return \Slim\Slim
+   */
+  public function getSlim() {
+    return $this->slim;
+  }
+
+  /**
    * @var App
    */
   protected static $singletonApp = NULL;

@@ -251,7 +251,24 @@ class Model {
     if ($result == NULL) {
       return FALSE;
     }
-    $this->{$this->idProperty} = $id;
+    $this->loadParameters($result);
+    return TRUE;
+  }
+
+  /**
+   * todo: docs
+   *
+   * @param $fieldName string
+   * @param $value string
+   *
+   * @return bool
+   */
+  public function findByField($fieldName, $value) {
+    $dataConnection = $this->app->getDataConnection($this->connection);
+    $result = $dataConnection->findOneByField($fieldName, $value, $this->table, $this->readFields);
+    if ($result == NULL) {
+      return FALSE;
+    }
     $this->loadParameters($result);
     return TRUE;
   }

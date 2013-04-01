@@ -17,14 +17,20 @@ class Controller {
   protected $app;
 
   /**
-   * @var \Slim\Middleware[]
+   * @var \MABI\Middleware[]
    */
   protected $middlewares = array();
 
   /**
-   * @var \Slim\Http\Request
+   * @return \MABI\App
    */
-  protected $request;
+  public function getApp() {
+    return $this->app;
+  }
+
+  public function getMiddlewares() {
+    return $this->middlewares;
+  }
 
   public function __construct($app) {
     $this->app = $app;
@@ -47,12 +53,11 @@ class Controller {
   }
 
   /**
-   * @param $slim \Slim\Slim
-   * @param $middlewares  \Slim\Middleware[]
+   * @param $middlewares  \MABI\Middleware[]
    */
-  protected static function configureMiddlewares($slim, &$middlewares) {
+  protected function configureMiddlewares(&$middlewares) {
     /**
-     * @var $prevMiddelware \Slim\Middleware
+     * @var $prevMiddelware \MABI\Middleware
      */
     $prevMiddelware = NULL;
     foreach ($middlewares as $currMiddelware) {
@@ -60,12 +65,11 @@ class Controller {
         $prevMiddelware->setNextMiddleware($currMiddelware);
       }
       $prevMiddelware = $currMiddelware;
-      $currMiddelware->setApplication($slim);
+      $currMiddelware->setController($this);
     }
   }
 
-  public function addMiddleware(\Slim\Middleware $newMiddleware)
-  {
+  public function addMiddleware(\Slim\Middleware $newMiddleware) {
     array_unshift($this->middlewares, $newMiddleware);
   }
 
@@ -73,9 +77,7 @@ class Controller {
    * @param $slim \Slim\Slim
    */
   public function loadRoutes($slim) {
-    self::configureMiddlewares($slim, $this->middlewares);
-
-    $this->request = $slim->request();
+    $this->configureMiddlewares($this->middlewares);
 
     $rclass = new \ReflectionClass($this);
     $methods = $rclass->getMethods(\ReflectionMethod::IS_PUBLIC);

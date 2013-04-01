@@ -2,6 +2,8 @@
 
 namespace MABI\Middleware;
 
+include_once dirname(__FILE__) . '/../DefaultApplicationModel.php';
+
 use MABI\ReflectionHelper;
 
 class SharedSecret extends \MABI\Middleware {
@@ -48,7 +50,7 @@ class SharedSecret extends \MABI\Middleware {
     $modelProps = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
     $sharedSecretProp = 'sharedSecret';
     foreach ($modelProps as $modelProp) {
-      $rProp = new \ReflectionProperty($this, $modelProp->name);
+      $rProp = new \ReflectionProperty($applicationModelClass, $modelProp->name);
       $propOptions = ReflectionHelper::getDocProperty($rProp->getDocComment(), 'option');
       if (in_array('SharedSecret', $propOptions)) {
         $sharedSecretProp = $modelProp->name;

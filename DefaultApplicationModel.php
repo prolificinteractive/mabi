@@ -5,7 +5,9 @@ namespace MABI;
 /**
  * @restful NoController
  */
-class Application extends Model {
+class DefaultApplicationModel extends Model {
+  protected $table = 'applications';
+
   /**
    * @var string
    */

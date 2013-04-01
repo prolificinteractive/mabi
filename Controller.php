@@ -3,6 +3,7 @@
 namespace MABI;
 
 include_once dirname(__FILE__) . '/Inflector.php';
+include_once dirname(__FILE__) . '/Middleware.php';
 
 /**
  * todo: docs
@@ -35,9 +36,24 @@ class Controller {
   public function __construct($app) {
     $this->app = $app;
 
+    $myClass = get_called_class();
+
     if (empty($this->base)) {
       $this->base = strtolower(ReflectionHelper::stripClassName(
-        ReflectionHelper::getPrefixFromControllerClass(get_called_class())));
+        ReflectionHelper::getPrefixFromControllerClass($myClass)));
+    }
+
+    $rClass = new \ReflectionClass($myClass);
+    $middlewares = ReflectionHelper::getDocProperty($rClass->getDocComment(), 'middleware');
+    foreach ($middlewares as $middlewareClass) {
+      $middlewareFile = ReflectionHelper::stripClassName($middlewareClass) . '.php';
+      include_once dirname(__FILE__) . '/middleware/' . $middlewareFile;
+
+      /**
+       * @var $middleware \MABI\Middleware
+       */
+      $middleware = new $middlewareClass();
+      $this->addMiddleware($middleware);
     }
   }
 
@@ -69,7 +85,7 @@ class Controller {
     }
   }
 
-  public function addMiddleware(\Slim\Middleware $newMiddleware) {
+  public function addMiddleware(Middleware $newMiddleware) {
     array_unshift($this->middlewares, $newMiddleware);
   }
 

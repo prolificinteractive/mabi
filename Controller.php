@@ -73,20 +73,20 @@ class Controller {
    */
   protected function configureMiddlewares(&$middlewares) {
     /**
-     * @var $prevMiddelware \MABI\Middleware
+     * @var $prevMiddleware \MABI\Middleware
      */
-    $prevMiddelware = NULL;
-    foreach ($middlewares as $currMiddelware) {
-      if ($prevMiddelware != NULL) {
-        $prevMiddelware->setNextMiddleware($currMiddelware);
+    $prevMiddleware = NULL;
+    foreach ($middlewares as $currMiddleware) {
+      if ($prevMiddleware != NULL) {
+        $prevMiddleware->setNextMiddleware($currMiddleware);
       }
-      $prevMiddelware = $currMiddelware;
-      $currMiddelware->setController($this);
+      $prevMiddleware = $currMiddleware;
+      $currMiddleware->setController($this);
     }
   }
 
   public function addMiddleware(Middleware $newMiddleware) {
-    array_unshift($this->middlewares, $newMiddleware);
+    array_push($this->middlewares, $newMiddleware);
   }
 
   /**

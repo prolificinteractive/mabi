@@ -34,6 +34,11 @@ class App {
   protected $slim;
 
   /**
+   * @var Array
+   */
+  protected $config = array();
+
+  /**
    * @return \Slim\Slim
    */
   public function getSlim() {
@@ -69,6 +74,27 @@ class App {
   function addDataConnection($name, $dataConnection) {
     $this->dataConnections[$name] = $dataConnection;
     // todo: implement
+  }
+
+  /**
+   * todo: docs
+   *
+   * @param $key
+   * @param $value
+   */
+  public function setConfig($key, $value) {
+    $this->config[$key] = $value;
+  }
+
+  /**
+   * todo: docs
+   *
+   * @param $key
+   *
+   * @return mixed
+   */
+  public function getConfig($key) {
+    return $this->config[$key];
   }
 
   /**

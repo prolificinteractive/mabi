@@ -247,7 +247,7 @@
 
                 $('pre.response', resultContainer)
                     .toggleClass('error', false)
-                    .text(response);
+                    .text(formatJSON(JSON.parse(response)));
             }
 
         })

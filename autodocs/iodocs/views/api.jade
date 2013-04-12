@@ -56,6 +56,7 @@ ul
                         a(href='#') List Methods
                     li.expand-methods
                         a(href='#') Expand Methods
+            div.description=endpoint.description
             - if (endpoint.methods.length)
             ul.methods.hidden
                 - each method in endpoint.methods
@@ -74,9 +75,7 @@ ul
                             input(type='hidden', name='oauth', value=secure)
                             input(type='hidden', name='methodUri', value=method.URI)
 
-                            span.description!= method.Synopsis
-                            br
-                            br
+                            div.description!= method.Synopsis
                             - if (method.parameters.length > 0)
                                 table.parameters
                                     thead

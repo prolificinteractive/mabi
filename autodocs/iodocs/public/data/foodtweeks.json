@@ -2,19 +2,69 @@
     "endpoints": [
         {
             "name": "Tweeks",
+            "description": "abcd",
             "methods": [
                 {
-                    "MethodName":"Read Tweek",
-                    "Synopsis":"abcd<br/> \n1234\n\n1111\ni3j\n\nfjiew\n",
+                    "MethodName": "Read",
+                    "Synopsis": "abcd<br/> \n1234\n\n1111\ni3j\n\nfjiew\n",
                     "HTTPMethod": "GET",
                     "URI": "/tweek/:id",
                     "parameters": [
                         {
                             "Name": "id",
                             "Required": "Y",
-                            "Default": "json",
                             "Type": "string",
-                            "Description": "Output format as JSON or XML"
+                            "Location":"url",
+                            "Description": "The id of the Tweek"
+                        },
+                        {
+                            "Name": "shared-secret",
+                            "Required":"Y",
+                            "Type":"string",
+                            "Location":"header",
+                            "Default":"5159bfde68dca0c173f0939e"
+                        }
+                    ]
+                },
+                {
+                    "MethodName": "Tweeked",
+                    "Synopsis": "abcd<br/> \n1234\n\n1111\ni3j\n\nfjiew\n",
+                    "HTTPMethod": "POST",
+                    "URI": "/tweek/:id/tweeked",
+                    "parameters": [
+                        {
+                            "Name": "id",
+                            "Required": "Y",
+                            "Type": "string",
+                            "Description": "The id of the Tweek"
+                        }
+                    ]
+                },
+                {
+                    "MethodName": "Shared",
+                    "Synopsis": "abcd<br/> \n1234\n\n1111\ni3j\n\nfjiew\n",
+                    "HTTPMethod": "POST",
+                    "URI": "/tweek/:id/shared",
+                    "parameters": [
+                        {
+                            "Name": "id",
+                            "Required": "Y",
+                            "Type": "string",
+                            "Description": "The id of the Tweek"
+                        }
+                    ]
+                },
+                {
+                    "MethodName": "Rated",
+                    "Synopsis": "abcd<br/> \n1234\n\n1111\ni3j\n\nfjiew\n",
+                    "HTTPMethod": "POST",
+                    "URI": "/tweek/:id/rated",
+                    "parameters": [
+                        {
+                            "Name": "id",
+                            "Required": "Y",
+                            "Type": "string",
+                            "Description": "The id of the Tweek"
                         }
                     ]
                 }

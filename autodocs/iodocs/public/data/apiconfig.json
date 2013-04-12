@@ -34,9 +34,11 @@
         "keyParam":""
     },
     "foodtweeks": {
-        "name": "FoodTweeks",
-        "protocol": "https",
-        "baseURL": "dev.foodtweeks.com/api"
+        "name": "FoodTweeks API",
+        "protocol": "http",
+        "baseURL": "staging.foodtweeks.com",
+        "publicPath": "/api",
+        "auth":""
     },
     "requestbin": {
         "name": "Requestb.in",

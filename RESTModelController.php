@@ -120,10 +120,10 @@ class RESTModelController extends ModelController {
      * /BASE/:id/ACTION(/:param+) from methods named rest<METHOD><ACTION>()
      * where <METHOD> is GET, PUT, POST, or DELETE
      */
-    $rclass = new \ReflectionClass($this);
-    $methods = $rclass->getMethods(\ReflectionMethod::IS_PUBLIC);
-    foreach ($methods as $method) {
-      $methodName = $method->name;
+    $rClass = new \ReflectionClass($this);
+    $rMethods = $rClass->getMethods(\ReflectionMethod::IS_PUBLIC);
+    foreach ($rMethods as $rMethod) {
+      $methodName = $rMethod->name;
       if (strpos($methodName, 'restGet', 0) === 0) {
         $action = strtolower(substr($methodName, 7));
         $slim->get("/{$this->base}/:id/{$action}",
@@ -169,5 +169,133 @@ class RESTModelController extends ModelController {
           array($this, $methodName));
       }
     }
+  }
+
+  private function getRestMethodDocJSON(Parser $parser, $methodName, $httpMethod, $url, $rClass,
+                                        $method, $includesId = FALSE) {
+    $methodDoc = array();
+
+    $methodDoc['MethodName'] = $methodName;
+    $methodDoc['HTTPMethod'] = $httpMethod;
+    $methodDoc['URI'] = $url;
+    $rMethod = new \ReflectionMethod($this, $method);
+    $methodDoc['Synopsis'] = $parser->parse(ReflectionHelper::getDocText($rMethod->getDocComment()));
+    if ($includesId) {
+      $methodDoc['parameters'][] = array(
+        'Name' => 'id',
+        'Required' => 'Y',
+        'Type' => 'string',
+        'Location' => 'url',
+        'Description' => 'The id of the resource'
+      );
+    }
+    else {
+      $methodDoc['parameters'] = array();
+    }
+
+    // Allow controller middlewares to modify the documentation for this method
+    if (!empty($this->middlewares)) {
+      $middleware = reset($this->middlewares);
+      $middleware->documentMethod($rClass, $rMethod, $methodDoc);
+    }
+
+    return $methodDoc;
+  }
+
+  /**
+   * todo: docs
+   *
+   * @param Parser $parser
+   *
+   * @return array
+   */
+  public function getDocJSON(Parser $parser) {
+    $doc = parent::getDocJSON($parser);
+
+    $rClass = new \ReflectionClass(get_called_class());
+
+    $methodDoc = $this->getRestMethodDocJSON($parser, 'Get Full Collection',
+      'GET', "/{$this->base}", $rClass, '_restGetCollection');
+    if (!empty($methodDoc)) {
+      $doc['methods'][] = $methodDoc;
+    }
+    $methodDoc = $this->getRestMethodDocJSON($parser, 'Add to Collection',
+      'POST', "/{$this->base}", $rClass, '_restPostCollection');
+    if (!empty($methodDoc)) {
+      $doc['methods'][] = $methodDoc;
+    }
+    $methodDoc = $this->getRestMethodDocJSON($parser, 'Replace Full Collection',
+      'PUT', "/{$this->base}", $rClass, '_restPutCollection');
+    if (!empty($methodDoc)) {
+      $doc['methods'][] = $methodDoc;
+    }
+    $methodDoc = $this->getRestMethodDocJSON($parser, 'Delete Full Collection',
+      'DELETE', "/{$this->base}", $rClass, '_restDeleteCollection');
+    if (!empty($methodDoc)) {
+      $doc['methods'][] = $methodDoc;
+    }
+    $methodDoc = $this->getRestMethodDocJSON($parser, 'Get Resource',
+      'GET', "/{$this->base}/:id", $rClass, '_restGetObject', TRUE);
+    if (!empty($methodDoc)) {
+      $doc['methods'][] = $methodDoc;
+    }
+    $methodDoc = $this->getRestMethodDocJSON($parser, 'Update Resource',
+      'PUT', "/{$this->base}/:id", $rClass, '_restPutObject', TRUE);
+    if (!empty($methodDoc)) {
+      $doc['methods'][] = $methodDoc;
+    }
+    $methodDoc = $this->getRestMethodDocJSON($parser, 'Delete Resource',
+      'DELETE', "/{$this->base}/:id", $rClass, '_restDeleteObject', TRUE);
+    if (!empty($methodDoc)) {
+      $doc['methods'][] = $methodDoc;
+    }
+
+    // Add documentation for custom rest actions
+    $rMethods = $rClass->getMethods(\ReflectionMethod::IS_PUBLIC);
+    foreach ($rMethods as $rMethod) {
+      $methodDoc = array();
+
+      if (strpos($rMethod->name, 'restGet', 0) === 0) {
+        $methodDoc['MethodName'] = substr($rMethod->name, 7);
+        $methodDoc['HTTPMethod'] = 'GET';
+      }
+      elseif (strpos($rMethod->name, 'restPut', 0) === 0) {
+        $methodDoc['MethodName'] = substr($rMethod->name, 7);
+        $methodDoc['HTTPMethod'] = 'PUT';
+      }
+      elseif (strpos($rMethod->name, 'restPost', 0) === 0) {
+        $methodDoc['MethodName'] = substr($rMethod->name, 8);
+        $methodDoc['HTTPMethod'] = 'POST';
+      }
+      elseif (strpos($rMethod->name, 'restDelete', 0) === 0) {
+        $methodDoc['MethodName'] = substr($rMethod->name, 10);
+        $methodDoc['HTTPMethod'] = 'DELETE';
+      }
+      else {
+        continue;
+      }
+      $action = strtolower($methodDoc['MethodName']);
+      $methodDoc['URI'] = "/{$this->base}/:id/{$action}";
+      $methodDoc['Synopsis'] = $parser->parse(ReflectionHelper::getDocText($rMethod->getDocComment()));
+      $methodDoc['parameters'][] = array(
+        'Name' => 'id',
+        'Required' => 'Y',
+        'Type' => 'string',
+        'Location' => 'url',
+        'Description' => 'The id of the resource'
+      );
+
+      // Allow controller middlewares to modify the documentation for this method
+      if (!empty($this->middlewares)) {
+        $middleware = reset($this->middlewares);
+        $middleware->documentMethod($rClass, $rMethod, $methodDoc);
+      }
+
+      if (!empty($methodDoc)) {
+        $doc['methods'][] = $methodDoc;
+      }
+    }
+
+    return $doc;
   }
 }

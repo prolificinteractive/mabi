@@ -145,4 +145,62 @@ class Controller {
       }
     }
   }
+
+  /**
+   * todo: docs
+   *
+   * @param Parser $parser
+   *
+   * @return array
+   */
+  public function getDocJSON(Parser $parser) {
+    $myClass = get_called_class();
+    $rClass = new \ReflectionClass($myClass);
+
+    $doc = array();
+    $doc['name'] = ucwords(ReflectionHelper::stripClassName(ReflectionHelper::getPrefixFromControllerClass($myClass)));
+    $doc['description'] = $parser->parse(ReflectionHelper::getDocText($rClass->getDocComment()));
+
+    // Adding documentation for custom controller actions
+    $rMethods = $rClass->getMethods(\ReflectionMethod::IS_PUBLIC);
+    foreach ($rMethods as $rMethod) {
+      $methodDoc = array();
+
+      if (strpos($rMethod->name, 'get', 0) === 0) {
+        $methodDoc['MethodName'] = substr($rMethod->name, 3);
+        $methodDoc['HTTPMethod'] = 'GET';
+      }
+      elseif (strpos($rMethod->name, 'put', 0) === 0) {
+        $methodDoc['MethodName'] = substr($rMethod->name, 3);
+        $methodDoc['HTTPMethod'] = 'PUT';
+      }
+      elseif (strpos($rMethod->name, 'post', 0) === 0) {
+        $methodDoc['MethodName'] = substr($rMethod->name, 4);
+        $methodDoc['HTTPMethod'] = 'POST';
+      }
+      elseif (strpos($rMethod->name, 'delete', 0) === 0) {
+        $methodDoc['MethodName'] = substr($rMethod->name, 6);
+        $methodDoc['HTTPMethod'] = 'DELETE';
+      }
+      else {
+        continue;
+      }
+      $action = strtolower($methodDoc['MethodName']);
+      $methodDoc['URI'] = "/{$this->base}/{$action}";
+      $methodDoc['Synopsis'] = $parser->parse(ReflectionHelper::getDocText($rMethod->getDocComment()));
+      $methodDoc['parameters'] = array();
+
+      // Allow controller middlewares to modify the documentation for this method
+      if (!empty($this->middlewares)) {
+        $middleware = reset($this->middlewares);
+        $middleware->documentMethod($rClass, $rMethod, $methodDoc);
+      }
+
+      if (!empty($methodDoc)) {
+        $doc['methods'][] = $methodDoc;
+      }
+    }
+
+    return $doc;
+  }
 }

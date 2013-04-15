@@ -8,6 +8,10 @@ include_once dirname(__FILE__) . '/Slim/Slim.php';
 
 \Slim\Slim::registerAutoloader();
 
+interface Parser {
+  function Parse($text);
+}
+
 /**
  * todo: docs
  */
@@ -37,6 +41,11 @@ class App {
    * @var Array
    */
   protected $config = array();
+
+  /**
+   * @var Controller[]
+   */
+  protected $controllers = array();
 
   /**
    * @return \Slim\Slim
@@ -141,12 +150,26 @@ class App {
       $controllers = $controllerLoader->getControllers();
       foreach ($controllers as $controller) {
         $controller->loadRoutes($this->slim);
+        $this->controllers[] = $controller;
       }
     }
   }
 
   public function run() {
     $this->slim->run();
+  }
+
+  /**
+   * todo: docs
+   *
+   * @param Parser $parser
+   */
+  public function getDocJSON(Parser $parser) {
+    $docOut = array();
+    foreach ($this->controllers as $controller) {
+      $docOut['endpoints'][] = $controller->getDocJSON($parser);
+    }
+    return $docOut;
   }
 }
 

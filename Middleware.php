@@ -56,6 +56,9 @@ abstract class Middleware {
     return $this->next;
   }
 
+  public function documentMethod(\ReflectionClass $rClass, \ReflectionMethod $rMethod, array &$methodDoc) {
+  }
+
   /**
    * Call
    *

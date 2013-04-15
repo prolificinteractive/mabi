@@ -22,6 +22,15 @@ class ReflectionHelper {
     return $matches[1];
   }
 
+  public static function getDocText($docComments) {
+    $docComments = preg_replace('/^\s*\/\*\*.*\\n/m','',$docComments);
+    $docComments = preg_replace('/^\s*\*\/\s*/m','',$docComments);
+    $docComments = preg_replace('/^\s*\*\s*\n/m',"\n",$docComments);
+    $docComments = preg_replace('/^\h*\*\h*/m','',$docComments);
+    $docComments = preg_replace('/^\@.*\\n/m','',$docComments);
+    return $docComments;
+  }
+
   public static function createClassName($namespace, $className) {
     return (empty($namespace) ? '' : $namespace) . "\\{$className}";
   }

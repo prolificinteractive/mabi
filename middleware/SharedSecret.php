@@ -68,4 +68,18 @@ class SharedSecret extends \MABI\Middleware {
       $this->next->call();
     }
   }
+
+  public function documentMethod(\ReflectionClass $rClass, \ReflectionMethod $rMethod, array &$methodDoc) {
+    parent::documentMethod($rClass, $rMethod, $methodDoc);
+
+    $methodDoc['parameters'][] = array(
+      'Name' => 'shared-secret',
+      'Required' => 'N',
+      'Type' => 'string',
+      'Location' => 'header',
+      'Description' => 'The guid that identifies which application is attempting to access this endpoint. Only
+        the application itself and the internal API should be able to see this value, therefore, it should always
+        be transmitted over HTTPs.'
+    );
+  }
 }

@@ -20,4 +20,16 @@ class AnonymousIdentifier extends \MABI\Middleware {
       $this->next->call();
     }
   }
+
+  public function documentMethod(\ReflectionClass $rClass, \ReflectionMethod $rMethod, array &$methodDoc) {
+    parent::documentMethod($rClass, $rMethod, $methodDoc);
+
+    $methodDoc['parameters'][] = array(
+      'Name' => 'anonuuid',
+      'Required' => 'N',
+      'Type' => 'string',
+      'Location' => 'header',
+      'Description' => 'A guid that can be passed in to identify an anonymous user'
+    );
+  }
 }

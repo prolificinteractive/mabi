@@ -207,6 +207,7 @@ class RESTModelController extends ModelController {
    *
    * @param Parser $parser
    *
+   * @controller ignore
    * @return array
    */
   public function getDocJSON(Parser $parser) {

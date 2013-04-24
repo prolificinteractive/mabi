@@ -4,14 +4,13 @@ namespace MABI\Middleware;
 
 include_once dirname(__FILE__) . '/../Utilities.php';
 
-class RESTAccessPostOnly extends \MABI\Middleware {
+class RESTAccessReadOnly extends \MABI\Middleware {
 
-  private static function isRESTPostOrCustom($methodName) {
+  private static function isRESTReadOnlyOrCustom($methodName) {
     switch ($methodName) {
-      case '_restGetCollection':
+      case '_restPostCollection':
       case '_restPutCollection':
       case '_restDeleteCollection':
-      case '_restGetObject':
       case '_restPutObject':
       case '_restDeleteObject':
         return FALSE;
@@ -21,14 +20,14 @@ class RESTAccessPostOnly extends \MABI\Middleware {
   }
 
   /**
-   * Blocks access to all standard REST functions except for a POST to a collection. This means the API can
-   * only be used to append objects to the collection and nothing else. Custom actions are allowed.
+   * Blocks access to all standard REST functions that modify objects or a collection. This means the API can
+   * only be used to read information about objects in the collection. Custom actions are allowed.
    *
    * @throws \Slim\Exception\Stop
    */
   public function call() {
     $callable = $this->getController()->getApp()->getSlim()->router()->getCurrentRoute()->getCallable();
-    if (empty($callable) || !self::isRESTPostOrCustom($callable[1])) {
+    if (empty($callable) || !self::isRESTReadOnlyOrCustom($callable[1])) {
       $this->getController()->getApp()->getSlim()->response()->status(401);
       throw new \Slim\Exception\Stop();
     }
@@ -48,7 +47,7 @@ class RESTAccessPostOnly extends \MABI\Middleware {
   public function documentMethod(\ReflectionClass $rClass, \ReflectionMethod $rMethod, array &$methodDoc) {
     parent::documentMethod($rClass, $rMethod, $methodDoc);
 
-    if (!self::isRESTPostOrCustom($rMethod->name)) {
+    if (!self::isRESTReadOnlyOrCustom($rMethod->name)) {
       $methodDoc = NULL;
       return;
     }

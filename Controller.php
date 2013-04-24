@@ -23,12 +23,17 @@ class Controller {
   protected $middlewares = array();
 
   /**
+   * @controller ignore
    * @return \MABI\App
    */
   public function getApp() {
     return $this->app;
   }
 
+  /**
+   * @controller ignore
+   * @return array|Middleware[]
+   */
   public function getMiddlewares() {
     return $this->middlewares;
   }
@@ -95,10 +100,15 @@ class Controller {
   public function loadRoutes($slim) {
     $this->configureMiddlewares($this->middlewares);
 
-    $rclass = new \ReflectionClass($this);
-    $methods = $rclass->getMethods(\ReflectionMethod::IS_PUBLIC);
-    foreach ($methods as $method) {
-      $methodName = $method->name;
+    $rClass = new \ReflectionClass($this);
+    $rMethods = $rClass->getMethods(\ReflectionMethod::IS_PUBLIC);
+    foreach ($rMethods as $rMethod) {
+      // If there is a '@controller ignore' property, the function is not served as an endpoint
+      if(in_array('ignore', ReflectionHelper::getDocProperty($rMethod->getDocComment(),'controller'))) {
+        continue;
+      }
+
+      $methodName = $rMethod->name;
       if (strpos($methodName, 'get', 0) === 0) {
         $action = strtolower(substr($methodName, 3));
         $slim->get("/{$this->base}/{$action}", array($this, '_runControllerMiddlewares'), array($this, $methodName));
@@ -151,6 +161,7 @@ class Controller {
    *
    * @param Parser $parser
    *
+   * @controller ignore
    * @return array
    */
   public function getDocJSON(Parser $parser) {
@@ -164,6 +175,11 @@ class Controller {
     // Adding documentation for custom controller actions
     $rMethods = $rClass->getMethods(\ReflectionMethod::IS_PUBLIC);
     foreach ($rMethods as $rMethod) {
+      // If there is a '@controller ignore' property, the function is not served as an endpoint
+      if(in_array('ignore', ReflectionHelper::getDocProperty($rMethod->getDocComment(),'controller'))) {
+        continue;
+      }
+
       $methodDoc = array();
 
       if (strpos($rMethod->name, 'get', 0) === 0) {

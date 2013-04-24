@@ -31,5 +31,9 @@ class AnonymousIdentifier extends \MABI\Middleware {
       'Location' => 'header',
       'Description' => 'A guid that can be passed in to identify an anonymous user'
     );
+
+    if (!empty($this->next)) {
+      $this->next->documentMethod($rClass, $rMethod, $methodDoc);
+    }
   }
 }

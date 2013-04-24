@@ -11,6 +11,10 @@ include_once dirname(__FILE__) . '/Controller.php';
 class ModelController extends Controller {
   protected $modelClass = NULL;
 
+  /**
+   * @controller ignore
+   * @return string
+   */
   public function getModelClass() {
     return $this->modelClass;
   }

@@ -81,5 +81,9 @@ class SharedSecret extends \MABI\Middleware {
         the application itself and the internal API should be able to see this value, therefore, it should always
         be transmitted over HTTPs.'
     );
+
+    if (!empty($this->next)) {
+      $this->next->documentMethod($rClass, $rMethod, $methodDoc);
+    }
   }
 }

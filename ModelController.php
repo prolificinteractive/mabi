@@ -12,7 +12,7 @@ class ModelController extends Controller {
   protected $modelClass = NULL;
 
   /**
-   * @controller ignore
+   * @endpoint ignore
    * @return string
    */
   public function getModelClass() {

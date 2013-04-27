@@ -31,7 +31,7 @@ class Controller {
   protected $middlewares = array();
 
   /**
-   * @controller ignore
+   * @endpoint ignore
    * @return \MABI\App
    */
   public function getApp() {
@@ -39,7 +39,7 @@ class Controller {
   }
 
   /**
-   * @controller ignore
+   * @endpoint ignore
    * @return array|Middleware[]
    */
   public function getMiddlewares() {
@@ -123,7 +123,7 @@ class Controller {
     $rClass = new \ReflectionClass($this);
     $rMethods = $rClass->getMethods(\ReflectionMethod::IS_PUBLIC);
     foreach ($rMethods as $rMethod) {
-      // If there is a '@controller ignore' property, the function is not served as an endpoint
+      // If there is a '@endpoint ignore' property, the function is not served as an endpoint
       if (in_array('ignore', ReflectionHelper::getDocDirective($rMethod->getDocComment(), 'endpoint'))) {
         continue;
       }
@@ -181,7 +181,7 @@ class Controller {
    *
    * @param Parser $parser
    *
-   * @controller ignore
+   * @endpoint ignore
    * @return array
    */
   public function getDocJSON(Parser $parser) {
@@ -195,7 +195,7 @@ class Controller {
     // Adding documentation for custom controller actions
     $rMethods = $rClass->getMethods(\ReflectionMethod::IS_PUBLIC);
     foreach ($rMethods as $rMethod) {
-      // If there is a '@controller ignore' property, the function is not served as an endpoint
+      // If there is a '@endpoint ignore' property, the function is not served as an endpoint
       if (in_array('ignore', ReflectionHelper::getDocDirective($rMethod->getDocComment(), 'endpoint'))) {
         continue;
       }

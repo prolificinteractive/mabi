@@ -44,7 +44,7 @@ class Model {
   protected $writeAccess;
 
   /**
-   * @options system
+   * @field system
    * @var array
    */
   public $_remainingReadResults;

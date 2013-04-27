@@ -40,23 +40,17 @@ class GeneratedRESTModelControllerLoader extends ControllerLoader {
 
     foreach ($this->modelClasses as $modelClass) {
       $rClass = new \ReflectionClass($modelClass);
-      $properties = ReflectionHelper::getDocProperty($rClass->getDocComment(), 'restful');
+      $properties = ReflectionHelper::getDocDirective($rClass->getDocComment(), 'model');
       if (!in_array('NoController', $properties)) {
         /**
          * @var $controller Controller
          */
         $controller = RESTModelController::generate($modelClass, $this->app);
 
-        $middlewares = ReflectionHelper::getDocProperty($rClass->getDocComment(), 'middleware');
+        // Load the middleware that's specified in the Model
+        $middlewares = ReflectionHelper::getDocDirective($rClass->getDocComment(), 'middleware');
         foreach ($middlewares as $middlewareClass) {
-          $middlewareFile = ReflectionHelper::stripClassName($middlewareClass) . '.php';
-          include_once dirname(__FILE__) . '/middleware/' . $middlewareFile;
-
-          /**
-           * @var $middleware \MABI\Middleware
-           */
-          $middleware = new $middlewareClass();
-          $controller->addMiddleware($middleware);
+          $controller->addMiddlewareByClass($middlewareClass);
         }
         $this->controllers[] = $controller;
       }

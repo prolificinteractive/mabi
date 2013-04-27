@@ -48,10 +48,29 @@ class App {
   protected $controllers = array();
 
   /**
+   * @var string[]
+   */
+  protected $middlewareDirectories = array();
+
+  /**
    * @return \Slim\Slim
    */
   public function getSlim() {
     return $this->slim;
+  }
+
+  /**
+   * @param $middlewareDirectories string[]
+   */
+  public function setMiddlewareDirectories($middlewareDirectories) {
+    $this->middlewareDirectories = $middlewareDirectories;
+  }
+
+  /**
+   * @return string[]
+   */
+  public function getMiddlewareDirectories() {
+    return $this->middlewareDirectories;
   }
 
   /**
@@ -71,6 +90,7 @@ class App {
   }
 
   public function __construct() {
+    array_push($this->middlewareDirectories, dirname(__FILE__) . '/middleware');
     $this->slim = new \Slim\Slim();
   }
 

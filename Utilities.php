@@ -16,7 +16,7 @@ class ReflectionHelper {
     throw new \Exception('Cannot find model for model controller ' . $controllerClass);
   }
 
-  public static function getDocProperty($docComments, $property) {
+  public static function getDocDirective($docComments, $property) {
     $matches = array();
     preg_match_all('/\@' . $property . '\s(.*)\s/', $docComments, $matches);
     return $matches[1];

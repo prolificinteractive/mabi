@@ -38,7 +38,7 @@ class SharedSecret extends \MABI\Middleware {
       }
 
       $rClass = new \ReflectionClass($modelClass);
-      $modelOptions = ReflectionHelper::getDocProperty($rClass->getDocComment(), 'option');
+      $modelOptions = ReflectionHelper::getDocDirective($rClass->getDocComment(), 'model');
       if (in_array('ApplicationModel', $modelOptions)) {
         $applicationModelClass = $modelClass;
         break;
@@ -51,7 +51,7 @@ class SharedSecret extends \MABI\Middleware {
     $sharedSecretProp = 'sharedSecret';
     foreach ($modelProps as $modelProp) {
       $rProp = new \ReflectionProperty($applicationModelClass, $modelProp->name);
-      $propOptions = ReflectionHelper::getDocProperty($rProp->getDocComment(), 'option');
+      $propOptions = ReflectionHelper::getDocDirective($rProp->getDocComment(), 'model');
       if (in_array('SharedSecret', $propOptions)) {
         $sharedSecretProp = $modelProp->name;
         break;

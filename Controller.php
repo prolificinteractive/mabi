@@ -6,10 +6,18 @@ include_once dirname(__FILE__) . '/Inflector.php';
 include_once dirname(__FILE__) . '/Middleware.php';
 
 /**
- * todo: docs
+ * Defines a controller that serves endpoints routed based on its contained function names.
+ *
+ * The controller also allows middleware to be associated with all of the endpoints that it serves.
  */
 class Controller {
-
+  /**
+   * The base name for the controller. This defines the first part of the endpoint url.
+   *
+   * e.g. <APP_PATH>/{BASE}/{ACTION}/...
+   *
+   * @var string
+   */
   protected $base = NULL;
 
   /**
@@ -49,17 +57,29 @@ class Controller {
     }
 
     $rClass = new \ReflectionClass($myClass);
-    $middlewares = ReflectionHelper::getDocProperty($rClass->getDocComment(), 'middleware');
-    foreach ($middlewares as $middlewareClass) {
-      $middlewareFile = ReflectionHelper::stripClassName($middlewareClass) . '.php';
-      include_once dirname(__FILE__) . '/middleware/' . $middlewareFile;
 
-      /**
-       * @var $middleware \MABI\Middleware
-       */
-      $middleware = new $middlewareClass();
-      $this->addMiddleware($middleware);
+    // Load middlewares from @middleware directive
+    $middlewares = ReflectionHelper::getDocDirective($rClass->getDocComment(), 'middleware');
+    foreach ($middlewares as $middlewareClass) {
+      $this->addMiddlewareByClass($middlewareClass);
     }
+  }
+
+  public function addMiddlewareByClass($middlewareClass) {
+    $middlewareFile = ReflectionHelper::stripClassName($middlewareClass) . '.php';
+    // Finds the file to include for this middleware using the app's middleware directory listing
+    foreach ($this->app->getMiddlewareDirectories() as $middlewareDirectory) {
+      if (file_exists($middlewareDirectory . '/' . $middlewareFile)) {
+        include_once $middlewareDirectory . '/' . $middlewareFile;
+        break;
+      }
+    }
+
+    /**
+     * @var $middleware \MABI\Middleware
+     */
+    $middleware = new $middlewareClass();
+    $this->addMiddleware($middleware);
   }
 
   /**
@@ -104,7 +124,7 @@ class Controller {
     $rMethods = $rClass->getMethods(\ReflectionMethod::IS_PUBLIC);
     foreach ($rMethods as $rMethod) {
       // If there is a '@controller ignore' property, the function is not served as an endpoint
-      if(in_array('ignore', ReflectionHelper::getDocProperty($rMethod->getDocComment(),'controller'))) {
+      if (in_array('ignore', ReflectionHelper::getDocDirective($rMethod->getDocComment(), 'endpoint'))) {
         continue;
       }
 
@@ -176,7 +196,7 @@ class Controller {
     $rMethods = $rClass->getMethods(\ReflectionMethod::IS_PUBLIC);
     foreach ($rMethods as $rMethod) {
       // If there is a '@controller ignore' property, the function is not served as an endpoint
-      if(in_array('ignore', ReflectionHelper::getDocProperty($rMethod->getDocComment(),'controller'))) {
+      if (in_array('ignore', ReflectionHelper::getDocDirective($rMethod->getDocComment(), 'endpoint'))) {
         continue;
       }
 

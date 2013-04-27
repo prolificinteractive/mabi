@@ -204,7 +204,7 @@ class Model {
       $rProp = new \ReflectionProperty($this, $property->name);
       $propComment = $rProp->getDocComment();
       // Pulls out the type following the pattern @var <TYPE> from the doc comments of the property
-      $varDocs = ReflectionHelper::getDocProperty($propComment, 'var');
+      $varDocs = ReflectionHelper::getDocDirective($propComment, 'var');
       if (empty($varDocs)) {
         $this->{$property->getName()} = $resultArray[$property->getName()];
       }
@@ -282,13 +282,13 @@ class Model {
       /*
        * Ignores writing any model property with 'external' option
        */
-      if (!$removeInternal && in_array('external', ReflectionHelper::getDocProperty($property->getDocComment(), 'options'))) {
+      if (!$removeInternal && in_array('external', ReflectionHelper::getDocDirective($property->getDocComment(), 'field'))) {
         continue;
       }
-      if ($removeInternal && in_array('internal', ReflectionHelper::getDocProperty($property->getDocComment(), 'options'))) {
+      if ($removeInternal && in_array('internal', ReflectionHelper::getDocDirective($property->getDocComment(), 'field'))) {
         continue;
       }
-      if (in_array('system', ReflectionHelper::getDocProperty($property->getDocComment(), 'options'))) {
+      if (in_array('system', ReflectionHelper::getDocDirective($property->getDocComment(), 'field'))) {
         continue;
       }
 

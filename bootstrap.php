@@ -1,3 +1,3 @@
 <?php
 
-include_once dirname(__FILE__) . '/App.php';
+include_once __DIR__ . '/App.php';

@@ -2,8 +2,8 @@
 
 namespace MABI;
 
-include_once dirname(__FILE__) . '/Utilities.php';
-include_once dirname(__FILE__) . '/Controller.php';
+include_once __DIR__ . '/Utilities.php';
+include_once __DIR__ . '/Controller.php';
 
 /**
  * todo: docs

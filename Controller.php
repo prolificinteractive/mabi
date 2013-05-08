@@ -2,8 +2,8 @@
 
 namespace MABI;
 
-include_once dirname(__FILE__) . '/Inflector.php';
-include_once dirname(__FILE__) . '/Middleware.php';
+include_once __DIR__ . '/Inflector.php';
+include_once __DIR__ . '/Middleware.php';
 
 /**
  * Defines a controller that serves endpoints routed based on its contained function names.

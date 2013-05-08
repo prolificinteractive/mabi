@@ -2,8 +2,8 @@
 
 namespace MABI;
 
-include_once dirname(__FILE__) . '/Inflector.php';
-include_once dirname(__FILE__) . '/Utilities.php';
+include_once __DIR__ . '/Inflector.php';
+include_once __DIR__ . '/Utilities.php';
 
 /**
  * todo: docs
@@ -102,7 +102,6 @@ class Model {
    * @return Model[]
    */
   public function findAll() {
-    // todo: implement
     $dataConnection = $this->app->getDataConnection($this->connection);
     $foundObjects = $dataConnection->findAll($this->table, $this->readFields);
     $foundModels = array();

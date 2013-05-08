@@ -2,7 +2,7 @@
 
 namespace MABI\Autodocs;
 
-include_once dirname(__FILE__) . '/markdown-extra/markdown.php';
+include_once __DIR__ . '/markdown-extra/markdown.php';
 
 use MABI\Parser;
 

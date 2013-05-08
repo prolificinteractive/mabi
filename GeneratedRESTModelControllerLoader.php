@@ -2,8 +2,8 @@
 
 namespace MABI;
 
-include_once dirname(__FILE__) . '/ControllerLoader.php';
-include_once dirname(__FILE__) . '/RESTModelController.php';
+include_once __DIR__ . '/ControllerLoader.php';
+include_once __DIR__ . '/RESTModelController.php';
 
 /**
  * automatically generates RESTful controllers

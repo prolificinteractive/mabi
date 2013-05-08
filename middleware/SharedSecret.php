@@ -2,7 +2,7 @@
 
 namespace MABI\Middleware;
 
-include_once dirname(__FILE__) . '/../DefaultApplicationModel.php';
+include_once __DIR__ . '/../DefaultApplicationModel.php';
 
 use MABI\ReflectionHelper;
 

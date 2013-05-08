@@ -2,7 +2,7 @@
 
 namespace MABI;
 
-include_once dirname(__FILE__) . '/Model.php';
+include_once __DIR__ . '/Model.php';
 
 /**
  * todo: docs

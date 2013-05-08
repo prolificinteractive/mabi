@@ -2,6 +2,9 @@
 
 namespace MABI\Middleware;
 
+include_once __DIR__ . '/Inflector.php';
+
+
 class AnonymousIdentifier extends \MABI\Middleware {
   public $anonymousId = NULL;
 

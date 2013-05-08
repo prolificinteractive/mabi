@@ -2,9 +2,9 @@
 
 namespace MABI;
 
-include_once dirname(__FILE__) . '/Inflector.php';
-include_once dirname(__FILE__) . '/Utilities.php';
-include_once dirname(__FILE__) . '/ModelController.php';
+include_once __DIR__ . '/Inflector.php';
+include_once __DIR__ . '/Utilities.php';
+include_once __DIR__ . '/ModelController.php';
 
 /**
  * todo: docs
@@ -31,8 +31,6 @@ class RESTModelController extends ModelController {
   }
 
   public function _restPostCollection() {
-    // todo: get post data to insert
-
     $this->model = call_user_func($this->modelClass . '::init', $this->app);
     $this->model->loadParameters($this->getApp()->getSlim()->request()->post());
     $this->model->insert();
@@ -52,7 +50,6 @@ class RESTModelController extends ModelController {
      * @var $model Model
      */
     echo $this->model->outputJSON();
-    // todo: implement
   }
 
   public function _restPutObject($id) {

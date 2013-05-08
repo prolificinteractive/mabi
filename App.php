@@ -2,9 +2,9 @@
 
 namespace MABI;
 
-include_once dirname(__FILE__) . '/DataConnection.php';
-include_once dirname(__FILE__) . '/ModelLoader.php';
-include_once dirname(__FILE__) . '/Slim/Slim.php';
+include_once __DIR__ . '/DataConnection.php';
+include_once __DIR__ . '/ModelLoader.php';
+include_once __DIR__ . '/Slim/Slim.php';
 
 \Slim\Slim::registerAutoloader();
 
@@ -90,7 +90,7 @@ class App {
   }
 
   public function __construct() {
-    array_push($this->middlewareDirectories, dirname(__FILE__) . '/middleware');
+    array_push($this->middlewareDirectories, __DIR__ . '/middleware');
     $this->slim = new \Slim\Slim();
   }
 
@@ -140,7 +140,7 @@ class App {
    *
    * @param $modelLoaders ModelLoader[]
    */
-  public function setModelLoaders($modelLoaders) {
+  public function setModelLoaders(array $modelLoaders) {
     $this->modelLoaders = $modelLoaders;
 
     $this->modelClasses = array();
@@ -165,7 +165,7 @@ class App {
    *
    * @param $controllerLoaders ControllerLoader[]
    */
-  public function setControllerLoaders($controllerLoaders) {
+  public function setControllerLoaders(array $controllerLoaders) {
     foreach ($controllerLoaders as $controllerLoader) {
       $controllers = $controllerLoader->getControllers();
       foreach ($controllers as $controller) {
@@ -183,6 +183,8 @@ class App {
    * todo: docs
    *
    * @param Parser $parser
+   *
+   * @return array
    */
   public function getDocJSON(Parser $parser) {
     $docOut = array();

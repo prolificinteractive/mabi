@@ -155,7 +155,7 @@
 
         var params = $(this).serializeArray();
 
-        $.post('/auth', params, function(result) {
+        $.post(basePath + 'auth', params, function(result) {
             if (result.signin) {
                 window.open(result.signin,"_blank","height=900,width=800,menubar=0,resizable=1,scrollbars=1,status=0,titlebar=0,toolbar=0");
             }
@@ -235,7 +235,7 @@
 
         console.log(params);
 
-        $.post('/processReq', params, function(result, text) {
+        $.post(basePath + 'processReq', params, function(result, text) {
             // If we get passed a signin property, open a window to allow the user to signin/link their account
             if (result.signin) {
                 window.open(result.signin,"_blank","height=900,width=800,menubar=0,resizable=1,scrollbars=1,status=0,titlebar=0,toolbar=0");

@@ -2,9 +2,10 @@
 
 namespace MABI\Middleware;
 
-include_once dirname(__FILE__) . '/../Utilities.php';
+include_once __DIR__ . '/../Middleware.php';
+include_once __DIR__ . '/../Utilities.php';
 
-class RESTAccessReadOnly extends \MABI\Middleware {
+class RESTReadOnlyAccess extends \MABI\Middleware {
 
   private static function isRESTReadOnlyOrCustom($methodName) {
     switch ($methodName) {

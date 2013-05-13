@@ -3,6 +3,7 @@
 namespace MABI\Middleware;
 
 include_once __DIR__ . '/../DefaultApplicationModel.php';
+include_once __DIR__ . '/../Middleware.php';
 
 use MABI\ReflectionHelper;
 
@@ -45,13 +46,13 @@ class SharedSecret extends \MABI\Middleware {
       }
     }
 
-    // Find the shared secret property (named sharedSecret -> annotated 'option SharedSecret')
+    // Find the shared secret property (named sharedSecret or annotated 'field SharedSecret')
     $rClass = new \ReflectionClass($applicationModelClass);
     $modelProps = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
     $sharedSecretProp = 'sharedSecret';
     foreach ($modelProps as $modelProp) {
       $rProp = new \ReflectionProperty($applicationModelClass, $modelProp->name);
-      $propOptions = ReflectionHelper::getDocDirective($rProp->getDocComment(), 'model');
+      $propOptions = ReflectionHelper::getDocDirective($rProp->getDocComment(), 'field');
       if (in_array('SharedSecret', $propOptions)) {
         $sharedSecretProp = $modelProp->name;
         break;
@@ -59,7 +60,7 @@ class SharedSecret extends \MABI\Middleware {
     }
 
     $this->apiApplication = $applicationModelClass::init($mabi);
-    if (!$this->apiApplication->findByField($sharedSecretProp, $mabi->getSlim()->request()->headers('shared-secret'))) {
+    if (!$this->apiApplication->findByField($sharedSecretProp, $mabi->getSlim()->request()->headers('SHARED-SECRET'))) {
       $this->apiApplication = FALSE;
     }
     $mabi->getSlim()->request()->apiApplication = $this->apiApplication;

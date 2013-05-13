@@ -2,6 +2,8 @@
 
 namespace MABI\Middleware;
 
+include_once __DIR__ . '/../Middleware.php';
+
 class APIApplicationOnlyAccess extends \MABI\Middleware {
   /**
    * Call
@@ -25,6 +27,7 @@ class APIApplicationOnlyAccess extends \MABI\Middleware {
   public function documentMethod(\ReflectionClass $rClass, \ReflectionMethod $rMethod, array &$methodDoc) {
     parent::documentMethod($rClass, $rMethod, $methodDoc);
 
+    // todo: adjust if not only shared-secret access
     foreach ($methodDoc['parameters'] as $k => $parameter) {
       if ($parameter['Name'] == 'shared-secret') {
         $methodDoc['parameters'][$k]['Required'] = 'Y';

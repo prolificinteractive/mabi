@@ -2,8 +2,7 @@
 
 namespace MABI\Middleware;
 
-include_once __DIR__ . '/Inflector.php';
-
+include_once __DIR__ . '/../Middleware.php';
 
 class AnonymousIdentifier extends \MABI\Middleware {
   public $anonymousId = NULL;
@@ -17,7 +16,7 @@ class AnonymousIdentifier extends \MABI\Middleware {
    * call the next downstream middleware.
    */
   public function call() {
-    $this->anonymousId = $this->getController()->getApp()->getSlim()->request()->headers('anonuuid');
+    $this->anonymousId = $this->getController()->getApp()->getSlim()->request()->headers('ANONUUID');
     $this->getController()->getApp()->getSlim()->request()->anonymousId = $this->anonymousId;
     if (!empty($this->next)) {
       $this->next->call();

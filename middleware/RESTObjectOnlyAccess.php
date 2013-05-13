@@ -2,9 +2,10 @@
 
 namespace MABI\Middleware;
 
+include_once __DIR__ . '/../Middleware.php';
 include_once __DIR__ . '/../Utilities.php';
 
-class RESTAccessObjectOnly extends \MABI\Middleware {
+class RESTObjectOnlyAccess extends \MABI\Middleware {
 
   private static function isRESTObjectOnlyOrCustom($methodName) {
     switch ($methodName) {

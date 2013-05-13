@@ -5,6 +5,8 @@ namespace MABI;
 include_once __DIR__ . '/DataConnection.php';
 include_once __DIR__ . '/ModelLoader.php';
 include_once __DIR__ . '/Slim/Slim.php';
+include_once __DIR__ . '/Controller.php';
+include_once __DIR__ . '/ControllerLoader.php';
 
 \Slim\Slim::registerAutoloader();
 
@@ -20,17 +22,17 @@ class App {
   /**
    * @var DataConnection[]
    */
-  protected $dataConnections;
+  protected $dataConnections = array();
 
   /**
    * @var ModelLoader[]
    */
-  protected $modelLoaders;
+  protected $modelLoaders = array();
 
   /**
    * @var string[]
    */
-  protected $modelClasses;
+  protected $modelClasses = array();
 
   /**
    * @var \Slim\Slim;

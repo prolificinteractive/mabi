@@ -2,6 +2,7 @@
 
 namespace MABI;
 
+include_once __DIR__ . '/App.php';
 include_once __DIR__ . '/Inflector.php';
 include_once __DIR__ . '/Middleware.php';
 

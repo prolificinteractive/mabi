@@ -1,0 +1,21 @@
+<phpunit>
+    <testsuites>
+        <testsuite name="MABI">
+            <directory>.</directory>
+        </testsuite>
+    </testsuites>
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory>..</directory>
+            <exclude>
+                <directory>../Slim</directory>
+                <directory>../autodocs</directory>
+                <directory>../tests</directory>
+                <file>../Inflector.php</file>
+            </exclude>
+        </whitelist>
+    </filter>
+    <logging>
+        <log type="coverage-html" target="./report"/>
+    </logging>
+</phpunit>

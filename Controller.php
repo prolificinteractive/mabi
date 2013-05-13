@@ -116,6 +116,18 @@ class Controller {
   }
 
   /**
+   * An overridable function that is called before a route executes middleware
+   */
+  public function preMiddleware() {
+  }
+
+  /**
+   * An overridable function that is called before a route executes the final callable (after middleware)
+   */
+  public function preCallable() {
+  }
+
+  /**
    * @param $slim \Slim\Slim
    */
   public function loadRoutes($slim) {
@@ -129,50 +141,39 @@ class Controller {
         continue;
       }
 
+      $action = NULL;
+      $httpMethod = NULL;
       $methodName = $rMethod->name;
       if (strpos($methodName, 'get', 0) === 0) {
         $action = strtolower(substr($methodName, 3));
-        $slim->get("/{$this->base}/{$action}", array($this, '_runControllerMiddlewares'), array($this, $methodName));
-        $slim->get("/{$this->base}/{$action}(/:param+)", array(
-          $this,
-          '_runControllerMiddlewares'
-        ), array(
-          $this,
-          $methodName
-        ));
+        $httpMethod = \Slim\Http\Request::METHOD_GET;
       }
       elseif (strpos($methodName, 'put', 0) === 0) {
         $action = strtolower(substr($methodName, 3));
-        $slim->put("/{$this->base}/{$action}", array($this, '_runControllerMiddlewares'), array($this, $methodName));
-        $slim->put("/{$this->base}/{$action}(/:param+)", array(
-          $this,
-          '_runControllerMiddlewares'
-        ), array(
-          $this,
-          $methodName
-        ));
+        $httpMethod = \Slim\Http\Request::METHOD_PUT;
       }
       elseif (strpos($methodName, 'post', 0) === 0) {
         $action = strtolower(substr($methodName, 4));
-        $slim->post("/{$this->base}/{$action}", array($this, '_runControllerMiddlewares'), array($this, $methodName));
-        $slim->post("/{$this->base}/{$action}(/:param+)", array(
-          $this,
-          '_runControllerMiddlewares'
-        ), array(
-          $this,
-          $methodName
-        ));
+        $httpMethod = \Slim\Http\Request::METHOD_POST;
       }
       elseif (strpos($methodName, 'delete', 0) === 0) {
         $action = strtolower(substr($methodName, 6));
-        $slim->delete("/{$this->base}/{$action}", array($this, '_runControllerMiddlewares'), array($this, $methodName));
-        $slim->delete("/{$this->base}/{$action}(/:param+)", array(
-          $this,
-          '_runControllerMiddlewares'
-        ), array(
-          $this,
-          $methodName
-        ));
+        $httpMethod = \Slim\Http\Request::METHOD_DELETE;
+      }
+
+      if (!empty($action)) {
+        $slim->map("/{$this->base}/{$action}",
+          array($this, 'preMiddleware'),
+          array($this, '_runControllerMiddlewares'),
+          array($this, 'preCallable'),
+          array($this, $methodName))->
+          via($httpMethod);
+        $slim->map("/{$this->base}/{$action}(/:param+)",
+          array($this, 'preMiddleware'),
+          array($this, '_runControllerMiddlewares'),
+          array($this, 'preCallable'),
+          array($this, $methodName))->
+          via($httpMethod);
       }
     }
   }

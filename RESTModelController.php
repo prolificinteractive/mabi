@@ -88,28 +88,42 @@ class RESTModelController extends ModelController {
 
     // todo: add API versioning
     $slim->get("/{$this->base}",
+      array($this, 'preMiddleware'),
       array($this, '_runControllerMiddlewares'),
+      array($this, 'preCallable'),
       array($this, '_restGetCollection'));
     $slim->post("/{$this->base}",
+      array($this, 'preMiddleware'),
       array($this, '_runControllerMiddlewares'),
+      array($this, 'preCallable'),
       array($this, '_restPostCollection'));
     $slim->put("/{$this->base}",
+      array($this, 'preMiddleware'),
       array($this, '_runControllerMiddlewares'),
+      array($this, 'preCallable'),
       array($this, '_restPutCollection'));
     $slim->delete("/{$this->base}",
+      array($this, 'preMiddleware'),
       array($this, '_runControllerMiddlewares'),
+      array($this, 'preCallable'),
       array($this, '_restDeleteCollection'));
     $slim->get("/{$this->base}/:id",
+      array($this, 'preMiddleware'),
       array($this, '_runControllerMiddlewares'),
       array($this, '_readModel'),
+      array($this, 'preCallable'),
       array($this, '_restGetObject'));
     $slim->put("/{$this->base}/:id",
+      array($this, 'preMiddleware'),
       array($this, '_runControllerMiddlewares'),
       array($this, '_readModel'),
+      array($this, 'preCallable'),
       array($this, '_restPutObject'));
     $slim->delete("/{$this->base}/:id",
+      array($this, 'preMiddleware'),
       array($this, '_runControllerMiddlewares'),
       array($this, '_readModel'),
+      array($this, 'preCallable'),
       array($this, '_restDeleteObject'));
 
     /**
@@ -120,56 +134,48 @@ class RESTModelController extends ModelController {
     $rClass = new \ReflectionClass($this);
     $rMethods = $rClass->getMethods(\ReflectionMethod::IS_PUBLIC);
     foreach ($rMethods as $rMethod) {
+      $action = NULL;
+      $httpMethod = NULL;
       $methodName = $rMethod->name;
       if (strpos($methodName, 'restGet', 0) === 0) {
         $action = strtolower(substr($methodName, 7));
-        $slim->get("/{$this->base}/:id/{$action}",
-          array($this, '_runControllerMiddlewares'),
-          array($this, '_readModel'),
-          array($this, $methodName));
-        $slim->get("/{$this->base}/:id/{$action}(/:param)",
-          array($this, '_runControllerMiddlewares'),
-          array($this, '_readModel'),
-          array($this, $methodName));
+        $httpMethod = \Slim\Http\Request::METHOD_GET;
       }
       elseif (strpos($methodName, 'restPut', 0) === 0) {
         $action = strtolower(substr($methodName, 7));
-        $slim->put("/{$this->base}/:id/{$action}",
-          array($this, '_runControllerMiddlewares'),
-          array($this, '_readModel'),
-          array($this, $methodName));
-        $slim->put("/{$this->base}/:id/{$action}(/:param)",
-          array($this, '_runControllerMiddlewares'),
-          array($this, '_readModel'),
-          array($this, $methodName));
+        $httpMethod = \Slim\Http\Request::METHOD_PUT;
       }
       elseif (strpos($methodName, 'restPost', 0) === 0) {
         $action = strtolower(substr($methodName, 8));
-        $slim->post("/{$this->base}/:id/{$action}",
-          array($this, '_runControllerMiddlewares'),
-          array($this, '_readModel'),
-          array($this, $methodName));
-        $slim->post("/{$this->base}/:id/{$action}(/:param)",
-          array($this, '_runControllerMiddlewares'),
-          array($this, '_readModel'),
-          array($this, $methodName));
+        $httpMethod = \Slim\Http\Request::METHOD_POST;
       }
       elseif (strpos($methodName, 'restDelete', 0) === 0) {
         $action = strtolower(substr($methodName, 10));
-        $slim->delete("/{$this->base}/:id/{$action}",
+        $httpMethod = \Slim\Http\Request::METHOD_DELETE;
+      }
+
+      if (!empty($action)) {
+        $slim->map("/{$this->base}/:id/{$action}",
+          array($this, 'preMiddleware'),
           array($this, '_runControllerMiddlewares'),
           array($this, '_readModel'),
-          array($this, $methodName));
-        $slim->delete("/{$this->base}/:id/{$action}(/:param)",
+          array($this, 'preCallable'),
+          array($this, $methodName))->
+          via($httpMethod);
+        $slim->map("/{$this->base}/:id/{$action}(/:param)",
+          array($this, 'preMiddleware'),
           array($this, '_runControllerMiddlewares'),
           array($this, '_readModel'),
-          array($this, $methodName));
+          array($this, 'preCallable'),
+          array($this, $methodName))->
+          via($httpMethod);
       }
     }
   }
 
-  private function getRestMethodDocJSON(Parser $parser, $methodName, $httpMethod, $url, $rClass,
-                                        $method, $includesId = FALSE) {
+  private
+  function getRestMethodDocJSON(Parser $parser, $methodName, $httpMethod, $url, $rClass,
+                                $method, $includesId = FALSE) {
     $methodDoc = array();
 
     $methodDoc['MethodName'] = $methodName;
@@ -207,7 +213,8 @@ class RESTModelController extends ModelController {
    * @endpoint ignore
    * @return array
    */
-  public function getDocJSON(Parser $parser) {
+  public
+  function getDocJSON(Parser $parser) {
     $doc = parent::getDocJSON($parser);
 
     $rClass = new \ReflectionClass(get_called_class());

@@ -2,6 +2,8 @@
 
 namespace MABI;
 
+include_once __DIR__ . '/Controller.php';
+
 abstract class Middleware {
   /**
    * @var \MABI\Controller

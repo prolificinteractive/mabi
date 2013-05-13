@@ -2,7 +2,7 @@
 
 namespace MABI\Middleware;
 
-include_once dirname(__FILE__) . '/../Utilities.php';
+include_once __DIR__ . '/../Utilities.php';
 
 class RESTAccessPostOnly extends \MABI\Middleware {
 

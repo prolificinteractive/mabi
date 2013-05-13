@@ -2,6 +2,8 @@
 
 namespace MABI\Middleware;
 
+include_once __DIR__ . '/../Middleware.php';
+
 class APIApplicationOnlyAccess extends \MABI\Middleware {
   /**
    * Call

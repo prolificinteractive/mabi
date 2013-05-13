@@ -1,0 +1,18 @@
+<phpunit>
+  <testsuites>
+    <testsuite name="MABI">
+      <directory>.</directory>
+    </testsuite>
+  </testsuites>
+  <filter>
+    <blacklist>
+      <directory>../Slim</directory>
+      <directory>../autodocs</directory>
+      <directory>../tests</directory>
+      <file>../Inflector.php</file>
+    </blacklist>
+  </filter>
+  <logging>
+    <log type="coverage-html" target="./report" />
+  </logging>
+</phpunit>

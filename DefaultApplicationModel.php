@@ -2,6 +2,8 @@
 
 namespace MABI;
 
+include_once __DIR__ . '/Model.php';
+
 /**
  * @restful NoController
  */

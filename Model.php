@@ -160,6 +160,7 @@ class Model {
         $parameter = floatval($result);
         break;
       case 'DateTime':
+      case '\DateTime':
         $parameter = new \DateTime('@' . $result);
         break;
       case '':

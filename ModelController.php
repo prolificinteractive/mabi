@@ -35,7 +35,8 @@ class ModelController extends Controller {
   }
 
   public static function generate($modelClass, $app) {
-    $newController = new RESTModelController($app);
+    $calledClass = get_called_class();
+    $newController = new $calledClass($app);
     $newController->modelClass = $modelClass;
     $newController->base = strtolower(ReflectionHelper::stripClassName($modelClass));
     return $newController;

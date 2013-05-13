@@ -4,6 +4,7 @@ namespace MABI;
 
 include_once __DIR__ . '/Utilities.php';
 include_once __DIR__ . '/ControllerLoader.php';
+include_once __DIR__ . '/ModelController.php';
 
 class DirectoryControllerLoader extends ControllerLoader {
 
@@ -31,11 +32,6 @@ class DirectoryControllerLoader extends ControllerLoader {
    * @var string[]
    */
   protected $overriddenModelClasses = array();
-
-  /**
-   * @var \MABI\Controller[]
-   */
-  protected $controllers = array();
 
   public function __construct($directory, $app, $namespace = NULL) {
     $this->app = $app;
@@ -70,7 +66,6 @@ class DirectoryControllerLoader extends ControllerLoader {
    * @return Controller[]
    */
   public function getControllers() {
-    // TODO: Implement getControllers() method.
     return $this->controllers;
   }
 

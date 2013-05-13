@@ -1,58 +1,18 @@
 <?php
 
+namespace MABI\Testing;
+
 include_once 'PHPUnit/Autoload.php';
+include_once __DIR__ . '/MiddlewareTestCase.php';
 include_once __DIR__ . '/../../middleware/APIApplicationOnlyAccess.php';
 include_once __DIR__ . '/../../middleware/SharedSecret.php';
-include_once __DIR__ . '/../../DirectoryControllerLoader.php';
 
-class APIApplicationOnlyAccessTest extends \PHPUnit_Framework_TestCase {
-
-  /**
-   * @var \MABI\App
-   */
-  protected $app;
-
-  /**
-   * @var PHPUnit_Framework_MockObject_MockObject
-   */
-  protected $dataConnectionMock;
-
-  /**
-   * @var \MABI\Controller
-   */
-  protected $controller;
-
-  public function setUpApp($env = array(), $middlewares = array()) {
-    \Slim\Environment::mock($env);
-    $this->app = new \MABI\App();
-
-    $dirControllerLoader = new \MABI\DirectoryControllerLoader(__DIR__ . '/../TestApp/TestControllerDir', $this->app,
-      'mabiTesting');
-    foreach ($dirControllerLoader->getControllers() as $controller) {
-      if (get_class($controller) == 'mabiTesting\JustAController') {
-        $this->controller = $controller;
-        if (!empty($middlewares)) {
-          foreach ($middlewares as $middleware) {
-            $this->controller->addMiddleware($middleware);
-          }
-        }
-      }
-    }
-
-    $this->dataConnectionMock = $this->getMock('\MABI\DataConnection');
-    $this->dataConnectionMock
-      ->expects($this->any())
-      ->method('getDefaultIdColumn')
-      ->will($this->returnValue('id'));
-
-    $this->app->addDataConnection('default', $this->dataConnectionMock);
-
-    $this->app->setControllerLoaders(array($dirControllerLoader));
-  }
+class APIApplicationOnlyAccessTest extends \MABI\Testing\MiddlewareTestCase {
 
   public function testStoppedCall() {
-    $middleware = new \MABI\Middleware\APIApplicationOnlyAccess();
-    $this->setUpApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware));
+    $middleware = new \MABI\Middleware\SharedSecret();
+    $middleware2 = new \MABI\Middleware\APIApplicationOnlyAccess();
+    $this->setUpApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware, $middleware2));
 
     $this->app->getSlim()->call();
 
@@ -80,8 +40,17 @@ class APIApplicationOnlyAccessTest extends \PHPUnit_Framework_TestCase {
   }
 
   public function testDocs() {
-    $this->setUpApp(array('ANONUUID' => 'test1', 'PATH_INFO' => '/justa/testfunc'));
+    $middleware = new \MABI\Middleware\APIApplicationOnlyAccess();
+    $this->setUpApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware));
 
-    $middleware = new \MABI\Middleware\AnonymousIdentifier();
+    $docArray = array(
+      'parameters' => array(
+        0 => array('Name' => 'shared-secret')
+      )
+    );
+    $rClassMock = $this->getMock('\ReflectionClass', array(), array(), '', FALSE);
+    $rRefMock = $this->getMock('\ReflectionMethod', array(), array(), '', FALSE);
+    $middleware->documentMethod($rClassMock, $rRefMock, $docArray);
+    $this->assertNotEmpty($docArray);
   }
 }

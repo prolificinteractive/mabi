@@ -1,5 +1,7 @@
 <?php
 
+namespace MABI\Testing;
+
 include_once 'PHPUnit/Autoload.php';
 include_once __DIR__ . '/../App.php';
 include_once __DIR__ . '/../Model.php';
@@ -14,7 +16,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase {
   protected $app;
 
   /**
-   * @var PHPUnit_Framework_MockObject_MockObject
+   * @var \PHPUnit_Framework_MockObject_MockObject
    */
   protected $dataConnectionMock;
 
@@ -218,7 +220,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase {
     $this->assertInternalType('float', $fmodel->floatField);
     $this->assertEquals(10.5, $fmodel->floatField);
     $this->assertInstanceOf('DateTime', $fmodel->timestampField);
-    $this->assertEquals(new DateTime('2013-05-08 13:59:25+00:00'), $fmodel->timestampField);
+    $this->assertEquals(new \DateTime('2013-05-08 13:59:25+00:00'), $fmodel->timestampField);
     $this->assertInternalType('array', $fmodel->arrayField);
     $this->assertEquals(array('10', '12', '23', 7), $fmodel->arrayField);
     $this->assertInternalType('array', $fmodel->subObjList);

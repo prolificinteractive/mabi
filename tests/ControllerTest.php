@@ -1,5 +1,7 @@
 <?php
 
+namespace MABI\Testing;
+
 include_once 'PHPUnit/Autoload.php';
 include_once __DIR__ . '/../App.php';
 include_once __DIR__ . '/../DirectoryModelLoader.php';
@@ -10,12 +12,12 @@ include_once __DIR__ . '/../autodocs/MarkdownParser.php';
 
 class ControllerTest extends \PHPUnit_Framework_TestCase {
   /**
-   * @var PHPUnit_Framework_MockObject_MockObject
+   * @var \PHPUnit_Framework_MockObject_MockObject
    */
   protected $dataConnectionMock;
 
   /**
-   * @var PHPUnit_Framework_MockObject_MockObject
+   * @var \PHPUnit_Framework_MockObject_MockObject
    */
   protected $controllerMock;
 

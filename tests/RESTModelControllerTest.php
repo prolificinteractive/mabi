@@ -1,5 +1,7 @@
 <?php
 
+namespace MABI\Testing;
+
 include_once 'PHPUnit/Autoload.php';
 include_once __DIR__ . '/../App.php';
 include_once __DIR__ . '/../Utilities.php';
@@ -12,12 +14,12 @@ include_once __DIR__ . '/../autodocs/MarkdownParser.php';
 
 class RESTModelControllerTest extends \PHPUnit_Framework_TestCase {
   /**
-   * @var PHPUnit_Framework_MockObject_MockObject
+   * @var \PHPUnit_Framework_MockObject_MockObject
    */
   protected $dataConnectionMock;
 
   /**
-   * @var PHPUnit_Framework_MockObject_MockObject
+   * @var \PHPUnit_Framework_MockObject_MockObject
    */
   protected $controllerMock;
 
@@ -63,7 +65,7 @@ class RESTModelControllerTest extends \PHPUnit_Framework_TestCase {
       ), array($this->app),
       'ModelBController');
     $modelClass = 'mabiTesting\ModelB';
-    $refObject = new ReflectionObject($this->controllerMock);
+    $refObject = new \ReflectionObject($this->controllerMock);
     $refModelClassProperty = $refObject->getProperty('modelClass');
     $refModelClassProperty->setAccessible(TRUE);
     $refModelClassProperty->setValue($this->controllerMock, $modelClass);

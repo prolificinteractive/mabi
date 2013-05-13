@@ -1,5 +1,7 @@
 <?php
 
+namespace MABI\Testing;
+
 include_once 'PHPUnit/Autoload.php';
 include_once __DIR__ . '/../App.php';
 include_once __DIR__ . '/../MongoDataConnection.php';
@@ -8,7 +10,7 @@ include_once __DIR__ . '/../DirectoryControllerLoader.php';
 include_once __DIR__ . '/../GeneratedRESTModelControllerLoader.php';
 include_once __DIR__ . '/../autodocs/MarkdownParser.php';
 
-class AppTest extends PHPUnit_Framework_TestCase {
+class AppTest extends \PHPUnit_Framework_TestCase {
 
   public function setUp() {
     \Slim\Environment::mock();

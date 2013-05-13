@@ -2,9 +2,10 @@
 
 namespace MABI\Middleware;
 
+include_once __DIR__ . '/../Middleware.php';
 include_once __DIR__ . '/../Utilities.php';
 
-class RESTAccessPostOnly extends \MABI\Middleware {
+class RESTPostOnlyAccess extends \MABI\Middleware {
 
   private static function isRESTPostOrCustom($methodName) {
     switch ($methodName) {

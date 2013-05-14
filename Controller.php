@@ -228,6 +228,19 @@ class Controller {
       $methodDoc['Synopsis'] = $parser->parse(ReflectionHelper::getDocText($rMethod->getDocComment()));
       $methodDoc['parameters'] = array();
 
+      // Add in parameters specified using @docs-param
+      $docsParameters = ReflectionHelper::getDocDirective($rMethod->getDocComment(), 'docs-param');
+      foreach($docsParameters as $docsParameter) {
+        $paramComponents = explode(' ', $docsParameter, 5);
+        $methodDoc['parameters'][] = array(
+          'Name' => $paramComponents[0],
+          'Type' => $paramComponents[1],
+          'Location' => $paramComponents[2],
+          'Required' => $paramComponents[3] == 'required' ? 'Y' : 'N',
+          'Description' => $paramComponents[4]
+        );
+      }
+
       // Allow controller middlewares to modify the documentation for this method
       if (!empty($this->middlewares)) {
         $middleware = reset($this->middlewares);

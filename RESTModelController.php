@@ -213,8 +213,7 @@ class RESTModelController extends ModelController {
    * @endpoint ignore
    * @return array
    */
-  public
-  function getDocJSON(Parser $parser) {
+  public function getDocJSON(Parser $parser) {
     $doc = parent::getDocJSON($parser);
 
     $rClass = new \ReflectionClass(get_called_class());

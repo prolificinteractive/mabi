@@ -65,7 +65,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase {
     $this->controllerMock->expects($this->once())
       ->method('getTestFunc')
       ->will($this->returnValue('test'));
-    $this->app->getSlim()->call();
+    $this->app->call();
     $this->assertEquals(200, $this->app->getSlim()->response()->status());
     $this->assertEquals('', $this->app->getSlim()->response()->body());
 
@@ -74,7 +74,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase {
     $this->controllerMock->expects($this->once())
       ->method('postTestFunc')
       ->will($this->returnValue('test'));
-    $this->app->getSlim()->call();
+    $this->app->call();
     $this->assertEquals(200, $this->app->getSlim()->response()->status());
     $this->assertEquals('', $this->app->getSlim()->response()->body());
 
@@ -83,7 +83,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase {
     $this->controllerMock->expects($this->once())
       ->method('putTestFunc')
       ->will($this->returnValue('test'));
-    $this->app->getSlim()->call();
+    $this->app->call();
     $this->assertEquals(200, $this->app->getSlim()->response()->status());
     $this->assertEquals('', $this->app->getSlim()->response()->body());
 
@@ -92,7 +92,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase {
     $this->controllerMock->expects($this->once())
       ->method('deleteTestFunc')
       ->will($this->returnValue('test'));
-    $this->app->getSlim()->call();
+    $this->app->call();
     $this->assertEquals(200, $this->app->getSlim()->response()->status());
     $this->assertEquals('', $this->app->getSlim()->response()->body());
   }

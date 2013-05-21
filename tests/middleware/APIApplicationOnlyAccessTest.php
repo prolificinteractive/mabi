@@ -7,14 +7,14 @@ include_once __DIR__ . '/MiddlewareTestCase.php';
 include_once __DIR__ . '/../../middleware/APIApplicationOnlyAccess.php';
 include_once __DIR__ . '/../../middleware/SharedSecret.php';
 
-class APIApplicationOnlyAccessTest extends \MABI\Testing\MiddlewareTestCase {
+class APIApplicationOnlyAccessTest extends MiddlewareTestCase {
 
   public function testStoppedCall() {
     $middleware = new \MABI\Middleware\SharedSecret();
     $middleware2 = new \MABI\Middleware\APIApplicationOnlyAccess();
     $this->setUpApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware, $middleware2));
 
-    $this->app->getSlim()->call();
+    $this->app->call();
 
     $this->assertEquals(401, $this->app->getSlim()->response()->status());
   }
@@ -34,7 +34,7 @@ class APIApplicationOnlyAccessTest extends \MABI\Testing\MiddlewareTestCase {
         'sharedSecret' => 'TEST-SECRET-1'
       )));
 
-    $this->app->getSlim()->call();
+    $this->app->call();
 
     $this->assertEquals(200, $this->app->getSlim()->response()->status());
   }

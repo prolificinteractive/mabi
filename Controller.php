@@ -230,7 +230,7 @@ class Controller {
 
       // Add in parameters specified using @docs-param
       $docsParameters = ReflectionHelper::getDocDirective($rMethod->getDocComment(), 'docs-param');
-      foreach($docsParameters as $docsParameter) {
+      foreach ($docsParameters as $docsParameter) {
         $paramComponents = explode(' ', $docsParameter, 5);
         $methodDoc['parameters'][] = array(
           'Name' => $paramComponents[0],

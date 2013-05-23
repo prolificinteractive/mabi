@@ -191,10 +191,11 @@ class Model {
    * Loads parameters from a PHP database into the model object using reflection
    *
    * @param $resultArray array
+   * @param $forceId string
    *
    * @throws \Exception
    */
-  public function loadParameters($resultArray) {
+  public function loadParameters($resultArray, $forceId = NULL) {
     $rClass = new \ReflectionClass($this);
     $myProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
     foreach ($myProperties as $property) {
@@ -233,6 +234,9 @@ class Model {
     if (!empty($resultArray[$this->idColumn])) {
       $this->{$this->idProperty} = $resultArray[$this->idColumn];
       unset($resultArray[$this->idColumn]);
+    }
+    if(isset($forceId)) {
+      $this->{$this->idProperty} = $forceId;
     }
 
     $this->_remainingReadResults = $resultArray;

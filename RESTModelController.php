@@ -53,11 +53,12 @@ class RESTModelController extends ModelController {
   }
 
   public function _restPutObject($id) {
-    // todo: implement
+    $this->model->loadParameters($this->getApp()->getSlim()->request()->post(), $id);
+    $this->model->save();
   }
 
   public function _restDeleteObject($id) {
-    // todo: implement
+    $this->model->delete();
   }
 
   /**

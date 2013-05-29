@@ -196,17 +196,15 @@ class Model {
    */
   public function loadParameters($resultArray) {
     $rClass = new \ReflectionClass($this);
-    $myProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
-    foreach ($myProperties as $property) {
-      if (!array_key_exists($property->name, $resultArray)) {
+    $rProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
+    foreach ($rProperties as $rProperty) {
+      if (!array_key_exists($rProperty->name, $resultArray)) {
         continue;
       }
-      $rProp = new \ReflectionProperty($this, $property->name);
-      $propComment = $rProp->getDocComment();
       // Pulls out the type following the pattern @var <TYPE> from the doc comments of the property
-      $varDocs = ReflectionHelper::getDocDirective($propComment, 'var');
+      $varDocs = ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'var');
       if (empty($varDocs)) {
-        $this->{$property->getName()} = $resultArray[$property->getName()];
+        $this->{$rProperty->getName()} = $resultArray[$rProperty->getName()];
       }
       else {
         $type = $varDocs[0];
@@ -217,17 +215,17 @@ class Model {
           // with that type
           $type = $matches[1];
           $outArr = array();
-          foreach ($resultArray[$property->getName()] as $listResult) {
+          foreach ($resultArray[$rProperty->getName()] as $listResult) {
             $this->loadParameter($type, $parameter, $listResult);
             $outArr[] = $parameter;
           }
-          $this->{$property->getName()} = $outArr;
+          $this->{$rProperty->getName()} = $outArr;
         }
         else {
-          $this->loadParameter($type, $this->{$property->getName()}, $resultArray[$property->getName()]);
+          $this->loadParameter($type, $this->{$rProperty->getName()}, $resultArray[$rProperty->getName()]);
         }
       }
-      unset($resultArray[$property->getName()]);
+      unset($resultArray[$rProperty->getName()]);
     }
 
     if (!empty($resultArray[$this->idColumn])) {
@@ -277,32 +275,32 @@ class Model {
     $rClass = new \ReflectionClass($this);
 
     $outArr = array();
-    $myProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
-    foreach ($myProperties as $property) {
+    $rProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
+    foreach ($rProperties as $rProperty) {
       /*
        * Ignores writing any model property with 'external' option
        */
-      if (!$removeInternal && in_array('external', ReflectionHelper::getDocDirective($property->getDocComment(), 'field'))) {
+      if (!$removeInternal && in_array('external', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
         continue;
       }
-      if ($removeInternal && in_array('internal', ReflectionHelper::getDocDirective($property->getDocComment(), 'field'))) {
+      if ($removeInternal && in_array('internal', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
         continue;
       }
-      if (in_array('system', ReflectionHelper::getDocDirective($property->getDocComment(), 'field'))) {
+      if (in_array('system', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
         continue;
       }
 
-      if (!is_object($this->{$property->getName()})) {
-        $outArr[$property->getName()] = $this->{$property->getName()};
+      if (!is_object($this->{$rProperty->getName()})) {
+        $outArr[$rProperty->getName()] = $this->{$rProperty->getName()};
       }
       else {
-        $propClass = new \ReflectionClass($this->{$property->getName()});
+        $propClass = new \ReflectionClass($this->{$rProperty->getName()});
         if ($propClass->isSubclassOf('\MABI\Model')) {
           /**
            * @var $subModel \MABI\Model
            */
-          $subModel = $this->{$property->getName()};
-          $outArr[$property->getName()] = $subModel->getPropertyArray();
+          $subModel = $this->{$rProperty->getName()};
+          $outArr[$rProperty->getName()] = $subModel->getPropertyArray();
         }
       }
     }
@@ -359,5 +357,111 @@ class Model {
 
   public function outputJSON() {
     return json_encode($this->getPropertyArray(TRUE));
+  }
+
+  protected function addIOSAttribute(\SimpleXMLElement &$iosEntity, $name, $mabiType, $multi = FALSE) {
+    $setAttribute = TRUE;
+    $type = 'String';
+    switch ($mabiType) {
+      case '':
+      case 'string':
+        break;
+      case 'int':
+        $type = 'Integer 32';
+        break;
+      case 'bool':
+        $type = 'Boolean';
+        break;
+      case 'float':
+        $type = 'Float';
+        break;
+      case 'DateTime':
+      case '\DateTime':
+        $type = 'Date';
+        break;
+      case 'array':
+        $type = 'Transformable';
+        break;
+      default:
+        try {
+          var_dump($mabiType);
+          $rClass = new \ReflectionClass($mabiType);
+          if ($rClass->isSubclassOf('\MABI\Model')) {
+            $setAttribute = FALSE;
+            $attribute = $iosEntity->addChild('relationship');
+            $attribute->addAttribute('optional', 'YES');
+            $attribute->addAttribute('syncable', 'YES');
+            $attribute->addAttribute('deletionRule', 'Nullify');
+            $attribute->addAttribute('destinationEntity', ReflectionHelper::stripClassName($mabiType));
+            if($multi) {
+              $attribute->addAttribute('toMany', 'YES');
+            } else {
+              $attribute->addAttribute('minCount', '1');
+              $attribute->addAttribute('maxCount', '1');
+            }
+            $attribute->addAttribute('name', $name);
+            $attribute->addAttribute('attributeType', $type);
+          }
+          else {
+            throw New \Exception('Class ' . $mabiType . ' does not derive from \MABI\Model');
+          }
+        } catch (\ReflectionException $ex) {
+          throw New \Exception('Could not reflect class ' . $mabiType . "\n" . $ex->getMessage());
+        }
+    }
+    if ($setAttribute) {
+      $attribute = $iosEntity->addChild('attribute');
+      $attribute->addAttribute('optional', 'YES');
+      $attribute->addAttribute('syncable', 'YES');
+      $attribute->addAttribute('name', $name);
+      $attribute->addAttribute('attributeType', $type);
+    }
+  }
+
+  public function getIOSModel(\SimpleXMLElement &$iosModel) {
+    $entity = $iosModel->addChild('entity');
+    $entity->addAttribute('name', ReflectionHelper::stripClassName(get_called_class()));
+    $entity->addAttribute('syncable', 'YES');
+
+    $attribute = $entity->addChild('attribute');
+    $attribute->addAttribute('name', $this->idProperty);
+    $attribute->addAttribute('optional', 'YES');
+    $attribute->addAttribute('attributeType', 'String');
+    $attribute->addAttribute('syncable', 'YES');
+
+    $rClass = new \ReflectionClass($this);
+
+    $rProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
+    foreach ($rProperties as $rProperty) {
+      /*
+       * Ignores writing any model property with 'internal' or 'system' option
+       */
+      if (in_array('internal', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field')) ||
+        in_array('system', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))
+      ) {
+        continue;
+      }
+
+      // Pulls out the type following the pattern @var <TYPE> from the doc comments of the property
+      $varDocs = ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'var');
+
+      if (empty($varDocs)) {
+        $this->addIOSAttribute($entity, $rProperty->getName(), 'string');
+      }
+      else {
+        $type = $varDocs[0];
+        $matches = array();
+
+        if (preg_match('/(.*)\[\]/', $type, $matches)) {
+          // If the type follows the list of type pattern (<TYPE>[]), an array will be generated and filled
+          // with that type
+          $type = $matches[1];
+          $this->addIOSAttribute($entity, $rProperty->getName(), $type);
+        }
+        else {
+          $this->addIOSAttribute($entity, $rProperty->getName(), $type);
+        }
+      }
+    }
   }
 }

@@ -195,5 +195,25 @@ class App {
     }
     return $docOut;
   }
+
+  public function getIOSModel() {
+    $iosModel = new \SimpleXMLElement('<model/>');
+    $iosModel->addAttribute('name', '');
+    $iosModel->addAttribute('userDefinedModelVersionIdentifier', '');
+    $iosModel->addAttribute('type', 'com.apple.IDECoreDataModeler.DataModel');
+    $iosModel->addAttribute('documentVersion', '1.0');
+    $iosModel->addAttribute('lastSavedToolsVersion', '2061');
+    $iosModel->addAttribute('systemVersion', '12D78');
+    $iosModel->addAttribute('minimumToolsVersion', 'Xcode 4.3');
+    $iosModel->addAttribute('macOSVersion', 'Automatic');
+    $iosModel->addAttribute('iOSVersion', 'Automatic');
+
+    foreach($this->modelClasses as $modelClass) {
+      $model = call_user_func($modelClass . '::init', $this);
+      $model->getIOSModel($iosModel);
+    }
+
+    return $iosModel->asXML();
+  }
 }
 

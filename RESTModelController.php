@@ -22,6 +22,13 @@ class RESTModelController extends ModelController {
    */
   protected $model = NULL;
 
+  /**
+   * @return \Mabi\Model
+   */
+  public function getModel() {
+    return $this->model;
+  }
+
   public function _restGetCollection() {
     /**
      * @var $model Model
@@ -110,20 +117,20 @@ class RESTModelController extends ModelController {
       array($this, '_restDeleteCollection'));
     $slim->get("/{$this->base}/:id",
       array($this, 'preMiddleware'),
-      array($this, '_runControllerMiddlewares'),
       array($this, '_readModel'),
+      array($this, '_runControllerMiddlewares'),
       array($this, 'preCallable'),
       array($this, '_restGetObject'));
     $slim->put("/{$this->base}/:id",
       array($this, 'preMiddleware'),
-      array($this, '_runControllerMiddlewares'),
       array($this, '_readModel'),
+      array($this, '_runControllerMiddlewares'),
       array($this, 'preCallable'),
       array($this, '_restPutObject'));
     $slim->delete("/{$this->base}/:id",
       array($this, 'preMiddleware'),
-      array($this, '_runControllerMiddlewares'),
       array($this, '_readModel'),
+      array($this, '_runControllerMiddlewares'),
       array($this, 'preCallable'),
       array($this, '_restDeleteObject'));
 
@@ -158,25 +165,22 @@ class RESTModelController extends ModelController {
       if (!empty($action)) {
         $slim->map("/{$this->base}/:id/{$action}",
           array($this, 'preMiddleware'),
-          array($this, '_runControllerMiddlewares'),
           array($this, '_readModel'),
+          array($this, '_runControllerMiddlewares'),
           array($this, 'preCallable'),
-          array($this, $methodName))->
-          via($httpMethod);
+          array($this, $methodName))->via($httpMethod);
         $slim->map("/{$this->base}/:id/{$action}(/:param)",
           array($this, 'preMiddleware'),
-          array($this, '_runControllerMiddlewares'),
           array($this, '_readModel'),
+          array($this, '_runControllerMiddlewares'),
           array($this, 'preCallable'),
-          array($this, $methodName))->
-          via($httpMethod);
+          array($this, $methodName))->via($httpMethod);
       }
     }
   }
 
-  private
-  function getRestMethodDocJSON(Parser $parser, $methodName, $httpMethod, $url, $rClass,
-                                $method, $includesId = FALSE) {
+  private function getRestMethodDocJSON(Parser $parser, $methodName, $httpMethod, $url, $rClass,
+                                        $method, $includesId = FALSE) {
     $methodDoc = array();
 
     $methodDoc['MethodName'] = $methodName;

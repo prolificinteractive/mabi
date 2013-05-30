@@ -15,4 +15,8 @@ class Identity extends Extension {
       new DirectoryControllerLoader(__DIR__ . '/controllers', 'MABI\Identity')
     ));
   }
+
+  public static function passHash($password, $salt) {
+    return hash_hmac('sha256', $password, $salt);
+  }
 }

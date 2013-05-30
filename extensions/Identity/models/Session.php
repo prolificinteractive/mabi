@@ -15,7 +15,20 @@ class Session extends Model {
 
   /**
    * @var string
+   * @field owner
    * @field internal
    */
-  public $loggedInUserId;
+  public $user;
+
+  /**
+   * @var string
+   * @field external
+   */
+  public $email;
+
+  /**
+   * @var string
+   * @field external
+   */
+  public $password;
 }

@@ -3,20 +3,39 @@
 namespace MABI\Identity;
 
 use \MABI\RESTModelController;
+use Slim\Exception\Stop;
 
 /**
  * todo: docs
  *
- * todo: add middleware where only post is allowed as anonymous
  * @middleware \MABI\Middleware\RESTPostAndObjectOnlyAccess
+ * @middleware \MABI\Identity\Middleware\SessionHeader
+ * @middleware \MABI\Identity\Middleware\RESTOwnerOnlyAccess
  */
 class SessionController extends RESTModelController {
 
-  function _restPostCollection() {
-    // todo: implement. verify user/password and then create session
-  }
+  /**
+   * @var Session
+   */
+  protected $model;
 
-  function _restPutObject($id) {
-    // todo: verify that id only valid for logged in id
+  function _restPostCollection() {
+    if(empty($this->model->password) || empty($this->model->email)) {
+      $this->getApp()->getSlim()->response()->status(400);
+      throw new Stop("Email and Password are required to create a section");
+    }
+
+    /**
+     * @var $user User
+     */
+    $user = User::init($this->getApp());
+    $user->findByField('email', $this->model->email);
+
+    if($user->passHash != Identity::passHash($this->model->password, $user->salt)) {
+      $this->getApp()->getSlim()->response()->status(400);
+      throw new Stop("Email and password are required to create a section");
+    }
+
+    parent::_restPostCollection();
   }
 }

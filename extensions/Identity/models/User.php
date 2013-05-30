@@ -8,6 +8,12 @@ use MABI\Model;
 
 class User extends Model {
   /**
+   * @field owner
+   * @var string
+   */
+  public $id;
+
+  /**
    * @var \DateTime
    */
   public $created;

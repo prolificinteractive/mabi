@@ -30,7 +30,7 @@ class ModelController extends Controller {
     }
 
     if (empty($this->base)) {
-      $this->base = strtolower(ReflectionHelper::stripClassName($this->modelClass));
+      $this->base = Inflector::pluralize(strtolower(ReflectionHelper::stripClassName($this->modelClass)));
     }
   }
 

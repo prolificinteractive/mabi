@@ -27,9 +27,9 @@ class Extension {
   protected $modelLoaders = array();
 
   /**
-   * @var string[]
+   * @var ControllerLoader[]
    */
-  protected $modelClasses = array();
+  protected $controllerLoaders = array();
 
   /**
    * @var Array
@@ -40,11 +40,6 @@ class Extension {
    * @var Extension[]
    */
   protected $extensions = array();
-
-  /**
-   * @var Controller[]
-   */
-  protected $controllers = array();
 
   /**
    * @var string[]
@@ -125,21 +120,7 @@ class Extension {
    * @param $modelLoaders ModelLoader[]
    */
   public function setModelLoaders(array $modelLoaders) {
-    $this->modelClasses = array();
-
-    foreach ($this->extensions as $extension) {
-      foreach ($extension->modelClasses as $modelClass) {
-        $this->modelClasses[] = $modelClass;
-      }
-    }
-
-    foreach ($modelLoaders as $modelLoader) {
-      $modelClasses = $modelLoader->loadModels();
-      foreach ($modelClasses as $modelClass) {
-        // todo: allow model overrides
-        $this->modelClasses[] = $modelClass;
-      }
-    }
+    $this->modelLoaders = $modelLoaders;
   }
 
   public function getDataConnection($name) {
@@ -153,7 +134,28 @@ class Extension {
   }
 
   public function getModelClasses() {
-    return $this->modelClasses;
+    $modelClasses = array();
+
+    foreach ($this->extensions as $extension) {
+      $modelClasses = array_merge($modelClasses, $extension->getModelClasses());
+    }
+
+    foreach ($this->modelLoaders as $modelLoader) {
+      $loadModelClasses = $modelLoader->loadModels();
+      foreach ($loadModelClasses as $modelClass) {
+        // allow model overrides
+        foreach ($modelClasses as $k => $overriddenModel) {
+          if (ReflectionHelper::stripClassName($modelClass) == ReflectionHelper::stripClassName($overriddenModel)) {
+            unset($modelClasses[$k]);
+            break;
+          }
+        }
+
+        $modelClasses[] = $modelClass;
+      }
+    }
+
+    return $modelClasses;
   }
 
   public function addExtension(Extension $extension) {
@@ -166,21 +168,39 @@ class Extension {
    * @param $controllerLoaders ControllerLoader[]
    */
   public function setControllerLoaders(array $controllerLoaders) {
-    $this->controllers = array();
+    $this->controllerLoaders = $controllerLoaders;
+  }
+
+  /**
+   * todo: docs
+   *
+   * @return Controller[]
+   */
+  public function getControllers() {
+    $controllers = array();
 
     foreach ($this->extensions as $extension) {
-      foreach ($extension->controllers as $controller) {
-        $this->controllers[] = $controller;
+      $controllers = array_merge($controllers, $extension->getControllers());
+    }
+
+    foreach ($this->controllerLoaders as $controllerLoader) {
+      $loadControllers = $controllerLoader->getControllers();
+      foreach ($loadControllers as $controller) {
+        // allow controller overrides
+        foreach ($controllers as $k => $overriddenController) {
+          if (ReflectionHelper::stripClassName(get_class($controller)) ==
+            ReflectionHelper::stripClassName(get_class($overriddenController))
+          ) {
+            unset($controllers[$k]);
+            break;
+          }
+        }
+
+        $controllers[] = $controller;
       }
     }
 
-    foreach ($controllerLoaders as $controllerLoader) {
-      $controllers = $controllerLoader->getControllers();
-      foreach ($controllers as $controller) {
-        // todo: allow controller overrides
-        $this->controllers[] = $controller;
-      }
-    }
+    return $controllers;
   }
 
   /**
@@ -192,7 +212,7 @@ class Extension {
    */
   public function getDocJSON(Parser $parser) {
     $docOut = array();
-    foreach ($this->controllers as $controller) {
+    foreach ($this->getControllers() as $controller) {
       $docOut['endpoints'][] = $controller->getDocJSON($parser);
     }
     return $docOut;

@@ -50,7 +50,7 @@ class App extends Extension {
   }
 
   public function run() {
-    foreach ($this->controllers as $controller) {
+    foreach ($this->getControllers() as $controller) {
       $controller->loadRoutes($this->slim);
     }
 
@@ -58,7 +58,7 @@ class App extends Extension {
   }
 
   public function call() {
-    foreach ($this->controllers as $controller) {
+    foreach ($this->getControllers() as $controller) {
       $controller->loadRoutes($this->slim);
     }
 

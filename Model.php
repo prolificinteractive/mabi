@@ -68,6 +68,9 @@ class Model {
     return $this->table;
   }
 
+  public function getId() {
+    return $this->{$this->idProperty};
+  }
   /**
    * todo: docs
    *

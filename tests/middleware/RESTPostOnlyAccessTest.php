@@ -14,7 +14,7 @@ class RESTPostOnlyAccessTest extends MiddlewareTestCase {
     $middleware = new RESTPostOnlyAccess();
     $this->setUpRESTApp(array('PATH_INFO' => '/modelb'), array($middleware));
 
-    $this->app->getSlim()->call();
+    $this->app->call();
 
     $this->assertEquals(401, $this->app->getSlim()->response()->status());
   }
@@ -37,7 +37,7 @@ class RESTPostOnlyAccessTest extends MiddlewareTestCase {
         )
       )));
 
-    $this->app->getSlim()->call();
+    $this->app->call();
 
     $this->assertEquals(200, $this->app->getSlim()->response()->status());
   }
@@ -46,7 +46,12 @@ class RESTPostOnlyAccessTest extends MiddlewareTestCase {
     $middleware = new RESTPostOnlyAccess();
     $this->setUpRESTApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware));
 
-    $docArray = array();
+    $docArray = array(
+      'HTTPMethod' => 'test',
+      'URI' => "/test",
+      'Synopsis' => '',
+      'parameters' => array()
+    );
     $rClassMock = $this->getMock('\ReflectionClass', array(), array(), '', FALSE);
     $reflectionMethod = new \ReflectionMethod(get_class($this->restController),
       '_restPutCollection');
@@ -59,7 +64,12 @@ class RESTPostOnlyAccessTest extends MiddlewareTestCase {
     $middleware = new RESTPostOnlyAccess();
     $this->setUpRESTApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware));
 
-    $docArray = array();
+    $docArray = array(
+      'HTTPMethod' => 'test',
+      'URI' => "/test",
+      'Synopsis' => '',
+      'parameters' => array()
+    );
     $rClassMock = $this->getMock('\ReflectionClass', array(), array(), '', FALSE);
     $reflectionMethod = new \ReflectionMethod(get_class($this->restController),
       '_restPostCollection');

@@ -68,6 +68,9 @@ class Model {
     return $this->table;
   }
 
+  public function getId() {
+    return $this->{$this->idProperty};
+  }
   /**
    * todo: docs
    *
@@ -191,10 +194,11 @@ class Model {
    * Loads parameters from a PHP database into the model object using reflection
    *
    * @param $resultArray array
+   * @param $forceId string
    *
    * @throws \Exception
    */
-  public function loadParameters($resultArray) {
+  public function loadParameters($resultArray, $forceId = NULL) {
     $rClass = new \ReflectionClass($this);
     $rProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
     foreach ($rProperties as $rProperty) {
@@ -231,6 +235,9 @@ class Model {
     if (!empty($resultArray[$this->idColumn])) {
       $this->{$this->idProperty} = $resultArray[$this->idColumn];
       unset($resultArray[$this->idColumn]);
+    }
+    if(isset($forceId)) {
+      $this->{$this->idProperty} = $forceId;
     }
 
     $this->_remainingReadResults = $resultArray;

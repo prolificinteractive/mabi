@@ -6,7 +6,7 @@ include_once 'PHPUnit/Autoload.php';
 include_once __DIR__ . '/MiddlewareTestCase.php';
 include_once __DIR__ . '/../../middleware/SharedSecret.php';
 
-class SharedSecretTest extends \MABI\Testing\MiddlewareTestCase {
+class SharedSecretTest extends MiddlewareTestCase {
 
   public function testCall() {
     $middleware = new \MABI\Middleware\SharedSecret();
@@ -22,7 +22,7 @@ class SharedSecretTest extends \MABI\Testing\MiddlewareTestCase {
         'sharedSecret' => 'TEST-SECRET-1'
       )));
 
-    $this->app->getSlim()->call();
+    $this->app->call();
 
     $this->assertEquals(200, $this->app->getSlim()->response()->status());
     $this->assertNotEmpty($this->app->getSlim()->request()->apiApplication);

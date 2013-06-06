@@ -2,37 +2,17 @@
 
 namespace MABI;
 
-include_once __DIR__ . '/DataConnection.php';
-include_once __DIR__ . '/ModelLoader.php';
 include_once __DIR__ . '/Slim/Slim.php';
-include_once __DIR__ . '/Controller.php';
-include_once __DIR__ . '/ControllerLoader.php';
+include_once __DIR__ . '/Extension.php';
 
-\Slim\Slim::registerAutoloader();
+use \Slim\Slim;
 
-interface Parser {
-  function Parse($text);
-}
+Slim::registerAutoloader();
 
 /**
  * todo: docs
  */
-class App {
-
-  /**
-   * @var DataConnection[]
-   */
-  protected $dataConnections = array();
-
-  /**
-   * @var ModelLoader[]
-   */
-  protected $modelLoaders = array();
-
-  /**
-   * @var string[]
-   */
-  protected $modelClasses = array();
+class App extends Extension {
 
   /**
    * @var \Slim\Slim;
@@ -40,39 +20,10 @@ class App {
   protected $slim;
 
   /**
-   * @var Array
-   */
-  protected $config = array();
-
-  /**
-   * @var Controller[]
-   */
-  protected $controllers = array();
-
-  /**
-   * @var string[]
-   */
-  protected $middlewareDirectories = array();
-
-  /**
    * @return \Slim\Slim
    */
   public function getSlim() {
     return $this->slim;
-  }
-
-  /**
-   * @param $middlewareDirectories string[]
-   */
-  public function setMiddlewareDirectories($middlewareDirectories) {
-    $this->middlewareDirectories = $middlewareDirectories;
-  }
-
-  /**
-   * @return string[]
-   */
-  public function getMiddlewareDirectories() {
-    return $this->middlewareDirectories;
   }
 
   /**
@@ -92,108 +43,26 @@ class App {
   }
 
   public function __construct() {
-    array_push($this->middlewareDirectories, __DIR__ . '/middleware');
-    $this->slim = new \Slim\Slim();
-  }
-
-  /**
-   * todo: docs
-   *
-   * @param $name string
-   * @param $dataConnection DataConnection
-   */
-  function addDataConnection($name, $dataConnection) {
-    $this->dataConnections[$name] = $dataConnection;
-    // todo: implement
-  }
-
-  /**
-   * todo: docs
-   *
-   * @param $key
-   * @param $value
-   */
-  public function setConfig($key, $value) {
-    $this->config[$key] = $value;
-  }
-
-  /**
-   * todo: docs
-   *
-   * @param $key
-   *
-   * @return mixed
-   */
-  public function getConfig($key) {
-    return $this->config[$key];
-  }
-
-  /**
-   * todo: docs
-   *
-   * @param $modelClass string
-   */
-  function addModel($modelClass) {
-    // todo: implement
-  }
-
-  /**
-   * todo: docs
-   *
-   * @param $modelLoaders ModelLoader[]
-   */
-  public function setModelLoaders(array $modelLoaders) {
-    $this->modelLoaders = $modelLoaders;
-
-    $this->modelClasses = array();
-    foreach ($modelLoaders as $modelLoader) {
-      $modelClasses = $modelLoader->loadModels();
-      foreach ($modelClasses as $modelClass) {
-        $this->modelClasses[] = $modelClass;
-      }
+    if (file_exists(__DIR__ . '/middleware')) {
+      array_push($this->middlewareDirectories, __DIR__ . '/middleware');
     }
-  }
-
-  public function getDataConnection($name) {
-    return $this->dataConnections[$name];
-  }
-
-  public function getModelClasses() {
-    return $this->modelClasses;
-  }
-
-  /**
-   * todo: docs
-   *
-   * @param $controllerLoaders ControllerLoader[]
-   */
-  public function setControllerLoaders(array $controllerLoaders) {
-    foreach ($controllerLoaders as $controllerLoader) {
-      $controllers = $controllerLoader->getControllers();
-      foreach ($controllers as $controller) {
-        $controller->loadRoutes($this->slim);
-        $this->controllers[] = $controller;
-      }
-    }
+    $this->slim = new Slim();
   }
 
   public function run() {
+    foreach ($this->getControllers() as $controller) {
+      $controller->loadRoutes($this->slim);
+    }
+
     $this->slim->run();
   }
 
-  /**
-   * todo: docs
-   *
-   * @param Parser $parser
-   *
-   * @return array
-   */
-  public function getDocJSON(Parser $parser) {
-    $docOut = array();
-    foreach ($this->controllers as $controller) {
-      $docOut['endpoints'][] = $controller->getDocJSON($parser);
+  public function call() {
+    foreach ($this->getControllers() as $controller) {
+      $controller->loadRoutes($this->slim);
     }
-    return $docOut;
+
+    $this->slim->call();
   }
 
   public function getIOSModel() {

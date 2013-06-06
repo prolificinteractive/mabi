@@ -11,6 +11,7 @@
                 <directory>../Slim</directory>
                 <directory>../autodocs</directory>
                 <directory>../tests</directory>
+                <directory>../extensions</directory>
                 <file>../Inflector.php</file>
             </exclude>
         </whitelist>

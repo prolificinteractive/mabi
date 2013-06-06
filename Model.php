@@ -422,6 +422,7 @@ class Model {
     $entity = $iosModel->addChild('entity');
     $entity->addAttribute('name', ReflectionHelper::stripClassName(get_called_class()));
     $entity->addAttribute('syncable', 'YES');
+    $entity->addAttribute('representedClassName', ReflectionHelper::stripClassName(get_called_class()));
 
     $attribute = $entity->addChild('attribute');
     $attribute->addAttribute('name', $this->idProperty);

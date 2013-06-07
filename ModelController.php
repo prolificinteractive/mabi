@@ -23,8 +23,6 @@ class ModelController extends Controller {
    * @param $app App
    */
   public function __construct($app) {
-    parent::__construct($app);
-
     if (empty($this->modelClass)) {
       $this->modelClass = ReflectionHelper::getPrefixFromControllerClass(get_called_class());
     }
@@ -32,6 +30,8 @@ class ModelController extends Controller {
     if (empty($this->base)) {
       $this->base = Inflector::pluralize(strtolower(ReflectionHelper::stripClassName($this->modelClass)));
     }
+
+    parent::__construct($app);
   }
 
   public static function generate($modelClass, $app) {

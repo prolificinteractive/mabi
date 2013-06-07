@@ -177,6 +177,9 @@ class Extension {
    * @return Controller[]
    */
   public function getControllers() {
+    /**
+     * @var $controllers Controller[]
+     */
     $controllers = array();
 
     foreach ($this->extensions as $extension) {
@@ -188,9 +191,7 @@ class Extension {
       foreach ($loadControllers as $controller) {
         // allow controller overrides
         foreach ($controllers as $k => $overriddenController) {
-          if (ReflectionHelper::stripClassName(get_class($controller)) ==
-            ReflectionHelper::stripClassName(get_class($overriddenController))
-          ) {
+          if ($controller->getBase() == $overriddenController->getBase()) {
             unset($controllers[$k]);
             break;
           }

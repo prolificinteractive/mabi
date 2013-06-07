@@ -22,6 +22,13 @@ class Controller {
   protected $base = NULL;
 
   /**
+   * @return string
+   */
+  public function getBase() {
+    return $this->base;
+  }
+
+  /**
    * @var App
    */
   protected $app;

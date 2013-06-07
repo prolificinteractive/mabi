@@ -32,9 +32,10 @@ class RESTModelControllerTest extends \PHPUnit_Framework_TestCase {
   public function testGeneratedRESTModelControllerLoader() {
     \Slim\Environment::mock();
     $this->app = new \MABI\App();
-    $this->app->setModelLoaders(array(new \MABI\DirectoryModelLoader('TestApp/TestModelDir', 'mabiTesting')));
+    $this->app->setModelLoaders(array(new \MABI\DirectoryModelLoader(__DIR__ . '/TestApp/TestModelDir', 'mabiTesting')));
+    $this->app->getExtensionModelClasses();
 
-    $controllerLoader = new \MABI\GeneratedRESTModelControllerLoader(array('\mabiTesting\ModelA'), $this->app);
+    $controllerLoader = new \MABI\GeneratedRESTModelControllerLoader(array(0 => 'mabiTesting\ModelA'), $this->app);
     $controllers = $controllerLoader->getControllers();
     $this->assertNotEmpty($controllers);
     $this->assertInstanceOf('\MABI\RESTModelController', $controllers[0]);
@@ -54,7 +55,7 @@ class RESTModelControllerTest extends \PHPUnit_Framework_TestCase {
 
     $this->app->addDataConnection('default', $this->dataConnectionMock);
 
-    $this->app->setModelLoaders(array(new \MABI\DirectoryModelLoader('TestApp/TestModelDir', 'mabiTesting')));
+    $this->app->setModelLoaders(array(new \MABI\DirectoryModelLoader(__DIR__ . '/TestApp/TestModelDir', 'mabiTesting')));
 
     $dirControllerLoader = new \MABI\DirectoryControllerLoader('TestApp/TestControllerDir', $this->app, 'mabiTesting');
     $this->controllerMock = $this->getMock('\mabiTesting\ModelBController', array(
@@ -79,13 +80,13 @@ class RESTModelControllerTest extends \PHPUnit_Framework_TestCase {
     $this->app->setControllerLoaders(array(
       $controllerLoader,
       new \MABI\GeneratedRESTModelControllerLoader(
-        array_diff($this->app->getModelClasses(), array($modelClass)), $this->app)
+        array_diff($this->app->getExtensionModelClasses(), array($modelClass)), $this->app)
     ));
   }
 
   public function testStandardRESTRoutes() {
     // Test GET /{collection}
-    $this->setUpRESTApp(array('PATH_INFO' => '/modela'));
+    $this->setUpRESTApp(array('PATH_INFO' => '/modelas'));
     $this->dataConnectionMock->expects($this->once())
       ->method('findAll')
       ->with('modelas')
@@ -124,7 +125,7 @@ class RESTModelControllerTest extends \PHPUnit_Framework_TestCase {
     $this->assertInstanceOf('stdClass', $result);
 
     // Test GET /{collection}/{objectid}
-    $this->setUpRESTApp(array('PATH_INFO' => '/modela/1'));
+    $this->setUpRESTApp(array('PATH_INFO' => '/modelas/1'));
     $this->dataConnectionMock->expects($this->once())
       ->method('findOneByField')
       ->with('id', 1, 'modelas')

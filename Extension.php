@@ -42,6 +42,18 @@ class Extension {
   protected $extensions = array();
 
   /**
+   * @var App
+   */
+  protected $app;
+
+  /**
+   * @return \MABI\App
+   */
+  public function getApp() {
+    return $this->app;
+  }
+
+  /**
    * @var string[]
    */
   protected $middlewareDirectories = array();
@@ -65,7 +77,11 @@ class Extension {
     return array_merge($extensionDirs, $this->middlewareDirectories);
   }
 
-  public function __construct() {
+  /**
+   * @param $app App
+   */
+  public function __construct($app) {
+    $this->app = $app;
   }
 
   /**
@@ -131,6 +147,19 @@ class Extension {
 
     $dataConnections = array_merge($extensionDataConnections, $this->dataConnections);
     return $dataConnections[$name];
+  }
+
+  public function getExtensionModelClasses() {
+    $modelClasses = array();
+
+    foreach ($this->modelLoaders as $modelLoader) {
+      $loadModelClasses = $modelLoader->loadModels();
+      foreach ($loadModelClasses as $modelClass) {
+        $modelClasses[] = $modelClass;
+      }
+    }
+
+    return $modelClasses;
   }
 
   public function getModelClasses() {

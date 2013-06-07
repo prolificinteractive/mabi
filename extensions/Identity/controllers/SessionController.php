@@ -2,13 +2,15 @@
 
 namespace MABI\Identity;
 
+include_once __DIR__ . '/../../../RESTModelController.php';
+
 use \MABI\RESTModelController;
 use Slim\Exception\Stop;
 
 /**
  * todo: docs
  *
- * @middleware \MABI\Middleware\RESTPostAndObjectOnlyAccess
+ * @middleware \MABI\RESTAccess\PostAndObjectOnly
  * @middleware \MABI\Identity\Middleware\SessionHeader
  * @middleware \MABI\Identity\Middleware\RESTOwnerOnlyAccess
  */

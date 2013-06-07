@@ -27,9 +27,9 @@ class AppTest extends \PHPUnit_Framework_TestCase {
   }
 
   function testSingleton() {
-    $app = \MABI\App::getApp();
+    $app = \MABI\App::getSingletonApp();
     $this->assertNotEmpty($app);
-    $this->assertEquals(\MABI\App::getApp(), $app);
+    $this->assertEquals(\MABI\App::getSingletonApp(), $app);
   }
 
   function testConfigSettings() {

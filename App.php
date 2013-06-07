@@ -34,7 +34,7 @@ class App extends Extension {
   /**
    * todo: docs
    */
-  static function getApp() {
+  static function getSingletonApp() {
     if (empty(self::$singletonApp)) {
       self::$singletonApp = new App();
     }
@@ -47,6 +47,7 @@ class App extends Extension {
       array_push($this->middlewareDirectories, __DIR__ . '/middleware');
     }
     $this->slim = new Slim();
+    parent::__construct($this);
   }
 
   public function run() {

@@ -20,9 +20,9 @@ include_once __DIR__ . '/RESTModelController.php';
 class GeneratedRESTModelControllerLoader extends ControllerLoader {
 
   /**
-   * @var \MABI\App
+   * @var \MABI\Extension
    */
-  protected $app;
+  protected $extension;
 
   /**
    * @var string[]
@@ -34,8 +34,8 @@ class GeneratedRESTModelControllerLoader extends ControllerLoader {
    */
   protected $controllers = array();
 
-  public function __construct($modelClasses, $app) {
-    $this->app = $app;
+  public function __construct($modelClasses, $extension) {
+    $this->extension = $extension;
     $this->modelClasses = $modelClasses;
 
     foreach ($this->modelClasses as $modelClass) {
@@ -45,7 +45,7 @@ class GeneratedRESTModelControllerLoader extends ControllerLoader {
         /**
          * @var $controller Controller
          */
-        $controller = RESTModelController::generate($modelClass, $this->app);
+        $controller = RESTModelController::generate($modelClass, $this->extension);
 
         // Load the middleware that's specified in the Model
         $middlewares = ReflectionHelper::getDocDirective($rClass->getDocComment(), 'middleware');

@@ -11,13 +11,6 @@ include_once __DIR__ . '/ModelController.php';
  */
 class RESTModelController extends ModelController {
   /**
-   * @param $app App
-   */
-  public function __construct($app) {
-    parent::__construct($app);
-  }
-
-  /**
    * @var \Mabi\Model
    */
   protected $model = NULL;
@@ -33,12 +26,12 @@ class RESTModelController extends ModelController {
     /**
      * @var $model Model
      */
-    $model = call_user_func($this->modelClass . '::init', $this->app);
+    $model = call_user_func($this->modelClass . '::init', $this->getApp());
     echo json_encode($model->findAll());
   }
 
   public function _restPostCollection() {
-    $this->model = call_user_func($this->modelClass . '::init', $this->app);
+    $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
     $this->model->loadParameters($this->getApp()->getSlim()->request()->post());
     $this->model->insert();
     echo $this->model->outputJSON();
@@ -72,7 +65,7 @@ class RESTModelController extends ModelController {
    * @param $route \Slim\Route
    */
   public function _readModel($route) {
-    $this->model = call_user_func($this->modelClass . '::init', $this->app);
+    $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
     $this->model->findById($route->getParam('id'));
   }
 

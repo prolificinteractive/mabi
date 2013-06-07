@@ -95,7 +95,6 @@ class Model {
       $newModelObj->idColumn = $newModelObj->app->getDataConnection($newModelObj->connection)->getDefaultIdColumn();
     }
 
-    // todo: implement
     return $newModelObj;
   }
 

@@ -29,9 +29,9 @@ class Controller {
   }
 
   /**
-   * @var App
+   * @var Extension
    */
-  protected $app;
+  protected $extension;
 
   /**
    * @var \MABI\Middleware[]
@@ -43,7 +43,14 @@ class Controller {
    * @return \MABI\App
    */
   public function getApp() {
-    return $this->app;
+    return $this->extension->getApp();
+  }
+
+  /**
+   * @return \MABI\Extension
+   */
+  public function getExtension() {
+    return $this->extension;
   }
 
   /**
@@ -54,8 +61,8 @@ class Controller {
     return $this->middlewares;
   }
 
-  public function __construct($app) {
-    $this->app = $app;
+  public function __construct($extension) {
+    $this->extension = $extension;
 
     $myClass = get_called_class();
 
@@ -76,7 +83,7 @@ class Controller {
   public function addMiddlewareByClass($middlewareClass) {
     $middlewareFile = ReflectionHelper::stripClassName($middlewareClass) . '.php';
     // Finds the file to include for this middleware using the app's middleware directory listing
-    foreach ($this->app->getMiddlewareDirectories() as $middlewareDirectory) {
+    foreach ($this->extension->getMiddlewareDirectories() as $middlewareDirectory) {
       if (file_exists($middlewareDirectory . '/' . $middlewareFile)) {
         include_once $middlewareDirectory . '/' . $middlewareFile;
         break;

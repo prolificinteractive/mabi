@@ -1,11 +1,14 @@
 <?php
 
-namespace MABI\Middleware;
+namespace MABI\RESTAccess;
 
-include_once __DIR__ . '/../Middleware.php';
-include_once __DIR__ . '/../Utilities.php';
+use MABI\Middleware;
+use Slim\Exception\Stop;
 
-abstract class RESTAccessMiddleware extends \MABI\Middleware {
+include_once __DIR__ . '/../../Middleware.php';
+include_once __DIR__ . '/../../Utilities.php';
+
+abstract class RESTAccessMiddleware extends Middleware {
 
   protected abstract function doesHaveAccessToMethod($methodName);
 
@@ -18,7 +21,7 @@ abstract class RESTAccessMiddleware extends \MABI\Middleware {
     $callable = $this->getController()->getApp()->getSlim()->router()->getCurrentRoute()->getCallable();
     if (empty($callable) || !$this->doesHaveAccessToMethod($callable[1])) {
       $this->getController()->getApp()->getSlim()->response()->status(401);
-      throw new \Slim\Exception\Stop();
+      throw new Stop();
     }
 
     if (!empty($this->next)) {

@@ -20,11 +20,9 @@ class ModelController extends Controller {
   }
 
   /**
-   * @param $app App
+   * @param $extension Extension
    */
-  public function __construct($app) {
-    parent::__construct($app);
-
+  public function __construct($extension) {
     if (empty($this->modelClass)) {
       $this->modelClass = ReflectionHelper::getPrefixFromControllerClass(get_called_class());
     }
@@ -32,13 +30,15 @@ class ModelController extends Controller {
     if (empty($this->base)) {
       $this->base = Inflector::pluralize(strtolower(ReflectionHelper::stripClassName($this->modelClass)));
     }
+
+    parent::__construct($extension);
   }
 
-  public static function generate($modelClass, $app) {
+  public static function generate($modelClass, $extension) {
     $calledClass = get_called_class();
-    $newController = new $calledClass($app);
+    $newController = new $calledClass($extension);
     $newController->modelClass = $modelClass;
-    $newController->base = strtolower(ReflectionHelper::stripClassName($modelClass));
+    $newController->base = Inflector::pluralize(strtolower(ReflectionHelper::stripClassName($modelClass)));
     return $newController;
   }
 }

@@ -38,7 +38,7 @@ class ModelController extends Controller {
     $calledClass = get_called_class();
     $newController = new $calledClass($app);
     $newController->modelClass = $modelClass;
-    $newController->base = strtolower(ReflectionHelper::stripClassName($modelClass));
+    $newController->base = Inflector::pluralize(strtolower(ReflectionHelper::stripClassName($modelClass)));
     return $newController;
   }
 }

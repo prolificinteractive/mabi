@@ -72,6 +72,7 @@ class MongoDataConnection extends DataConnection {
       }
       */
     }
+    array_walk_recursive($mongodata, array($this, 'serializeMongoId'));
 
     return $mongodata;
   }

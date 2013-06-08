@@ -22,6 +22,7 @@ class Controller {
   protected $base = NULL;
 
   /**
+   * @endpoint ignore
    * @return string
    */
   public function getBase() {
@@ -47,6 +48,7 @@ class Controller {
   }
 
   /**
+   * @endpoint ignore
    * @return \MABI\Extension
    */
   public function getExtension() {
@@ -116,6 +118,7 @@ class Controller {
      * @var $prevMiddleware \MABI\Middleware
      */
     $prevMiddleware = NULL;
+
     foreach ($middlewares as $currMiddleware) {
       if ($prevMiddleware != NULL) {
         $prevMiddleware->setNextMiddleware($currMiddleware);
@@ -203,6 +206,8 @@ class Controller {
   public function getDocJSON(Parser $parser) {
     $myClass = get_called_class();
     $rClass = new \ReflectionClass($myClass);
+
+    $this->configureMiddlewares($this->middlewares);
 
     $doc = array();
     $doc['name'] = ucwords(ReflectionHelper::stripClassName(ReflectionHelper::getPrefixFromControllerClass($myClass)));

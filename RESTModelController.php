@@ -16,6 +16,7 @@ class RESTModelController extends ModelController {
   protected $model = NULL;
 
   /**
+   * @endpoint ignore
    * @return \Mabi\Model
    */
   public function getModel() {

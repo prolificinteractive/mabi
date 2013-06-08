@@ -4,16 +4,16 @@ namespace MABI\RESTAccess\Testing;
 
 include_once 'PHPUnit/Autoload.php';
 include_once __DIR__ . '/../../../tests/middleware/MiddlewareTestCase.php';
-include_once __DIR__ . '/../PostOnly.php';
+include_once __DIR__ . '/../PostAndObjectOnly.php';
 
-use \MABI\RESTAccess\PostOnly;
+use \MABI\RESTAccess\PostAndObjectOnly;
 use \MABI\Testing\MiddlewareTestCase;
 
-class PostOnlyTest extends MiddlewareTestCase {
+class PostAndObjectOnlyTest extends MiddlewareTestCase {
 
   public function testStoppedCall() {
-    $middleware = new PostOnly();
-    $this->setUpRESTApp(array('PATH_INFO' => '/modelb'), array($middleware));
+    $middleware = new PostAndObjectOnly();
+    $this->setUpRESTApp(array('PATH_INFO' => '/modelbs'), array($middleware));
 
     $this->app->call();
 
@@ -21,21 +21,15 @@ class PostOnlyTest extends MiddlewareTestCase {
   }
 
   public function testPassedCall() {
-    $middleware = new PostOnly();
-    $this->setUpRESTApp(array(
-      'PATH_INFO' => '/modelb',
-      'REQUEST_METHOD' => 'POST',
-      'slim.input' => 'name=modelb',
-    ), array($middleware));
+    $middleware = new PostAndObjectOnly();
+    $this->setUpRESTApp(array('PATH_INFO' => '/modelbs/1'), array($middleware));
 
     $this->dataConnectionMock->expects($this->once())
-      ->method('insert')
-      ->with('modelbs', array('name' => 'modelb'))
+      ->method('findOneByField')
+      ->with('id', 1, 'modelbs')
       ->will($this->returnValue(array(
-        array(
-          'modelBId' => 2,
-          'name' => 'modelb'
-        )
+        'modelBId' => 1,
+        'name' => 'test'
       )));
 
     $this->app->call();
@@ -44,7 +38,7 @@ class PostOnlyTest extends MiddlewareTestCase {
   }
 
   public function testSkipDocs() {
-    $middleware = new PostOnly();
+    $middleware = new PostAndObjectOnly();
     $this->setUpRESTApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware));
 
     $docArray = array(
@@ -62,7 +56,7 @@ class PostOnlyTest extends MiddlewareTestCase {
   }
 
   public function testFullDocs() {
-    $middleware = new PostOnly();
+    $middleware = new PostAndObjectOnly();
     $this->setUpRESTApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware));
 
     $docArray = array(

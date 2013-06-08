@@ -13,7 +13,7 @@ class ObjectOnlyTest extends MiddlewareTestCase {
 
   public function testStoppedCall() {
     $middleware = new ObjectOnly();
-    $this->setUpRESTApp(array('PATH_INFO' => '/modelb'), array($middleware));
+    $this->setUpRESTApp(array('PATH_INFO' => '/modelbs'), array($middleware));
 
     $this->app->call();
 
@@ -22,7 +22,7 @@ class ObjectOnlyTest extends MiddlewareTestCase {
 
   public function testPassedCall() {
     $middleware = new ObjectOnly();
-    $this->setUpRESTApp(array('PATH_INFO' => '/modelb/1'), array($middleware));
+    $this->setUpRESTApp(array('PATH_INFO' => '/modelbs/1'), array($middleware));
 
     $this->dataConnectionMock->expects($this->once())
       ->method('findOneByField')

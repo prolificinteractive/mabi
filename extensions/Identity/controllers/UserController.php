@@ -22,7 +22,7 @@ class UserController extends RESTModelController {
   protected $model;
 
   /**
-   * todo: docs
+   * Creates a new user. Will pass back the created user model
    *
    * @docs-param firstName string body optional todo: docs
    * @docs-param lastName string body optional todo: docs

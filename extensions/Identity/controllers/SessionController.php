@@ -22,7 +22,8 @@ class SessionController extends RESTModelController {
   protected $model;
 
   /**
-   * todo: docs
+   * Creates a session. A valid email and password of an existing user must be passed in, and the new session
+   * (with the session id) will be returned.
    *
    * @docs-param email string body required todo: docs
    * @docs-param password string body required todo: docs

@@ -183,16 +183,38 @@ class Controller {
           array($this, 'preMiddleware'),
           array($this, '_runControllerMiddlewares'),
           array($this, 'preCallable'),
-          array($this, $methodName))->
-          via($httpMethod);
+          array($this, $methodName))->via($httpMethod);
         $slim->map("/{$this->base}/{$action}(/:param+)",
           array($this, 'preMiddleware'),
           array($this, '_runControllerMiddlewares'),
           array($this, 'preCallable'),
-          array($this, $methodName))->
-          via($httpMethod);
+          array($this, $methodName))->via($httpMethod);
       }
     }
+  }
+
+  /**
+   * Add in parameters specified using @docs-param
+   *
+   * @param $rMethod
+   *
+   * @return array
+   */
+  protected function getDocParameters(\ReflectionMethod $rMethod) {
+    $parameters = array();
+    $docsParameters = ReflectionHelper::getDocDirective($rMethod->getDocComment(), 'docs-param');
+    foreach ($docsParameters as $docsParameter) {
+      $paramComponents = explode(' ', $docsParameter, 5);
+      $parameters[] = array(
+        'Name' => $paramComponents[0],
+        'Type' => $paramComponents[1],
+        'Location' => $paramComponents[2],
+        'Required' => $paramComponents[3] == 'required' ? 'Y' : 'N',
+        'Description' => $paramComponents[4]
+      );
+    }
+
+    return $parameters;
   }
 
   /**
@@ -245,20 +267,7 @@ class Controller {
       $action = strtolower($methodDoc['MethodName']);
       $methodDoc['URI'] = "/{$this->base}/{$action}";
       $methodDoc['Synopsis'] = $parser->parse(ReflectionHelper::getDocText($rMethod->getDocComment()));
-      $methodDoc['parameters'] = array();
-
-      // Add in parameters specified using @docs-param
-      $docsParameters = ReflectionHelper::getDocDirective($rMethod->getDocComment(), 'docs-param');
-      foreach ($docsParameters as $docsParameter) {
-        $paramComponents = explode(' ', $docsParameter, 5);
-        $methodDoc['parameters'][] = array(
-          'Name' => $paramComponents[0],
-          'Type' => $paramComponents[1],
-          'Location' => $paramComponents[2],
-          'Required' => $paramComponents[3] == 'required' ? 'Y' : 'N',
-          'Description' => $paramComponents[4]
-        );
-      }
+      $methodDoc['parameters'] = $this->getDocParameters($rMethod);
 
       // Allow controller middlewares to modify the documentation for this method
       if (!empty($this->middlewares)) {

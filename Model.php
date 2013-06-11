@@ -71,6 +71,7 @@ class Model {
   public function getId() {
     return $this->{$this->idProperty};
   }
+
   /**
    * todo: docs
    *
@@ -107,13 +108,15 @@ class Model {
     $dataConnection = $this->app->getDataConnection($this->connection);
     $foundObjects = $dataConnection->findAll($this->table, $this->readFields);
     $foundModels = array();
-    foreach ($foundObjects as $foundObject) {
-      /**
-       * @var $model \MABI\Model
-       */
-      $model = call_user_func($this->modelClass . '::init', $this->app);
-      $model->loadParameters($foundObject);
-      $foundModels[] = $model;
+    if (is_array($foundObjects)) {
+      foreach ($foundObjects as $foundObject) {
+        /**
+         * @var $model \MABI\Model
+         */
+        $model = call_user_func($this->modelClass . '::init', $this->app);
+        $model->loadParameters($foundObject);
+        $foundModels[] = $model;
+      }
     }
     return $foundModels;
   }
@@ -163,7 +166,12 @@ class Model {
         break;
       case 'DateTime':
       case '\DateTime':
-        $parameter = new \DateTime('@' . $result);
+        if (empty($result)) {
+          $parameter = NULL;
+        }
+        else {
+          $parameter = new \DateTime('@' . $result);
+        }
         break;
       case '':
       case 'array':
@@ -237,7 +245,7 @@ class Model {
       $this->{$this->idProperty} = $resultArray[$this->idColumn];
       unset($resultArray[$this->idColumn]);
     }
-    if(isset($forceId)) {
+    if (isset($forceId)) {
       $this->{$this->idProperty} = $forceId;
     }
 
@@ -309,6 +317,13 @@ class Model {
            */
           $subModel = $this->{$property->getName()};
           $outArr[$property->getName()] = $subModel->getPropertyArray();
+        }
+        elseif($propClass->name == 'DateTime' || $propClass == '\DateTime') {
+          /**
+           * @var $date \DateTime
+           */
+          $date = $this->{$property->getName()};
+          $outArr[$property->getName()] = $date->getTimestamp();
         }
       }
     }

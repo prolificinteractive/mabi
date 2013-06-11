@@ -41,7 +41,7 @@ class RESTOwnerOnlyAccess extends Middleware {
   public function call() {
     // Owner access does not apply for Collection level functions
     $callable = $this->getController()->getApp()->getSlim()->router()->getCurrentRoute()->getCallable();
-    if (empty($callable) || !$this->isCollectionCallable($callable[1])) {
+    if (empty($callable) || $this->isCollectionCallable($callable[1])) {
       if (!empty($this->next)) {
         $this->next->call();
       }

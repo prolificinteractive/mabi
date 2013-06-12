@@ -41,7 +41,7 @@ class RESTOwnerOnlyAccess extends Middleware {
   public function call() {
     // Owner access does not apply for Collection level functions
     $callable = $this->getController()->getApp()->getSlim()->router()->getCurrentRoute()->getCallable();
-    if (empty($callable) || !$this->isCollectionCallable($callable[1])) {
+    if (empty($callable) || $this->isCollectionCallable($callable[1])) {
       if (!empty($this->next)) {
         $this->next->call();
       }
@@ -64,15 +64,16 @@ class RESTOwnerOnlyAccess extends Middleware {
     $rClass = new \ReflectionClass($restController->getModelClass());
     $ownerProperty = 'owner';
     foreach ($rClass->getProperties() as $rProperty) {
-      if(in_array('owner', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
+      if (in_array('owner', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
         $ownerProperty = $rProperty->getName();
         break;
       }
     }
 
     $model = $restController->getModel();
-    if(empty($session) || empty($model) || empty($session->user) || empty($model->{$ownerProperty}) ||
-      $session->user != $restController->getModel()->{$ownerProperty}) {
+    if (empty($session) || empty($model) || empty($session->user) || empty($model->{$ownerProperty}) ||
+      $session->user != $restController->getModel()->{$ownerProperty}
+    ) {
       // Don't give access to endpoint if the sessions
       $this->getController()->getApp()->getSlim()->response()->status(401);
       throw new Stop();
@@ -83,15 +84,24 @@ class RESTOwnerOnlyAccess extends Middleware {
     }
   }
 
+  protected function callNextDocumenter($rClass, $rMethod, $methodDoc) {
+    if (!empty($this->next)) {
+      $this->next->documentMethod($rClass, $rMethod, $methodDoc);
+    }
+  }
+
   public function documentMethod(\ReflectionClass $rClass, \ReflectionMethod $rMethod, array &$methodDoc) {
     parent::documentMethod($rClass, $rMethod, $methodDoc);
 
     // Owner access does not apply for Collection level functions
-    $callable = $this->getController()->getApp()->getSlim()->router()->getCurrentRoute()->getCallable();
+    $route = $this->getController()->getApp()->getSlim()->router()->getCurrentRoute();
+    if (empty($route)) {
+      $this->callNextDocumenter($rClass, $rMethod, $methodDoc);
+      return;
+    }
+    $callable = $route->getCallable();
     if (empty($callable) || !$this->isCollectionCallable($callable[1])) {
-      if (!empty($this->next)) {
-        $this->next->documentMethod($rClass, $rMethod, $methodDoc);
-      }
+      $this->callNextDocumenter($rClass, $rMethod, $methodDoc);
       return;
     }
 
@@ -101,8 +111,6 @@ class RESTOwnerOnlyAccess extends Middleware {
       }
     }
 
-    if (!empty($this->next)) {
-      $this->next->documentMethod($rClass, $rMethod, $methodDoc);
-    }
+    $this->callNextDocumenter($rClass, $rMethod, $methodDoc);
   }
 }

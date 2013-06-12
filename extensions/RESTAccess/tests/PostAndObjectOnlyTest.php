@@ -1,18 +1,19 @@
 <?php
 
-namespace MABI\Testing;
+namespace MABI\RESTAccess\Testing;
 
 include_once 'PHPUnit/Autoload.php';
-include_once __DIR__ . '/MiddlewareTestCase.php';
-include_once __DIR__ . '/../../middleware/RESTObjectOnlyAccess.php';
+include_once __DIR__ . '/../../../tests/middleware/MiddlewareTestCase.php';
+include_once __DIR__ . '/../PostAndObjectOnly.php';
 
-use \MABI\Middleware\RESTObjectOnlyAccess;
+use \MABI\RESTAccess\PostAndObjectOnly;
+use \MABI\Testing\MiddlewareTestCase;
 
-class RESTObjectOnlyAccessTest extends MiddlewareTestCase {
+class PostAndObjectOnlyTest extends MiddlewareTestCase {
 
   public function testStoppedCall() {
-    $middleware = new RESTObjectOnlyAccess();
-    $this->setUpRESTApp(array('PATH_INFO' => '/modelb'), array($middleware));
+    $middleware = new PostAndObjectOnly();
+    $this->setUpRESTApp(array('PATH_INFO' => '/modelbs'), array($middleware));
 
     $this->app->call();
 
@@ -20,8 +21,8 @@ class RESTObjectOnlyAccessTest extends MiddlewareTestCase {
   }
 
   public function testPassedCall() {
-    $middleware = new RESTObjectOnlyAccess();
-    $this->setUpRESTApp(array('PATH_INFO' => '/modelb/1'), array($middleware));
+    $middleware = new PostAndObjectOnly();
+    $this->setUpRESTApp(array('PATH_INFO' => '/modelbs/1'), array($middleware));
 
     $this->dataConnectionMock->expects($this->once())
       ->method('findOneByField')
@@ -37,7 +38,25 @@ class RESTObjectOnlyAccessTest extends MiddlewareTestCase {
   }
 
   public function testSkipDocs() {
-    $middleware = new RESTObjectOnlyAccess();
+    $middleware = new PostAndObjectOnly();
+    $this->setUpRESTApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware));
+
+    $docArray = array(
+      'HTTPMethod' => 'test',
+      'URI' => "/test",
+      'Synopsis' => '',
+      'parameters' => array()
+    );
+    $rClassMock = $this->getMock('\ReflectionClass', array(), array(), '', FALSE);
+    $reflectionMethod = new \ReflectionMethod(get_class($this->restController),
+      '_restPutCollection');
+
+    $middleware->documentMethod($rClassMock, $reflectionMethod, $docArray);
+    $this->assertNull($docArray);
+  }
+
+  public function testFullDocs() {
+    $middleware = new PostAndObjectOnly();
     $this->setUpRESTApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware));
 
     $docArray = array(
@@ -49,24 +68,6 @@ class RESTObjectOnlyAccessTest extends MiddlewareTestCase {
     $rClassMock = $this->getMock('\ReflectionClass', array(), array(), '', FALSE);
     $reflectionMethod = new \ReflectionMethod(get_class($this->restController),
       '_restPostCollection');
-
-    $middleware->documentMethod($rClassMock, $reflectionMethod, $docArray);
-    $this->assertNull($docArray);
-  }
-
-  public function testFullDocs() {
-    $middleware = new RESTObjectOnlyAccess();
-    $this->setUpRESTApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware));
-
-    $docArray = array(
-      'HTTPMethod' => 'test',
-      'URI' => "/test",
-      'Synopsis' => '',
-      'parameters' => array()
-    );
-    $rClassMock = $this->getMock('\ReflectionClass', array(), array(), '', FALSE);
-    $reflectionMethod = new \ReflectionMethod(get_class($this->restController),
-      '_restPutObject');
 
     $middleware->documentMethod($rClassMock, $reflectionMethod, $docArray);
     $this->assertNotEmpty($docArray);

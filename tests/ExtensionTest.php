@@ -2,6 +2,7 @@
 
 namespace MABI\Testing;
 
+use MABI\App;
 use MABI\Autodocs\MarkdownParser;
 use MABI\DirectoryControllerLoader;
 use MABI\DirectoryModelLoader;
@@ -22,15 +23,15 @@ class ExtensionTest extends \PHPUnit_Framework_TestCase {
   }
 
   function testSetMiddlewareDirectories() {
-    $app = new Extension();
+    $app = new App();
     $middlewareDirs = array('/testdir/1', '/testdir/2');
     $app->setMiddlewareDirectories($middlewareDirs);
     $this->assertEquals($middlewareDirs, $app->getMiddlewareDirectories());
   }
 
   function testGetMiddlewareDirectories() {
-    $app = new Extension();
-    $newExt = new Extension();
+    $app = new App();
+    $newExt = new Extension($app);
     $app->setMiddlewareDirectories(array('/testdir/1', '/testdir/2'));
     $newExt->setMiddlewareDirectories(array('/testdir/3'));
     $app->addExtension($newExt);
@@ -41,8 +42,8 @@ class ExtensionTest extends \PHPUnit_Framework_TestCase {
   }
 
   function testGetConfig() {
-    $app = new Extension();
-    $newExt = new Extension();
+    $app = new App();
+    $newExt = new Extension($app);
     $newExt->setConfig('test2', 'valB');
     $newExt->setConfig('test1', 'valC');
     $app->addExtension($newExt);
@@ -53,8 +54,8 @@ class ExtensionTest extends \PHPUnit_Framework_TestCase {
   }
 
   function testGetModelClasses() {
-    $app = new Extension();
-    $newExt = new Extension();
+    $app = new App();
+    $newExt = new Extension($app);
     $app->setModelLoaders(array(new DirectoryModelLoader('TestApp/TestModelDir', 'mabiTesting')));
     $newExt->setModelLoaders(array(new DirectoryModelLoader('TestApp/TestExtensionDir/TestModelDir', 'mabiTesting\testExtension')));
     $app->addExtension($newExt);
@@ -69,8 +70,8 @@ class ExtensionTest extends \PHPUnit_Framework_TestCase {
   }
 
   function testSetModelLoaders() {
-    $app = new Extension();
-    $newExt = new Extension();
+    $app = new App();
+    $newExt = new Extension($app);
     $app->setMiddlewareDirectories(array(__DIR__ . '/../middleware'));
     $app->setControllerLoaders(array(new DirectoryControllerLoader('TestApp/TestControllerDir', $app, 'mabiTesting')));
     $newExt->setControllerLoaders(array(new DirectoryControllerLoader('TestApp/TestExtensionDir/TestControllerDir', $app, 'mabiTesting\testExtension')));
@@ -78,7 +79,7 @@ class ExtensionTest extends \PHPUnit_Framework_TestCase {
 
     $outControllerClasses = array();
 
-    foreach($app->getControllers() as $controller) {
+    foreach ($app->getControllers() as $controller) {
       $outControllerClasses[] = get_class($controller);
     }
 
@@ -89,7 +90,7 @@ class ExtensionTest extends \PHPUnit_Framework_TestCase {
   }
 
   function testGetDocJSON() {
-    $app = new Extension();
+    $app = new App();
     $app->setControllerLoaders(array(new DirectoryControllerLoader('TestApp/TestControllerDir', $app, 'mabiTesting')));
     $parser = new MarkdownParser();
     $docsOutput = $app->getDocJSON($parser);

@@ -1,13 +1,13 @@
 <?php
 
-namespace MABI\Middleware;
+namespace MABI\RESTAccess;
 
 include_once __DIR__ . '/RESTAccessMiddleware.php';
 
 /**
  * Blocks access to collection REST functions except for a POST. Custom actions are allowed.
  */
-class RESTPostAndObjectOnlyAccess extends RESTAccessMiddleware {
+class PostAndObjectOnly extends RESTAccessMiddleware {
   protected function doesHaveAccessToMethod($methodName) {
     switch ($methodName) {
       case '_restGetCollection':

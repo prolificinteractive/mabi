@@ -11,18 +11,12 @@ include_once __DIR__ . '/ModelController.php';
  */
 class RESTModelController extends ModelController {
   /**
-   * @param $app App
-   */
-  public function __construct($app) {
-    parent::__construct($app);
-  }
-
-  /**
    * @var \Mabi\Model
    */
   protected $model = NULL;
 
   /**
+   * @endpoint ignore
    * @return \Mabi\Model
    */
   public function getModel() {
@@ -33,12 +27,12 @@ class RESTModelController extends ModelController {
     /**
      * @var $model Model
      */
-    $model = call_user_func($this->modelClass . '::init', $this->app);
+    $model = call_user_func($this->modelClass . '::init', $this->getApp());
     echo json_encode($model->findAll());
   }
 
   public function _restPostCollection() {
-    $this->model = call_user_func($this->modelClass . '::init', $this->app);
+    $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
     $this->model->loadParameters($this->getApp()->getSlim()->request()->post());
     $this->model->insert();
     echo $this->model->outputJSON();
@@ -72,7 +66,7 @@ class RESTModelController extends ModelController {
    * @param $route \Slim\Route
    */
   public function _readModel($route) {
-    $this->model = call_user_func($this->modelClass . '::init', $this->app);
+    $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
     $this->model->findById($route->getParam('id'));
   }
 
@@ -186,8 +180,9 @@ class RESTModelController extends ModelController {
     $methodDoc['MethodName'] = $methodName;
     $methodDoc['HTTPMethod'] = $httpMethod;
     $methodDoc['URI'] = $url;
-    $rMethod = new \ReflectionMethod($this, $method);
+    $rMethod = new \ReflectionMethod(get_called_class(), $method);
     $methodDoc['Synopsis'] = $parser->parse(ReflectionHelper::getDocText($rMethod->getDocComment()));
+    $methodDoc['parameters'] = $this->getDocParameters($rMethod);
     if ($includesId) {
       $methodDoc['parameters'][] = array(
         'Name' => 'id',
@@ -196,9 +191,6 @@ class RESTModelController extends ModelController {
         'Location' => 'url',
         'Description' => 'The id of the resource'
       );
-    }
-    else {
-      $methodDoc['parameters'] = array();
     }
 
     // Allow controller middlewares to modify the documentation for this method
@@ -293,6 +285,7 @@ class RESTModelController extends ModelController {
         'Location' => 'url',
         'Description' => 'The id of the resource'
       );
+      $methodDoc['parameters'] = array_merge($methodDoc['parameters'], $this->getDocParameters($rMethod));
 
       // Allow controller middlewares to modify the documentation for this method
       if (!empty($this->middlewares)) {

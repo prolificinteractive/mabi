@@ -14,6 +14,12 @@ class Session extends Model {
   public $created;
 
   /**
+   * @field internal
+   * @var \DateTime
+   */
+  public $lastAccessed;
+
+  /**
    * @var string
    * @field owner
    * @field internal

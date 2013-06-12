@@ -70,7 +70,9 @@ class MiddlewareTestCase extends \PHPUnit_Framework_TestCase {
 
     $this->app->addDataConnection('default', $this->dataConnectionMock);
 
-    $this->app->setModelLoaders(array(new \MABI\DirectoryModelLoader(__DIR__ . '/../TestApp/TestModelDir', 'mabiTesting')));
+    $modelLoader = new \MABI\DirectoryModelLoader(__DIR__ . '/../TestApp/TestModelDir', 'mabiTesting');
+    $modelLoader->loadModels();
+    $this->app->setModelLoaders(array($modelLoader));
 
     $dirControllerLoader = new \MABI\DirectoryControllerLoader(__DIR__ . '/../TestApp/TestControllerDir', $this->app,
       'mabiTesting');

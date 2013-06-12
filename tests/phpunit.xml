@@ -3,6 +3,12 @@
         <testsuite name="MABI">
             <directory>.</directory>
         </testsuite>
+        <testsuite name="RESTAccess">
+            <directory>../extensions/RESTAccess/tests</directory>
+        </testsuite>
+        <testsuite name="Identity">
+            <directory>../extensions/Identity/tests</directory>
+        </testsuite>
     </testsuites>
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
@@ -11,7 +17,8 @@
                 <directory>../Slim</directory>
                 <directory>../autodocs</directory>
                 <directory>../tests</directory>
-                <directory>../extensions</directory>
+                <directory>../extensions/RESTAccess/tests</directory>
+                <directory>../extensions/Identity/tests</directory>
                 <file>../Inflector.php</file>
             </exclude>
         </whitelist>

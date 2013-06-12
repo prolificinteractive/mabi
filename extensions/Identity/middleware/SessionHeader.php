@@ -28,6 +28,7 @@ class SessionHeader extends Middleware {
     if($foundSession->findById($sessionId)) {
       $this->session = $foundSession;
       $this->getController()->getApp()->getSlim()->request()->session = $this->session;
+      $this->session->lastAccessed = new \DateTime('now');
     }
 
     if (!empty($this->next)) {
@@ -43,7 +44,7 @@ class SessionHeader extends Middleware {
       'Required' => 'N',
       'Type' => 'string',
       'Location' => 'header',
-      'Description' => 'A guid that identifies the current logged in session'
+      'Description' => 'A guid that identifies the current logged in session (the session id when you create a session)'
     );
 
     if (!empty($this->next)) {

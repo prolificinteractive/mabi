@@ -1,18 +1,19 @@
 <?php
 
-namespace MABI\Testing;
+namespace MABI\RESTAccess\Testing;
 
 include_once 'PHPUnit/Autoload.php';
-include_once __DIR__ . '/MiddlewareTestCase.php';
-include_once __DIR__ . '/../../middleware/RESTReadOnlyAccess.php';
+include_once __DIR__ . '/../../../tests/middleware/MiddlewareTestCase.php';
+include_once __DIR__ . '/../ReadOnly.php';
 
-use \MABI\Middleware\RESTReadOnlyAccess;
+use \MABI\RESTAccess\ReadOnly;
+use \MABI\Testing\MiddlewareTestCase;
 
-class RESTReadOnlyAccessTest extends MiddlewareTestCase {
+class ReadOnlyTest extends MiddlewareTestCase {
 
   public function testStoppedCall() {
-    $middleware = new RESTReadOnlyAccess();
-    $this->setUpRESTApp(array('PATH_INFO' => '/modelb','REQUEST_METHOD' => 'POST'), array($middleware));
+    $middleware = new ReadOnly();
+    $this->setUpRESTApp(array('PATH_INFO' => '/modelbs','REQUEST_METHOD' => 'POST'), array($middleware));
 
     $this->app->call();
 
@@ -20,8 +21,8 @@ class RESTReadOnlyAccessTest extends MiddlewareTestCase {
   }
 
   public function testPassedCall() {
-    $middleware = new RESTReadOnlyAccess();
-    $this->setUpRESTApp(array('PATH_INFO' => '/modelb/1'), array($middleware));
+    $middleware = new ReadOnly();
+    $this->setUpRESTApp(array('PATH_INFO' => '/modelbs/1'), array($middleware));
 
     $this->dataConnectionMock->expects($this->once())
       ->method('findOneByField')
@@ -37,7 +38,7 @@ class RESTReadOnlyAccessTest extends MiddlewareTestCase {
   }
 
   public function testSkipDocs() {
-    $middleware = new RESTReadOnlyAccess();
+    $middleware = new ReadOnly();
     $this->setUpRESTApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware));
 
     $docArray = array(
@@ -55,7 +56,7 @@ class RESTReadOnlyAccessTest extends MiddlewareTestCase {
   }
 
   public function testFullDocs() {
-    $middleware = new RESTReadOnlyAccess();
+    $middleware = new ReadOnly();
     $this->setUpRESTApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware));
 
     $docArray = array(

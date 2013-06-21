@@ -28,7 +28,11 @@ class RESTModelController extends ModelController {
      * @var $model Model
      */
     $model = call_user_func($this->modelClass . '::init', $this->getApp());
-    echo json_encode($model->findAll());
+    $outputArr = array();
+    foreach ($model->findAll() as $foundModel) {
+      $outputArr[] = $foundModel->getPropertyArray(TRUE);
+    }
+    echo json_encode($outputArr);
   }
 
   public function _restPostCollection() {

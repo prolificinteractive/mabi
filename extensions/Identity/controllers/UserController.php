@@ -31,7 +31,7 @@ class UserController extends RESTModelController {
    *
    * @throws \Slim\Exception\Stop
    */
-  function _restPostCollection() {
+  public function _restPostCollection() {
     $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
     $this->model->loadParameters($this->getApp()->getSlim()->request()->post());
 
@@ -54,15 +54,11 @@ class UserController extends RESTModelController {
       throw new Stop('An account with this email already exists');
     }
 
-    $this->model->salt = uniqid(mt_rand(), TRUE);
-    $this->model->passHash = Identity::passHash($this->model->password, $this->model->salt);
-    $this->model->password = NULL;
-    $this->model->created = new \DateTime('now');
-    $this->model->insert();
+    Identity::insertUser($this->model);
     echo $this->model->outputJSON();
   }
 
-  function postForgotPassword() {
+  public function postForgotPassword() {
     // todo: implement. get an email from post
   }
 }

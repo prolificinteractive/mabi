@@ -21,6 +21,8 @@ class SessionController extends RESTModelController {
    */
   protected $model;
 
+  protected $userModelClass = '\MABI\Identity\User';
+
   /**
    * Creates a session. A valid email and password of an existing user must be passed in, and the new session
    * (with the session id) will be returned.
@@ -37,18 +39,18 @@ class SessionController extends RESTModelController {
     if (empty($this->model->password) || empty($this->model->email)
     ) {
       $this->getApp()->getSlim()->response()->status(400);
-      throw new Stop("Email and Password are required to create a section");
+      throw new Stop("Email and Password are required to create a session");
     }
 
     /**
      * @var $user User
      */
-    $user = User::init($this->getApp());
+    $user = call_user_func($this->userModelClass . '::init', $this->getApp());
     $user->findByField('email', $this->model->email);
 
     if ($user->passHash != Identity::passHash($this->model->password, $user->salt)) {
       $this->getApp()->getSlim()->response()->status(400);
-      throw new Stop("Email and password are required to create a section");
+      throw new Stop("Email and password are required to create a session");
     }
 
     $this->model->created = new \DateTime('now');

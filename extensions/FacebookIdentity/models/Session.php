@@ -2,6 +2,8 @@
 
 namespace MABI\FacebookIdentity;
 
+include_once __DIR__ . '/../../Identity/models/Session.php';
+
 class Session extends \MABI\Identity\Session {
   /**
    * @var string

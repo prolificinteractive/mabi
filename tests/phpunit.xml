@@ -9,6 +9,9 @@
         <testsuite name="Identity">
             <directory>../extensions/Identity/tests</directory>
         </testsuite>
+        <testsuite name="FacebookIdentity">
+            <directory>../extensions/FacebookIdentity/tests</directory>
+        </testsuite>
     </testsuites>
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
@@ -19,6 +22,7 @@
                 <directory>../tests</directory>
                 <directory>../extensions/RESTAccess/tests</directory>
                 <directory>../extensions/Identity/tests</directory>
+                <directory>../extensions/FacebookIdentity/tests</directory>
                 <file>../Inflector.php</file>
             </exclude>
         </whitelist>

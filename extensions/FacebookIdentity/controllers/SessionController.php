@@ -3,11 +3,10 @@
 namespace MABI\FacebookIdentity;
 
 include_once __DIR__ . '/../../../RESTModelController.php';
+include_once __DIR__ . '/../../Identity/controllers/SessionController.php';
 
 use MABI\Identity\Identity;
-use \MABI\RESTModelController;
 use Slim\Exception\Stop;
-use \MABI\Parser;
 
 /**
  * todo: docs

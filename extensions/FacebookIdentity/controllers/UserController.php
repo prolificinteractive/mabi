@@ -2,6 +2,8 @@
 
 namespace MABI\FacebookIdentity;
 
+include_once __DIR__ . '/../../Identity/controllers/UserController.php';
+
 use MABI\Parser;
 use Slim\Exception\Stop;
 

@@ -10,4 +10,10 @@ class Session extends \MABI\Identity\Session {
    * @field external
    */
   public $accessToken;
+
+  /**
+   * @var bool
+   * @field external
+   */
+  public $newUserCreated;
 }

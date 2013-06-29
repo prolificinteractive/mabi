@@ -32,14 +32,30 @@ class FacebookIdentity extends Extension {
 
     $this->addExtension($identityExtension);
     $this->setModelLoaders(array(
-      new DirectoryModelLoader(__DIR__ . '/models', 'MABI\Identity')
+      new DirectoryModelLoader(__DIR__ . '/models', 'MABI\FacebookIdentity')
     ));
     $this->setControllerLoaders(array(
-      new DirectoryControllerLoader(__DIR__ . '/controllers', $this, 'MABI\Identity')
+      new DirectoryControllerLoader(__DIR__ . '/controllers', $this, 'MABI\FacebookIdentity')
     ));
   }
 
-  public static function passHash($password, $salt) {
-    return hash_hmac('sha256', $password, $salt);
+  /**
+   * Pulls the "Me" content from Facebook
+   *
+   * @param string $access_token The facebook connect access token
+   *
+   * @return mixed
+   */
+  public function getFBInfo($access_token) {
+    // todo: see if call was erroneous and throw exceptions
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, 'https://graph.facebook.com/me?access_token=' . $access_token);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+
+    // Get the response and close the channel.
+    $response = curl_exec($ch);
+    curl_close($ch);
+    return json_decode($response);
   }
 }

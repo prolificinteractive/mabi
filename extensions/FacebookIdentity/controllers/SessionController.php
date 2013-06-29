@@ -24,25 +24,6 @@ class SessionController extends \MABI\Identity\SessionController {
 
   protected $userModelClass = '\MABI\FacebookIdentity\User';
 
-  /**
-   * Pulls the "Me" content from Facebook
-   *
-   * @param string $access_token The facebook connect access token
-   *
-   * @return mixed
-   */
-  protected function fb_pull_me($access_token) {
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'https://graph.facebook.com/me?access_token=' . $access_token);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-
-    // Get the response and close the channel.
-    $response = curl_exec($ch);
-    curl_close($ch);
-    return json_decode($response);
-  }
-
   protected function insertFBUser($fbData) {
     /**
      * @var $userModel \MABI\FacebookIdentity\User
@@ -84,15 +65,18 @@ class SessionController extends \MABI\Identity\SessionController {
     }
     else {
       // get facebook info and login or create a user
-      $fbData = $this->fb_pull_me($this->model->accessToken);
+      $fbData = $this->extension->getFBInfo($this->model->accessToken);
+      // todo: handle exceptions
 
       /**
        * @var $userModel \MABI\FacebookIdentity\User
        */
       $userModel = call_user_func($this->userModelClass . '::init', $this->getApp());
+      $this->model->newUserCreated = FALSE;
 
       if (!$userModel->findByField('facebookId', $fbData->id)) {
         $userModel = $this->insertFBUser($fbData);
+        $this->model->newUserCreated = TRUE;
       }
 
       $this->model->created = new \DateTime('now');

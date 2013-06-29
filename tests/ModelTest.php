@@ -125,9 +125,19 @@ class ModelTest extends \PHPUnit_Framework_TestCase {
         'init_id' => '5',
         'partner' => array(
           'id' => 1,
-          'name' => 'test'
+          'name' => 'test',
+          'testOwner' => NULL
         )
-      ));
+      ))
+      ->will($this->returnValue(
+        array(
+          'id' => '10',
+          'init_id' => '5',
+          'partner' => array(
+            'id' => 1,
+            'name' => 'test'
+          )
+        )));
     /**
      * @var $amodel \mabiTesting\ModelA
      */
@@ -147,7 +157,8 @@ class ModelTest extends \PHPUnit_Framework_TestCase {
         'init_id' => '5',
         'partner' => array(
           'id' => 1,
-          'name' => 'test'
+          'name' => 'test',
+          'testOwner' => NULL
         ),
         'id' => 2
       ));

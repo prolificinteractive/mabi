@@ -30,7 +30,10 @@ class PostOnlyTest extends MiddlewareTestCase {
 
     $this->dataConnectionMock->expects($this->once())
       ->method('insert')
-      ->with('modelbs', array('name' => 'modelb'))
+      ->with('modelbs', array(
+        'name' => 'modelb',
+        'testOwner' => NULL
+      ))
       ->will($this->returnValue(array(
         array(
           'modelBId' => 2,

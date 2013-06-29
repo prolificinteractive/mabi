@@ -8,6 +8,7 @@
         </testsuite>
         <testsuite name="Identity">
             <directory>../extensions/Identity/tests</directory>
+            <directory>../extensions/Identity/tests/middleware</directory>
         </testsuite>
         <testsuite name="FacebookIdentity">
             <directory>../extensions/FacebookIdentity/tests</directory>

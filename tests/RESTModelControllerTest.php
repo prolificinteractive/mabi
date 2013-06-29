@@ -58,6 +58,7 @@ class RESTModelControllerTest extends \PHPUnit_Framework_TestCase {
     $this->app->setModelLoaders(array(new \MABI\DirectoryModelLoader(__DIR__ . '/TestApp/TestModelDir', 'mabiTesting')));
 
     $dirControllerLoader = new \MABI\DirectoryControllerLoader('TestApp/TestControllerDir', $this->app, 'mabiTesting');
+
     $this->controllerMock = $this->getMock('\mabiTesting\ModelBController', array(
         'restGetTestFunc',
         'restPostTestFunc',
@@ -65,6 +66,8 @@ class RESTModelControllerTest extends \PHPUnit_Framework_TestCase {
         'restDeleteTestFunc'
       ), array($this->app),
       'ModelBController');
+
+    // Set up modelClass and base fields in the mock controller
     $modelClass = 'mabiTesting\ModelB';
     $refObject = new \ReflectionObject($this->controllerMock);
     $refModelClassProperty = $refObject->getProperty('modelClass');
@@ -111,11 +114,14 @@ class RESTModelControllerTest extends \PHPUnit_Framework_TestCase {
     ));
     $this->dataConnectionMock->expects($this->once())
       ->method('insert')
-      ->with('modelbs', array('name' => 'modelb'))
+      ->with('modelbs', array(
+        'name' => 'modelb',
+        'testOwner' => NULL
+      ))
       ->will($this->returnValue(array(
         array(
           'modelBId' => 2,
-          'name' => 'modelb'
+          'name' => 'modelb',
         )
       )));
     $this->app->call();

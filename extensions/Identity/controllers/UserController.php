@@ -21,6 +21,8 @@ class UserController extends RESTModelController {
    */
   protected $model;
 
+  protected $sessionModelClass = '\MABI\Identity\Session';
+
   /**
    * Creates a new user. Will pass back the created user model
    *
@@ -54,7 +56,19 @@ class UserController extends RESTModelController {
       throw new Stop('An account with this email already exists');
     }
 
+    /**
+     * Automatically creates a session for the newly created user
+     *
+     * @var $session Session
+     */
+    $session = call_user_func($this->sessionModelClass . '::init', $this->getApp());
+    $session->created = new \DateTime('now');
+    $session->lastAccessed = new \DateTime('now');
+    $session->user = $user->getId();
+    $session->insert();
+
     Identity::insertUser($this->model);
+    $this->model->newSessionId = $session->getId();
     echo $this->model->outputJSON();
   }
 

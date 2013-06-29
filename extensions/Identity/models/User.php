@@ -53,4 +53,11 @@ class User extends Model {
    * @field external
    */
   public $password;
+
+  /**
+   * @var string
+   *
+   * @field external
+   */
+  public $newSessionId;
 }

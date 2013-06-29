@@ -36,8 +36,7 @@ class SessionController extends RESTModelController {
     $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
     $this->model->loadParameters($this->getApp()->getSlim()->request()->post());
 
-    if (empty($this->model->password) || empty($this->model->email)
-    ) {
+    if (empty($this->model->password) || empty($this->model->email)) {
       $this->getApp()->getSlim()->response()->status(400);
       throw new Stop("Email and Password are required to create a session");
     }
@@ -50,7 +49,7 @@ class SessionController extends RESTModelController {
 
     if ($user->passHash != Identity::passHash($this->model->password, $user->salt)) {
       $this->getApp()->getSlim()->response()->status(400);
-      throw new Stop("Email and password are required to create a session");
+      throw new Stop("Password is invalid");
     }
 
     $this->model->created = new \DateTime('now');

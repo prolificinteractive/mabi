@@ -62,6 +62,7 @@ class RESTOwnerOnlyAccess extends Middleware {
     $restController = $this->getController();
 
     $rClass = new \ReflectionClass($restController->getModelClass());
+    // Allow @field owner override otherwise the default owner field is $owner
     $ownerProperty = 'owner';
     foreach ($rClass->getProperties() as $rProperty) {
       if (in_array('owner', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
@@ -74,7 +75,7 @@ class RESTOwnerOnlyAccess extends Middleware {
     if (empty($session) || empty($model) || empty($session->user) || empty($model->{$ownerProperty}) ||
       $session->user != $restController->getModel()->{$ownerProperty}
     ) {
-      // Don't give access to endpoint if the sessions
+      // Don't give access to endpoint if the sessions don't match
       $this->getController()->getApp()->getSlim()->response()->status(401);
       throw new Stop();
     }
@@ -94,13 +95,7 @@ class RESTOwnerOnlyAccess extends Middleware {
     parent::documentMethod($rClass, $rMethod, $methodDoc);
 
     // Owner access does not apply for Collection level functions
-    $route = $this->getController()->getApp()->getSlim()->router()->getCurrentRoute();
-    if (empty($route)) {
-      $this->callNextDocumenter($rClass, $rMethod, $methodDoc);
-      return;
-    }
-    $callable = $route->getCallable();
-    if (empty($callable) || !$this->isCollectionCallable($callable[1])) {
+    if (!$this->isCollectionCallable($rMethod->name)) {
       $this->callNextDocumenter($rClass, $rMethod, $methodDoc);
       return;
     }

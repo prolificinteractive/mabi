@@ -5,7 +5,7 @@ namespace MABI;
 abstract class DataConnection {
   abstract function getDefaultIdColumn();
 
-  abstract function insert($table, &$data);
+  abstract function insert($table, $data);
 
   abstract function save($table, $data, $field, $value);
 

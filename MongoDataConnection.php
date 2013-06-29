@@ -14,7 +14,7 @@ class MongoDataConnection extends DataConnection {
    */
   protected $db = NULL;
 
-  private function createConnectionName($host, $port, $user, $password, $database, $version) {
+  private static function createConnectionName($host, $port, $user, $password, $database, $version) {
     $connectionName = NULL;
 
     if ($version >= '1.0.2') {
@@ -77,13 +77,13 @@ class MongoDataConnection extends DataConnection {
     return $mongodata;
   }
 
-  public function insert($table, &$data) {
+  public function insert($table, $data) {
     if (empty($data['_id'])) {
       $data['_id'] = new \MongoId();
     }
     $this->db->selectCollection($table)->insert($data);
     $data['_id'] = (string) $data['_id'];
-    return TRUE;
+    return $data;
   }
 
   function save($table, $data, $field, $value) {

@@ -103,6 +103,8 @@ class Model {
       $newModelObj->idColumn = $newModelObj->app->getDataConnection($newModelObj->connection)->getDefaultIdColumn();
     }
 
+    $newModelObj->{$newModelObj->idProperty} = NULL;
+
     return $newModelObj;
   }
 
@@ -352,8 +354,7 @@ class Model {
    */
   public function insert() {
     $dataConnection = $this->app->getDataConnection($this->connection);
-    $propArray = $this->getPropertyArray();
-    $dataConnection->insert($this->table, $propArray);
+    $propArray = $dataConnection->insert($this->table, $this->getPropertyArray());
     $this->loadParameters($propArray);
   }
 

@@ -294,6 +294,32 @@ class Model {
     return TRUE;
   }
 
+  protected function getPropertyArrayValue($value, $removeInternal = FALSE) {
+    if (!is_object($value)) {
+      return $value;
+    }
+    else {
+      $propClass = new \ReflectionClass($value);
+
+      if ($propClass->isSubclassOf('\MABI\Model')) {
+        /**
+         * @var $subModel \MABI\Model
+         */
+        $subModel = $value;
+        return $subModel->getPropertyArray($removeInternal);
+      }
+      elseif ($propClass->name == 'DateTime' || $propClass == '\DateTime') {
+        /**
+         * @var $date \DateTime
+         */
+        $date = $value;
+        return $date->getTimestamp();
+      }
+    }
+
+    return NULL;
+  }
+
   public function getPropertyArray($removeInternal = FALSE) {
     $rClass = new \ReflectionClass($this);
 
@@ -313,25 +339,13 @@ class Model {
         continue;
       }
 
-      if (!is_object($this->{$rProperty->getName()})) {
-        $outArr[$rProperty->getName()] = $this->{$rProperty->getName()};
+      if (is_array($this->{$rProperty->getName()})) {
+        foreach ($this->{$rProperty->getName()} as $k => $v) {
+          $outArr[$rProperty->getName()][$k] = $this->getPropertyArrayValue($v, $removeInternal);
+        }
       }
       else {
-        $propClass = new \ReflectionClass($this->{$rProperty->getName()});
-        if ($propClass->isSubclassOf('\MABI\Model')) {
-          /**
-           * @var $subModel \MABI\Model
-           */
-          $subModel = $this->{$rProperty->getName()};
-          $outArr[$rProperty->getName()] = $subModel->getPropertyArray($removeInternal);
-        }
-        elseif ($propClass->name == 'DateTime' || $propClass == '\DateTime') {
-          /**
-           * @var $date \DateTime
-           */
-          $date = $this->{$rProperty->getName()};
-          $outArr[$rProperty->getName()] = $date->getTimestamp();
-        }
+        $outArr[$rProperty->getName()] = $this->getPropertyArrayValue($this->{$rProperty->getName()}, $removeInternal);
       }
     }
     if (!empty($this->{$this->idProperty})) {

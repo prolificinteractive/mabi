@@ -196,9 +196,9 @@ class ModelTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * test all field types in FullModel
+   * test get all field types in FullModel
    */
-  public function testAllFieldTypes() {
+  public function testGetAllFieldTypes() {
     $this->dataConnectionMock->expects($this->once())
       ->method('findOneByField')
       ->with('id', 1, 'fullmodels')
@@ -242,6 +242,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase {
     $this->assertNotEmpty($fmodel->subObjList[0]->name);
   }
 
+  // todo: public function testInsertAllFieldTypes() {
   // todo: test external, system, and internal fields
   // todo: test remaining results
 }

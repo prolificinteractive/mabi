@@ -55,6 +55,8 @@ class SessionController extends RESTModelController {
     $this->model->created = new \DateTime('now');
     $this->model->lastAccessed = new \DateTime('now');
     $this->model->user = $user->getId();
+    $this->model->email = NULL;
+    $this->model->password = NULL;
     $this->model->insert();
     echo $this->model->outputJSON();
   }

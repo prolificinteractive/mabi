@@ -22,7 +22,6 @@ class Session extends Model {
   /**
    * @var string
    * @field owner
-   * @field internal
    */
   public $user;
 

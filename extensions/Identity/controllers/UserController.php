@@ -56,6 +56,8 @@ class UserController extends RESTModelController {
       throw new Stop('An account with this email already exists');
     }
 
+    Identity::insertUser($this->model);
+
     /**
      * Automatically creates a session for the newly created user
      *
@@ -64,10 +66,9 @@ class UserController extends RESTModelController {
     $session = call_user_func($this->sessionModelClass . '::init', $this->getApp());
     $session->created = new \DateTime('now');
     $session->lastAccessed = new \DateTime('now');
-    $session->user = $user->getId();
+    $session->user = $this->model->getId();
     $session->insert();
 
-    Identity::insertUser($this->model);
     $this->model->newSessionId = $session->getId();
     echo $this->model->outputJSON();
   }

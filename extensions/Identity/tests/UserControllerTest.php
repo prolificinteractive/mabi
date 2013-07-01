@@ -148,11 +148,12 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase {
     $this->assertThat($table, $this->logicalOr($this->equalTo('sessions'), $this->equalTo('users')));
     switch ($table) {
       case 'sessions':
+        $this->assertEquals($value['user'], '2');
         return array(
           'id' => '4',
           'date_created' => time(),
           'lastAccessed' => time(),
-          'user' => '1',
+          'user' => '2',
         );
         break;
       case 'users':

@@ -235,9 +235,11 @@ class Model {
           // with that type
           $type = $matches[1];
           $outArr = array();
-          foreach ($resultArray[$rProperty->getName()] as $listResult) {
-            $this->loadParameter($type, $parameter, $listResult);
-            $outArr[] = $parameter;
+          if (!empty($resultArray[$rProperty->getName()])) {
+            foreach ($resultArray[$rProperty->getName()] as $listResult) {
+              $this->loadParameter($type, $parameter, $listResult);
+              $outArr[] = $parameter;
+            }
           }
           $this->{$rProperty->getName()} = $outArr;
         }

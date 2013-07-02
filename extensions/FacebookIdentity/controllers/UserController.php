@@ -15,6 +15,27 @@ use Slim\Exception\Stop;
  * @middleware \MABI\Identity\Middleware\RESTOwnerOnlyAccess
  */
 class UserController extends \MABI\Identity\UserController {
+
+  /**
+   * @var bool
+   */
+  protected $facebookOnly = FALSE;
+
+  /**
+   * @return boolean
+   * @endpoint ignore
+   */
+  public function getFacebookOnly() {
+    return $this->facebookOnly;
+  }
+
+  /**
+   * @param boolean $facebookOnly
+   */
+  public function setFacebookOnly($facebookOnly) {
+    $this->facebookOnly = $facebookOnly;
+  }
+
   /**
    * Creates a new user. Will pass back the created user model
    *
@@ -26,7 +47,7 @@ class UserController extends \MABI\Identity\UserController {
    * @throws \Slim\Exception\Stop
    */
   public function _restPostCollection() {
-    if ($this->getExtension()->getFacebookOnly()) {
+    if ($this->getFacebookOnly()) {
       $this->getApp()->getSlim()->response()->status(401);
       throw new Stop("Facebook Connect is the only method allowed to create users");
     }
@@ -36,7 +57,7 @@ class UserController extends \MABI\Identity\UserController {
   }
 
   public function postForgotPassword() {
-    if ($this->getExtension()->getFacebookOnly()) {
+    if ($this->getFacebookOnly()) {
       $this->getApp()->getSlim()->response()->status(401);
       throw new Stop("Facebook Connect is the only method allowed to authenticate users");
     }
@@ -46,8 +67,15 @@ class UserController extends \MABI\Identity\UserController {
     }
   }
 
+  /**
+   * @endpoint ignore
+   *
+   * @param Parser $parser
+   *
+   * @return array
+   */
   public function getDocJSON(Parser $parser) {
-    if ($this->getExtension()->getFacebookOnly()) {
+    if ($this->getFacebookOnly()) {
       return array();
     }
     else {

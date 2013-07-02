@@ -25,6 +25,7 @@ class Identity extends Extension {
     $this->setControllerLoaders(array(
       new DirectoryControllerLoader(__DIR__ . '/controllers', $this, 'MABI\Identity')
     ));
+    $this->getExtensionModelClasses();
   }
 
   /**

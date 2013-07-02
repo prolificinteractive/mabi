@@ -74,6 +74,31 @@ class RESTModelController extends ModelController {
     $this->model->findById($route->getParam('id'));
   }
 
+  protected function addStandardRestRoute(\Slim\Slim $slim, $httpMethod, $isObjectLevel = FALSE) {
+    $methodName = '_rest' . ucwords(strtolower($httpMethod)) . ($isObjectLevel ? 'Object' : 'Collection');
+
+    $rMethod = new \ReflectionMethod(get_called_class(), $methodName);
+    // If there is a '@endpoint ignore' property, the function is not served as an endpoint
+    if (in_array('ignore', ReflectionHelper::getDocDirective($rMethod->getDocComment(), 'endpoint'))) {
+      return;
+    }
+    if (!$isObjectLevel) {
+      $slim->map("/{$this->base}",
+        array($this, 'preMiddleware'),
+        array($this, '_runControllerMiddlewares'),
+        array($this, 'preCallable'),
+        array($this, $methodName))->via($httpMethod);
+    }
+    else {
+      $slim->map("/{$this->base}/:id",
+        array($this, 'preMiddleware'),
+        array($this, '_readModel'),
+        array($this, '_runControllerMiddlewares'),
+        array($this, 'preCallable'),
+        array($this, $methodName))->via($httpMethod);
+    }
+  }
+
   /**
    * @param $slim \Slim\Slim
    */
@@ -93,44 +118,13 @@ class RESTModelController extends ModelController {
      */
 
     // todo: add API versioning
-    $slim->get("/{$this->base}",
-      array($this, 'preMiddleware'),
-      array($this, '_runControllerMiddlewares'),
-      array($this, 'preCallable'),
-      array($this, '_restGetCollection'));
-    $slim->post("/{$this->base}",
-      array($this, 'preMiddleware'),
-      array($this, '_runControllerMiddlewares'),
-      array($this, 'preCallable'),
-      array($this, '_restPostCollection'));
-    $slim->put("/{$this->base}",
-      array($this, 'preMiddleware'),
-      array($this, '_runControllerMiddlewares'),
-      array($this, 'preCallable'),
-      array($this, '_restPutCollection'));
-    $slim->delete("/{$this->base}",
-      array($this, 'preMiddleware'),
-      array($this, '_runControllerMiddlewares'),
-      array($this, 'preCallable'),
-      array($this, '_restDeleteCollection'));
-    $slim->get("/{$this->base}/:id",
-      array($this, 'preMiddleware'),
-      array($this, '_readModel'),
-      array($this, '_runControllerMiddlewares'),
-      array($this, 'preCallable'),
-      array($this, '_restGetObject'));
-    $slim->put("/{$this->base}/:id",
-      array($this, 'preMiddleware'),
-      array($this, '_readModel'),
-      array($this, '_runControllerMiddlewares'),
-      array($this, 'preCallable'),
-      array($this, '_restPutObject'));
-    $slim->delete("/{$this->base}/:id",
-      array($this, 'preMiddleware'),
-      array($this, '_readModel'),
-      array($this, '_runControllerMiddlewares'),
-      array($this, 'preCallable'),
-      array($this, '_restDeleteObject'));
+    $this->addStandardRestRoute($slim, \Slim\Http\Request::METHOD_GET);
+    $this->addStandardRestRoute($slim, \Slim\Http\Request::METHOD_POST);
+    $this->addStandardRestRoute($slim, \Slim\Http\Request::METHOD_PUT);
+    $this->addStandardRestRoute($slim, \Slim\Http\Request::METHOD_DELETE);
+    $this->addStandardRestRoute($slim, \Slim\Http\Request::METHOD_GET, TRUE);
+    $this->addStandardRestRoute($slim, \Slim\Http\Request::METHOD_PUT, TRUE);
+    $this->addStandardRestRoute($slim, \Slim\Http\Request::METHOD_DELETE, TRUE);
 
     /**
      * Gets other automatically generated routes following the pattern:
@@ -140,6 +134,11 @@ class RESTModelController extends ModelController {
     $rClass = new \ReflectionClass($this);
     $rMethods = $rClass->getMethods(\ReflectionMethod::IS_PUBLIC);
     foreach ($rMethods as $rMethod) {
+      // If there is a '@endpoint ignore' property, the function is not served as an endpoint
+      if (in_array('ignore', ReflectionHelper::getDocDirective($rMethod->getDocComment(), 'endpoint'))) {
+        continue;
+      }
+
       $action = NULL;
       $httpMethod = NULL;
       $methodName = $rMethod->name;

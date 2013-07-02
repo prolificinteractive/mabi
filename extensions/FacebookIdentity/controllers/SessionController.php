@@ -55,6 +55,7 @@ class SessionController extends \MABI\Identity\SessionController {
    * @param string $access_token The facebook connect access token
    *
    * @return mixed
+   * @endpoint ignore
    */
   public function getFBInfo($access_token) {
     // If there is mock data for testing purposes, return this instead of contacting facebook

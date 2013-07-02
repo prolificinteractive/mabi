@@ -181,11 +181,17 @@ class RESTModelController extends ModelController {
                                         $method, $includesId = FALSE) {
     $methodDoc = array();
 
+    $rMethod = new \ReflectionMethod(get_called_class(), $method);
+    $docComment = $rMethod->getDocComment();
+    // If there is a '@endpoint ignore' property, the function is not served as an endpoint
+    if (in_array('ignore', ReflectionHelper::getDocDirective($docComment, 'endpoint'))) {
+      return $methodDoc;
+    }
+
     $methodDoc['MethodName'] = $methodName;
     $methodDoc['HTTPMethod'] = $httpMethod;
     $methodDoc['URI'] = $url;
-    $rMethod = new \ReflectionMethod(get_called_class(), $method);
-    $methodDoc['Synopsis'] = $parser->parse(ReflectionHelper::getDocText($rMethod->getDocComment()));
+    $methodDoc['Synopsis'] = $parser->parse(ReflectionHelper::getDocText($docComment));
     $methodDoc['parameters'] = $this->getDocParameters($rMethod);
     if ($includesId) {
       $methodDoc['parameters'][] = array(
@@ -258,6 +264,12 @@ class RESTModelController extends ModelController {
     // Add documentation for custom rest actions
     $rMethods = $rClass->getMethods(\ReflectionMethod::IS_PUBLIC);
     foreach ($rMethods as $rMethod) {
+      $docComment = $rMethod->getDocComment();
+      // If there is a '@endpoint ignore' property, the function is not served as an endpoint
+      if (in_array('ignore', ReflectionHelper::getDocDirective($docComment, 'endpoint'))) {
+        continue;
+      }
+
       $methodDoc = array();
 
       if (strpos($rMethod->name, 'restGet', 0) === 0) {
@@ -281,7 +293,7 @@ class RESTModelController extends ModelController {
       }
       $action = strtolower($methodDoc['MethodName']);
       $methodDoc['URI'] = "/{$this->base}/:id/{$action}";
-      $methodDoc['Synopsis'] = $parser->parse(ReflectionHelper::getDocText($rMethod->getDocComment()));
+      $methodDoc['Synopsis'] = $parser->parse(ReflectionHelper::getDocText($docComment));
       $methodDoc['parameters'][] = array(
         'Name' => 'id',
         'Required' => 'Y',

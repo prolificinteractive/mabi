@@ -92,7 +92,7 @@ class RESTOwnerOnlyAccess extends Middleware {
     parent::documentMethod($rClass, $rMethod, $methodDoc);
 
     // Owner access does not apply for Collection level functions
-    if (!$this->isCollectionCallable($rMethod->name)) {
+    if ($this->isCollectionCallable($rMethod->name)) {
       $this->callNextDocumenter($rClass, $rMethod, $methodDoc);
       return;
     }

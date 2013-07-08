@@ -5,7 +5,6 @@ namespace MABI\Identity\Middleware;
 use MABI\Middleware;
 use MABI\Identity\Session;
 use MABI\ReflectionHelper;
-use Slim\Exception\Stop;
 
 include_once __DIR__ . '/../../../Middleware.php';
 
@@ -50,8 +49,7 @@ class RESTOwnerOnlyAccess extends Middleware {
 
     // A session is required to access these objects
     if (!isset($this->getController()->getApp()->getSlim()->request()->session)) {
-      $this->getController()->getApp()->getSlim()->response()->status(401);
-      throw new Stop();
+      $this->getController()->getApp()->returnError('Not properly authenticated for this route', 401, 1007);
     }
 
     /**
@@ -76,8 +74,7 @@ class RESTOwnerOnlyAccess extends Middleware {
       $session->user != $restController->getModel()->{$ownerProperty}
     ) {
       // Don't give access to endpoint if the sessions don't match
-      $this->getController()->getApp()->getSlim()->response()->status(401);
-      throw new Stop();
+      $this->getController()->getApp()->returnError('Not properly authenticated for this route', 401, 1007);
     }
 
     if (!empty($this->next)) {

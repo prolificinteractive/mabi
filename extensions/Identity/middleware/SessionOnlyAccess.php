@@ -3,7 +3,6 @@
 namespace MABI\Identity\Middleware;
 
 use MABI\Middleware;
-use Slim\Exception\Stop;
 
 include_once __DIR__ . '/../../../Middleware.php';
 
@@ -20,8 +19,7 @@ class SessionOnlyAccess extends Middleware {
   public function call() {
     // A session is required to access this call
     if (empty($this->getController()->getApp()->getSlim()->request()->session)) {
-      $this->getController()->getApp()->getSlim()->response()->status(401);
-      throw new Stop();
+      $this->getController()->getApp()->returnError('Not properly authenticated for this route', 401, 1007);
     }
 
     if (!empty($this->next)) {

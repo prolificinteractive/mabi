@@ -5,7 +5,6 @@ namespace MABI\Identity;
 include_once __DIR__ . '/../../../RESTModelController.php';
 
 use \MABI\RESTModelController;
-use Slim\Exception\Stop;
 
 /**
  * todo: docs
@@ -38,13 +37,11 @@ class UserController extends RESTModelController {
     $this->model->loadParameters($this->getApp()->getSlim()->request()->post());
 
     if (empty($this->model->password) || strlen($this->model->password) < 6) {
-      $this->getApp()->getSlim()->response()->status(400);
-      throw new Stop("Password must be at least 6 characters");
+      $this->getApp()->returnError('Password must be at least 6 characters', 400, 1004);
     }
 
     if (empty($this->model->email)) {
-      $this->getApp()->getSlim()->response()->status(400);
-      throw new Stop("Email is required");
+      $this->getApp()->returnError('Email is required', 400, 1005);
     }
 
     $user = User::init($this->getApp());
@@ -52,8 +49,7 @@ class UserController extends RESTModelController {
     $userId = $user->getId();
 
     if (!empty($userId)) {
-      $this->getApp()->getSlim()->response()->status(409);
-      throw new Stop('An account with this email already exists');
+      $this->getApp()->returnError('An account with this email already exists', 409, 1006);
     }
 
     Identity::insertUser($this->model);

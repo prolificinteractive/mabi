@@ -5,7 +5,6 @@ namespace MABI\Identity;
 include_once __DIR__ . '/../../../RESTModelController.php';
 
 use \MABI\RESTModelController;
-use Slim\Exception\Stop;
 
 /**
  * todo: docs
@@ -37,8 +36,7 @@ class SessionController extends RESTModelController {
     $this->model->loadParameters($this->getApp()->getSlim()->request()->post());
 
     if (empty($this->model->password) || empty($this->model->email)) {
-      $this->getApp()->getSlim()->response()->status(400);
-      throw new Stop("Email and Password are required to create a session");
+      $this->getApp()->returnError('Email and Password are required to create a session', 400, 1002);
     }
 
     /**
@@ -48,8 +46,7 @@ class SessionController extends RESTModelController {
     $user->findByField('email', $this->model->email);
 
     if ($user->passHash != Identity::passHash($this->model->password, $user->salt)) {
-      $this->getApp()->getSlim()->response()->status(400);
-      throw new Stop("Password is invalid");
+      $this->getApp()->returnError('Password is invalid', 400, 1003);
     }
 
     $this->model->created = new \DateTime('now');

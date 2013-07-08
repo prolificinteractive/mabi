@@ -48,7 +48,6 @@ class App extends Extension {
       array_push($this->middlewareDirectories, __DIR__ . '/middleware');
     }
     $this->slim = new Slim();
-    $this->slim->error(array($this, 'errorHandler'));
     parent::__construct($this);
   }
 

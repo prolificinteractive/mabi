@@ -27,13 +27,18 @@ class DirectoryModelLoader extends ModelLoader {
   public function __construct($directory, $namespace = NULL) {
     $this->directory = $directory;
     $this->namespace = $namespace;
+
+    // Make sure all PHP files in the directory are included
+    $modelClassFiles = DirectoryHelper::directoryToArray($this->directory, TRUE, '.php');
+    foreach ($modelClassFiles as $modelClassFile) {
+      include_once $modelClassFile;
+    }
   }
 
   public function loadModels() {
     $modelClassFiles = DirectoryHelper::directoryToArray($this->directory, TRUE, '.php');
 
     foreach ($modelClassFiles as $modelClassFile) {
-      include_once $modelClassFile;
       $this->modelClasses[] = ReflectionHelper::createClassName($this->namespace, basename($modelClassFile, '.php'));
     }
 

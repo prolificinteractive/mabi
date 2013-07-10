@@ -38,8 +38,6 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase {
     $this->app->addDataConnection('default', $this->dataConnectionMock);
 
     $this->app->addExtension(new Identity($this->app, new RESTAccess($this->app)));
-
-    $this->app->getModelClasses();
   }
 
   public function testNoPasswordPostCollection() {

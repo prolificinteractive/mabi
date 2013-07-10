@@ -82,7 +82,7 @@ class RESTOwnerOnlyAccess extends Middleware {
     }
   }
 
-  protected function callNextDocumenter($rClass, $rMethod, $methodDoc) {
+  protected function callNextDocumenter($rClass, $rMethod, &$methodDoc) {
     if (!empty($this->next)) {
       $this->next->documentMethod($rClass, $rMethod, $methodDoc);
     }

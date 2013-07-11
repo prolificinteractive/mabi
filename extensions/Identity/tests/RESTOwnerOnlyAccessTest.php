@@ -26,7 +26,6 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
       array(new SessionHeader(), $middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
-    $identity->getModelClasses();
 
     $this->dataConnectionMock->expects($this->any())
       ->method('findOneByField')
@@ -48,7 +47,6 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
       array($middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
-    $identity->getModelClasses();
 
     $this->dataConnectionMock->expects($this->any())
       ->method('findOneByField')
@@ -68,7 +66,6 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
       array(new SessionHeader(), $middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
-    $identity->getModelClasses();
 
     $this->dataConnectionMock->expects($this->any())
       ->method('findOneByField')
@@ -88,7 +85,6 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
       array(new SessionHeader(), $middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
-    $identity->getModelClasses();
 
     $this->dataConnectionMock->expects($this->any())
       ->method('findOneByField')
@@ -135,7 +131,6 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
       array($sessHeaderMiddleware, $middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
-    $identity->getModelClasses();
 
     $this->app->getDocJSON(new MarkdownParser());
 

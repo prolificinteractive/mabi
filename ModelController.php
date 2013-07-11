@@ -41,4 +41,22 @@ class ModelController extends Controller {
     $newController->base = Inflector::pluralize(strtolower(ReflectionHelper::stripClassName($modelClass)));
     return $newController;
   }
+
+  public function getDocJSON(Parser $parser) {
+    $doc = parent::getDocJSON($parser);
+
+    $rClass = new \ReflectionClass(get_called_class());
+
+    if (in_array('show-model', ReflectionHelper::getDocDirective($rClass->getDocComment(), 'docs'))) {
+      /**
+       * @var $model \MABI\Model
+       */
+      $model = call_user_func($this->modelClass . '::init', $this->getApp());
+      $doc['model'] = $model->getDocOutput($parser);
+    }
+
+    return $doc;
+  }
+
+
 }

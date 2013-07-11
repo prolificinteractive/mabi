@@ -3,14 +3,12 @@
 namespace MABI\Middleware;
 
 use MABI\Middleware;
-use Slim\Exception\Stop;
 
 include_once __DIR__ . '/../Middleware.php';
 
 class NoAccess extends Middleware {
   public function call() {
-    $this->getController()->getApp()->getSlim()->response()->status(401);
-    throw new Stop('You do not have access to this area');
+    $this->getController()->getApp()->returnError('Not properly authenticated for this route', 401, 1007);
   }
 
   public function documentMethod(\ReflectionClass $rClass, \ReflectionMethod $rMethod, array &$methodDoc) {

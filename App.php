@@ -6,6 +6,7 @@ include_once __DIR__ . '/Slim/Slim.php';
 include_once __DIR__ . '/Extension.php';
 
 use \Slim\Slim;
+use Slim\Exception\Stop;
 
 Slim::registerAutoloader();
 
@@ -50,6 +51,24 @@ class App extends Extension {
     parent::__construct($this);
   }
 
+  /**
+   * Returns a JSON array displaying the error to the client and stops execution
+   *
+   * @param $message string
+   * @param $httpStatusCode int
+   * @param $applicationErrorCode int
+   *
+   * @throws \Slim\Exception\Stop
+   */
+  public function returnError($message, $httpStatusCode, $applicationErrorCode = NULL) {
+    echo json_encode(array(
+      'error' => empty($applicationErrorCode) ? array('message' => $message) :
+        array('code' => $applicationErrorCode, 'message' => $message)
+    ));
+    $this->getApp()->getSlim()->response()->status($httpStatusCode);
+    throw new Stop($message);
+  }
+
   public function run() {
     foreach ($this->getControllers() as $controller) {
       $controller->loadRoutes($this->slim);
@@ -69,7 +88,7 @@ class App extends Extension {
   public function getIOSModel() {
     $iosModel = IOSModelInterpreter::getIOSDataModel();
 
-    foreach($this->getModelClasses() as $modelClass) {
+    foreach ($this->getModelClasses() as $modelClass) {
       $model = call_user_func($modelClass . '::init', $this);
       IOSModelInterpreter::addModel($iosModel, $model);
     }

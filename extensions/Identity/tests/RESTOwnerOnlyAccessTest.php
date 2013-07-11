@@ -55,7 +55,8 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
     $this->app->call();
 
     $this->assertEquals(401, $this->app->getSlim()->response()->status());
-    $this->assertEmpty($this->app->getSlim()->response()->body());
+    $this->assertNotEmpty($this->app->getSlim()->response()->body());
+    $this->assertEquals(1007, json_decode($this->app->getSlim()->response()->body())->error->code);
   }
 
   public function testWrongOwnerCall() {
@@ -73,7 +74,8 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
     $this->app->call();
 
     $this->assertEquals(401, $this->app->getSlim()->response()->status());
-    $this->assertEmpty($this->app->getSlim()->response()->body());
+    $this->assertNotEmpty($this->app->getSlim()->response()->body());
+    $this->assertEquals(1007, json_decode($this->app->getSlim()->response()->body())->error->code);
   }
 
   public function testWrongOwnerCollectionCall() {

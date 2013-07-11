@@ -3,7 +3,6 @@
 namespace MABI\RESTAccess;
 
 use MABI\Middleware;
-use Slim\Exception\Stop;
 
 include_once __DIR__ . '/../../Middleware.php';
 include_once __DIR__ . '/../../Utilities.php';
@@ -20,8 +19,7 @@ abstract class RESTAccessMiddleware extends Middleware {
   public function call() {
     $callable = $this->getController()->getApp()->getSlim()->router()->getCurrentRoute()->getCallable();
     if (empty($callable) || !$this->doesHaveAccessToMethod($callable[1])) {
-      $this->getController()->getApp()->getSlim()->response()->status(401);
-      throw new Stop();
+      $this->getController()->getApp()->returnError('Not properly authenticated for this route', 401, 1007);
     }
 
     if (!empty($this->next)) {

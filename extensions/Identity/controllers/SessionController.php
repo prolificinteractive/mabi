@@ -9,7 +9,7 @@ use \MABI\RESTModelController;
 /**
  * todo: docs
  *
- * @--disabled--middleware \MABI\RESTAccess\PostAndObjectOnly
+ * @middleware \MABI\RESTAccess\PostAndObjectOnly
  * @middleware \MABI\Identity\Middleware\SessionHeader
  * @middleware \MABI\Identity\Middleware\RESTOwnerOnlyAccess
  */
@@ -57,5 +57,4 @@ class SessionController extends RESTModelController {
     $this->model->insert();
     echo $this->model->outputJSON();
   }
-  
 }

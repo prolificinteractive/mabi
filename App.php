@@ -54,13 +54,29 @@ class App extends Extension {
   /**
    * Returns a JSON array displaying the error to the client and stops execution
    *
-   * @param $message string
-   * @param $httpStatusCode int
-   * @param $applicationErrorCode int
+   * Example Error Message Definition:
+   * define('ERRORDEF_NO_ACCESS', array('message' => 'No Access', 'code' => 1007, 'httpcode' => 402));
+   *
+   * @param $message string|array
+   * @param $httpStatusCode int|null
+   * @param $applicationErrorCode int|null
    *
    * @throws \Slim\Exception\Stop
+   * @throws \Exception
    */
-  public function returnError($message, $httpStatusCode, $applicationErrorCode = NULL) {
+  public function returnError($message, $httpStatusCode = NULL, $applicationErrorCode = NULL) {
+    if(is_array($message)) {
+      if(array_key_exists('message', $message) && array_key_exists('httpcode', $message) &&
+        array_key_exists('code', $message)) {
+        $message = $message['message'];
+        $httpStatusCode = $message['httpcode'];
+        $applicationErrorCode = $message['code'];
+      }
+      else {
+        throw new \Exception('Improper error message definition');
+      }
+    }
+
     echo json_encode(array(
       'error' => empty($applicationErrorCode) ? array('message' => $message) :
         array('code' => $applicationErrorCode, 'message' => $message)

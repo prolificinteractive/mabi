@@ -21,6 +21,8 @@ class Controller {
    */
   protected $base = NULL;
 
+  protected $documentationName = NULL;
+
   /**
    * @endpoint ignore
    * @return string
@@ -79,6 +81,10 @@ class Controller {
     $middlewares = ReflectionHelper::getDocDirective($rClass->getDocComment(), 'middleware');
     foreach ($middlewares as $middlewareClass) {
       $this->addMiddlewareByClass($middlewareClass);
+    }
+
+    if (empty($this->documentationName)) {
+      $this->documentationName = ucwords(ReflectionHelper::stripClassName(ReflectionHelper::getPrefixFromControllerClass($myClass)));
     }
   }
 
@@ -232,7 +238,7 @@ class Controller {
     $this->configureMiddlewares($this->middlewares);
 
     $doc = array();
-    $doc['name'] = ucwords(ReflectionHelper::stripClassName(ReflectionHelper::getPrefixFromControllerClass($myClass)));
+    $doc['name'] = $this->documentationName;
     $doc['description'] = $parser->parse(ReflectionHelper::getDocText($rClass->getDocComment()));
 
     // Adding documentation for custom controller actions

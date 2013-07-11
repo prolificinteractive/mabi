@@ -153,7 +153,7 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
     $sessionFound = FALSE;
     foreach ($docArray['parameters'] as $parameterDoc) {
       if (is_array($parameterDoc) && $parameterDoc['Name'] == 'SESSION' && $parameterDoc['Location'] == 'header') {
-        $this->assertEquals('Y', $parameterDoc['Required']);
+        $this->assertEquals('N', $parameterDoc['Required']);
         $sessionFound = TRUE;
         break;
       }

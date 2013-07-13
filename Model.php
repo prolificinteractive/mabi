@@ -33,7 +33,7 @@ class Model {
   /**
    * @var string
    */
-  protected $idProperty = 'id';
+  protected $idProperty;
 
   /**
    * @var string
@@ -99,8 +99,28 @@ class Model {
       $newModelObj->table = strtolower(Inflector::pluralize(ReflectionHelper::stripClassName($modelClass)));
     }
 
+    // Gets the default ID column on the DataConnection side
     if (empty($newModelObj->idColumn)) {
       $newModelObj->idColumn = $newModelObj->app->getDataConnection($newModelObj->connection)->getDefaultIdColumn();
+    }
+
+    // Allows overrides of idProperty for the name of the ID on the MABI side
+    if (empty($newModelObj->idProperty)) {
+      //
+      $rClass = new \ReflectionClass($newModelObj);
+      $rProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
+      foreach ($rProperties as $rProperty) {
+        /*
+         * Looks for the '@field id' directive to set as the id property
+         */
+        if (in_array('id', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
+          $newModelObj->idProperty = $rProperty->getName();
+          break;
+        }
+      }
+      if (empty($newModelObj->idProperty)) {
+        $newModelObj->idProperty = 'id';
+      }
     }
 
     $newModelObj->{$newModelObj->idProperty} = NULL;

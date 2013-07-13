@@ -8,7 +8,14 @@ use \MABI\RESTModelController;
 use Slim\Exception\Stop;
 
 /**
- * todo: docs
+ * Manages the endpoints for the maintaining authenticated sessions for Users. These are required for many
+ * calls that secure user information or must identify the user. The endpoints include creating a new session
+ * using a POST to the collection, and getting, updating and deleting extra session information.
+ *
+ * Authenticating into the API is analogous to creating a new session, as logging out of the API is analogous to
+ * deleting the session.
+ *
+ * There is no expiration mechanism built into the sessions, but this can be done in a custom implementation.
  *
  * @middleware \MABI\RESTAccess\PostAndObjectOnly
  * @middleware \MABI\Identity\Middleware\SessionHeader
@@ -24,11 +31,13 @@ class SessionController extends RESTModelController {
   protected $userModelClass = '\MABI\Identity\User';
 
   /**
+   * @docs-name Authenticate (Create New Session)
+   *
    * Creates a session. A valid email and password of an existing user must be passed in, and the new session
    * (with the session id) will be returned.
    *
-   * @docs-param email string body required todo: docs
-   * @docs-param password string body required todo: docs
+   * @docs-param email string body required The email of the user to create the session for
+   * @docs-param password string body required The password of the user to create the session for
    *
    * @throws \Slim\Exception\Stop
    */
@@ -54,7 +63,8 @@ class SessionController extends RESTModelController {
 
     $this->model->created = new \DateTime('now');
     $this->model->lastAccessed = new \DateTime('now');
-    $this->model->user = $user->getId();
+    $this->model->user = $user;
+    $this->model->userId = $user->getId();
     $this->model->email = NULL;
     $this->model->password = NULL;
     $this->model->insert();

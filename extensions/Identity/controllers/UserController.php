@@ -8,7 +8,8 @@ use \MABI\RESTModelController;
 use Slim\Exception\Stop;
 
 /**
- * todo: docs
+ * Manages the endpoints for the User model. This includes creating a new user using a POST to the collection, and
+ * getting, updating and deleting the user information.
  *
  * @middleware \MABI\RESTAccess\PostAndObjectOnly
  * @middleware \MABI\Identity\Middleware\SessionHeader
@@ -24,12 +25,15 @@ class UserController extends RESTModelController {
   protected $sessionModelClass = '\MABI\Identity\Session';
 
   /**
-   * Creates a new user. Will pass back the created user model
+   * @docs-name Create New User
    *
-   * @docs-param firstName string body optional todo: docs
-   * @docs-param lastName string body optional todo: docs
-   * @docs-param email string body required todo: docs
-   * @docs-param password string body required todo: docs
+   * Creates a new user. Will pass back the created user model, and will also create a new session (in newSessionId)
+   * so that the user may authenticate immediately.
+   *
+   * @docs-param firstName string body optional The first name of the new user
+   * @docs-param lastName string body optional The last name of the new user
+   * @docs-param email string body required The email address of the new user. This must be unique in the database.
+   * @docs-param password string body required The password for the new user. Please see requirements in the Model.
    *
    * @throws \Slim\Exception\Stop
    */
@@ -73,6 +77,9 @@ class UserController extends RESTModelController {
     echo $this->model->outputJSON();
   }
 
+  /**
+   * @endpoint ignore
+   */
   public function postForgotPassword() {
     // todo: implement. get an email from post
   }

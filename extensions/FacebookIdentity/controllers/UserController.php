@@ -8,7 +8,8 @@ use MABI\Parser;
 use Slim\Exception\Stop;
 
 /**
- * todo: docs
+ * Manages the endpoints for the User model. This includes creating a new user using a POST to the collection, and
+ * getting, updating and deleting the user information.
  *
  * @middleware \MABI\RESTAccess\PostAndObjectOnly
  * @middleware \MABI\Identity\Middleware\SessionHeader
@@ -37,12 +38,18 @@ class UserController extends \MABI\Identity\UserController {
   }
 
   /**
-   * Creates a new user. Will pass back the created user model
+   * @docs-name Create New User
    *
-   * @docs-param firstName string body optional todo: docs
-   * @docs-param lastName string body optional todo: docs
-   * @docs-param email string body required todo: docs
-   * @docs-param password string body required todo: docs
+   * Creates a new user. Will pass back the created user model, and will also create a new session (in newSessionId)
+   * so that the user may authenticate immediately.
+   *
+   * Facebook Connect users cannot be created through this endpoint, so if the facebookOnly flag is set, this method
+   * will be disabled.
+   *
+   * @docs-param firstName string body optional The first name of the new user
+   * @docs-param lastName string body optional The last name of the new user
+   * @docs-param email string body required The email address of the new user. This must be unique in the database.
+   * @docs-param password string body required The password for the new user. Please see requirements in the Model.
    *
    * @throws \Slim\Exception\Stop
    */
@@ -75,11 +82,20 @@ class UserController extends \MABI\Identity\UserController {
    * @return array
    */
   public function getDocJSON(Parser $parser) {
+    $doc = parent::getDocJSON($parser);
+
+    // Removes documentation for _restPostCollection and postForgotPassword if facebookOnly is set
     if ($this->getFacebookOnly()) {
-      return array();
+      foreach ($doc['methods'] as $k => $method) {
+        if ($method['InternalMethodName'] == '_restPostCollection' ||
+          $method['InternalMethodName'] == 'postForgotPassword'
+        ) {
+          unset($doc['methods'][$k]);
+          continue;
+        }
+      }
     }
-    else {
-      return parent::getDocJSON($parser);
-    }
+
+    return $doc;
   }
 }

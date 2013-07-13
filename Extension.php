@@ -139,6 +139,11 @@ class Extension {
     $this->modelLoaders = $modelLoaders;
   }
 
+  /**
+   * @param $name
+   *
+   * @return DataConnection
+   */
   public function getDataConnection($name) {
     $extensionDataConnections = array();
     foreach ($this->extensions as $extension) {

@@ -6,6 +6,7 @@ include_once __DIR__ . '/Slim/Slim.php';
 include_once __DIR__ . '/Extension.php';
 
 use \Slim\Slim;
+use Slim\Exception\Stop;
 
 Slim::registerAutoloader();
 
@@ -50,6 +51,40 @@ class App extends Extension {
     parent::__construct($this);
   }
 
+  /**
+   * Returns a JSON array displaying the error to the client and stops execution
+   *
+   * Example Error Message Definition:
+   * define('ERRORDEF_NO_ACCESS', array('message' => 'No Access', 'code' => 1007, 'httpcode' => 402));
+   *
+   * @param $message string|array
+   * @param $httpStatusCode int|null
+   * @param $applicationErrorCode int|null
+   *
+   * @throws \Slim\Exception\Stop
+   * @throws \Exception
+   */
+  public function returnError($message, $httpStatusCode = NULL, $applicationErrorCode = NULL) {
+    if(is_array($message)) {
+      if(array_key_exists('message', $message) && array_key_exists('httpcode', $message) &&
+        array_key_exists('code', $message)) {
+        $message = $message['message'];
+        $httpStatusCode = $message['httpcode'];
+        $applicationErrorCode = $message['code'];
+      }
+      else {
+        throw new \Exception('Improper error message definition');
+      }
+    }
+
+    echo json_encode(array(
+      'error' => empty($applicationErrorCode) ? array('message' => $message) :
+        array('code' => $applicationErrorCode, 'message' => $message)
+    ));
+    $this->getApp()->getSlim()->response()->status($httpStatusCode);
+    throw new Stop($message);
+  }
+
   public function run() {
     foreach ($this->getControllers() as $controller) {
       $controller->loadRoutes($this->slim);
@@ -69,7 +104,7 @@ class App extends Extension {
   public function getIOSModel() {
     $iosModel = IOSModelInterpreter::getIOSDataModel();
 
-    foreach($this->getModelClasses() as $modelClass) {
+    foreach ($this->getModelClasses() as $modelClass) {
       $model = call_user_func($modelClass . '::init', $this);
       IOSModelInterpreter::addModel($iosModel, $model);
     }

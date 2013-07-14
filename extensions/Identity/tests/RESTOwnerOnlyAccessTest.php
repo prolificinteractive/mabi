@@ -26,7 +26,6 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
       array(new SessionHeader(), $middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
-    $identity->getModelClasses();
 
     $this->dataConnectionMock->expects($this->any())
       ->method('findOneByField')
@@ -48,7 +47,6 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
       array($middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
-    $identity->getModelClasses();
 
     $this->dataConnectionMock->expects($this->any())
       ->method('findOneByField')
@@ -57,7 +55,8 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
     $this->app->call();
 
     $this->assertEquals(401, $this->app->getSlim()->response()->status());
-    $this->assertEmpty($this->app->getSlim()->response()->body());
+    $this->assertNotEmpty($this->app->getSlim()->response()->body());
+    $this->assertEquals(1007, json_decode($this->app->getSlim()->response()->body())->error->code);
   }
 
   public function testWrongOwnerCall() {
@@ -67,7 +66,6 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
       array(new SessionHeader(), $middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
-    $identity->getModelClasses();
 
     $this->dataConnectionMock->expects($this->any())
       ->method('findOneByField')
@@ -76,7 +74,8 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
     $this->app->call();
 
     $this->assertEquals(401, $this->app->getSlim()->response()->status());
-    $this->assertEmpty($this->app->getSlim()->response()->body());
+    $this->assertNotEmpty($this->app->getSlim()->response()->body());
+    $this->assertEquals(1007, json_decode($this->app->getSlim()->response()->body())->error->code);
   }
 
   public function testWrongOwnerCollectionCall() {
@@ -86,7 +85,6 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
       array(new SessionHeader(), $middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
-    $identity->getModelClasses();
 
     $this->dataConnectionMock->expects($this->any())
       ->method('findOneByField')
@@ -133,7 +131,6 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
       array($sessHeaderMiddleware, $middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
-    $identity->getModelClasses();
 
     $this->app->getDocJSON(new MarkdownParser());
 
@@ -151,7 +148,7 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
     $sessionFound = FALSE;
     foreach ($docArray['parameters'] as $parameterDoc) {
       if (is_array($parameterDoc) && $parameterDoc['Name'] == 'SESSION' && $parameterDoc['Location'] == 'header') {
-        $this->assertEquals('Y', $parameterDoc['Required']);
+        $this->assertEquals('N', $parameterDoc['Required']);
         $sessionFound = TRUE;
         break;
       }

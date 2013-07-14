@@ -55,8 +55,6 @@ class SessionControllerTest extends \PHPUnit_Framework_TestCase {
       ));
 
     $this->app->addExtension($mockFBIdentity);
-
-    $this->app->getModelClasses();
   }
 
   public function testSuccessfulSessionPostCollection() {

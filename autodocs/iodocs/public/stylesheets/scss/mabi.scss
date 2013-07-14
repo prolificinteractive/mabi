@@ -1,23 +1,38 @@
 .endpoint {
-  .description {
+  .endpointdetails {
     padding: 10px 10px 20px 10px;
 
-    ul {
-      list-style-type: disc;
-      padding-left: 40px;
+    .description {
+      padding-bottom: 10px;
+
+      ul {
+        list-style-type: disc;
+        padding-left: 40px;
+      }
+
+      li {
+        display: list-item;
+        text-align: -webkit-match-parent;
+        list-style-type: disc;
+      }
+
+      p {
+        margin-bottom: 14px;
+        margin-left: 0px;
+        margin-right: 0px;
+        margin-top: 14px;
+      }
     }
 
-    li {
-      display: list-item;
-      text-align: -webkit-match-parent;
-      list-style-type: disc;
-    }
+    .modeltable {
+      width: 100%;
 
-    p {
-      margin-bottom: 14px;
-      margin-left: 0px;
-      margin-right: 0px;
-      margin-top: 14px;
+      th, td {
+        padding: 2px 5px 2px 5px;
+      }
+      .desccol {
+        width: 100%;
+      }
     }
   }
 }

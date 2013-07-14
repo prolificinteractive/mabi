@@ -56,7 +56,22 @@ ul
                         a(href='#') List Methods
                     li.expand-methods
                         a(href='#') Expand Methods
-            div.description!=endpoint.description
+            div.endpointdetails
+                div.description!=endpoint.description
+                - if (endpoint.model && endpoint.model.fielddocs && endpoint.model.fielddocs.length > 0)
+                    div.model Field Descriptions:
+                        table.modeltable
+                            thead
+                                tr
+                                    th.namecol Name
+                                    th.typecol Type
+                                    th.desccol Description
+                            tbody
+                                - each field in endpoint.model.fielddocs
+                                    tr
+                                        td.namecol!=field.name
+                                        td.typecol!=field.type
+                                        td.desccol!=field.doc
             - if (endpoint.methods.length)
             ul.methods.hidden
                 - each method in endpoint.methods

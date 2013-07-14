@@ -21,7 +21,6 @@ class SessionHeaderTest extends MiddlewareTestCase {
     $this->setUpRESTApp(array('PATH_INFO' => '/modelbs', 'SESSION' => 'TEST-SESSION-ID-1'), array($middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
-    $identity->getModelClasses();
 
     $this->dataConnectionMock->expects($this->once())
       ->method('findOneByField')
@@ -45,7 +44,6 @@ class SessionHeaderTest extends MiddlewareTestCase {
     $this->setUpRESTApp(array('PATH_INFO' => '/modelbs', 'SESSION' => 'TEST-SESSION-ID-1'), array($middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
-    $identity->getModelClasses();
 
     $docArray = array();
     $rClassMock = $this->getMock('\ReflectionClass', array(), array(), '', FALSE);

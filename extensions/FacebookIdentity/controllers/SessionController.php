@@ -6,7 +6,6 @@ include_once __DIR__ . '/../../../RESTModelController.php';
 include_once __DIR__ . '/../../Identity/controllers/SessionController.php';
 
 use MABI\Identity\Identity;
-use Slim\Exception\Stop;
 
 /**
  * Manages the endpoints for the maintaining authenticated sessions for Users. These are required for many
@@ -124,8 +123,7 @@ class SessionController extends \MABI\Identity\SessionController {
 
     if (empty($this->model->accessToken)) {
       if ($this->getFacebookOnly()) {
-        $this->getApp()->getSlim()->response()->status(400);
-        throw new Stop("An authorization token is required to create a session");
+        $this->getApp()->returnError('An authorization token is required to create a session', 400, 1000);
       }
 
       parent::_restPostCollection();

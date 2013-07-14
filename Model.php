@@ -423,4 +423,40 @@ class Model {
   public function outputJSON() {
     return json_encode($this->getPropertyArray(TRUE));
   }
+
+  public function getDocOutput(Parser $parser) {
+    $fieldDocs = array();
+
+    $rClass = new \ReflectionClass($this);
+    $rProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
+    foreach ($rProperties as $rProperty) {
+      /*
+       * Ignores writing any model property with 'internal' or 'system' options
+       */
+      if (in_array('internal', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field')) ||
+        in_array('system', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))
+      ) {
+        continue;
+      }
+
+      $varType = 'unknown';
+      // Pulls out the type following the pattern @var <TYPE> from the doc comments of the property
+      $varDocs = ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'var');
+      if (!empty($varDocs)) {
+        $varType = $varDocs[0];
+      }
+
+      $fieldDoc = array(
+        'name' => $rProperty->getName(),
+        'type' => $varType,
+        'doc' => $parser->parse(ReflectionHelper::getDocText($rProperty->getDocComment()))
+      );
+      $fieldDocs[ /* $rProperty->getName() */] = $fieldDoc;
+    }
+
+    return array(
+      'fielddocs' => $fieldDocs,
+// todo: Add 'SampleJSON' so that it can be copied into requests
+    );
+  }
 }

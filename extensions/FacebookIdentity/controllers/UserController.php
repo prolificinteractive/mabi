@@ -5,7 +5,6 @@ namespace MABI\FacebookIdentity;
 include_once __DIR__ . '/../../Identity/controllers/UserController.php';
 
 use MABI\Parser;
-use Slim\Exception\Stop;
 
 /**
  * Manages the endpoints for the User model. This includes creating a new user using a POST to the collection, and
@@ -55,8 +54,7 @@ class UserController extends \MABI\Identity\UserController {
    */
   public function _restPostCollection() {
     if ($this->getFacebookOnly()) {
-      $this->getApp()->getSlim()->response()->status(401);
-      throw new Stop("Facebook Connect is the only method allowed to create users");
+      $this->getApp()->returnError('Facebook Connect is the only method allowed to create users', 401, 1001);
     }
     else {
       parent::_restPostCollection();
@@ -65,8 +63,7 @@ class UserController extends \MABI\Identity\UserController {
 
   public function postForgotPassword() {
     if ($this->getFacebookOnly()) {
-      $this->getApp()->getSlim()->response()->status(401);
-      throw new Stop("Facebook Connect is the only method allowed to authenticate users");
+      $this->getApp()->returnError('Facebook Connect is the only method allowed to create users', 401, 1001);
     }
     else {
       // todo: implement. get email from post, warn if a facebook user

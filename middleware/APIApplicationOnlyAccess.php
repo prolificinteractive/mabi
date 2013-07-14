@@ -15,8 +15,7 @@ class APIApplicationOnlyAccess extends \MABI\Middleware {
    */
   public function call() {
     if (empty($this->getController()->getApp()->getSlim()->request()->apiApplication)) {
-      $this->getController()->getApp()->getSlim()->response()->status(401);
-      throw new \Slim\Exception\Stop();
+      $this->getController()->getApp()->returnError('Not properly authenticated for this route', 401, 1007);
     }
 
     if (!empty($this->next)) {

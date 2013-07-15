@@ -23,11 +23,12 @@ class ReflectionHelper {
   }
 
   public static function getDocText($docComments) {
-    $docComments = preg_replace('/^\s*\/\*\*.*\\n/m','',$docComments);
-    $docComments = preg_replace('/^\s*\*\/\s*/m','',$docComments);
-    $docComments = preg_replace('/^\s*\*\s*\n/m',"\n",$docComments);
-    $docComments = preg_replace('/^\h*\*\h*/m','',$docComments);
-    $docComments = preg_replace('/^\@.*\\n/m','',$docComments);
+    $docComments = preg_replace('/^\s*\/\*\*.*\\n/m', '', $docComments);
+    $docComments = preg_replace('/^\s*\*\/\s*/m', '', $docComments);
+    $docComments = preg_replace('/^\s*\*\s*\n/m', "\n", $docComments);
+    $docComments = preg_replace('/^\h*\*\h*/m', '', $docComments);
+    $docComments = preg_replace('/^\@.*\\n/m', '', $docComments);
+    $docComments = preg_replace('/\@docs-jsondesc-start(.|\n|\r)*\@docs-jsondesc-end\n/m', '', $docComments);
     return $docComments;
   }
 
@@ -42,7 +43,7 @@ class DirectoryHelper {
     if ($handle = opendir($directory)) {
       while (FALSE !== ($file = readdir($handle))) {
         if ($file != "." && $file != ".." && (empty($extension) ||
-          (!empty($extension) && substr($file, -strlen($extension)) === $extension))
+            (!empty($extension) && substr($file, -strlen($extension)) === $extension))
         ) {
 
           if (is_dir($directory . "/" . $file)) {

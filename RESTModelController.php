@@ -11,7 +11,7 @@ include_once __DIR__ . '/ModelController.php';
  */
 class RESTModelController extends ModelController {
   /**
-   * @var \Mabi\Model
+   * @var \MABI\Model
    */
   protected $model = NULL;
 
@@ -47,7 +47,13 @@ class RESTModelController extends ModelController {
 
   public function _restPostCollection() {
     $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
-    $this->model->loadParameters($this->getApp()->getRequest()->post());
+    $this->model->load($this->getApp()->getRequest()->getBody());
+
+    $dupModel = call_user_func($this->modelClass . '::init', $this->getApp());
+    if ($dupModel->findById($this->model->getId())) {
+      $this->getApp()->returnError('An entry with the id ' . $this->model->getId() . ' already exists.', 409, 1008);
+    }
+
     $this->model->insert();
     echo $this->model->outputJSON();
   }
@@ -68,7 +74,7 @@ class RESTModelController extends ModelController {
   }
 
   public function _restPutObject($id) {
-    $this->model->loadParameters($this->getApp()->getRequest()->post(), $id);
+    $this->model->load($this->getApp()->getRequest()->getBody(), $id);
     $this->model->save();
   }
 

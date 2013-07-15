@@ -123,7 +123,7 @@ class Model {
          * @var $model \MABI\Model
          */
         $model = call_user_func($this->modelClass . '::init', $this->app);
-        $model->loadParameters($foundObject);
+        $model->load($foundObject);
         $foundModels[] = $model;
       }
     }
@@ -144,7 +144,7 @@ class Model {
        * @var $model \MABI\Model
        */
       $model = call_user_func($this->modelClass . '::init', $this->app);
-      $model->loadParameters($foundObject);
+      $model->load($foundObject);
       $foundModels[] = $model;
     }
     return $foundModels;
@@ -159,7 +159,7 @@ class Model {
    *
    * @throws \Exception
    */
-  protected function loadParameter($type, &$parameter, $result) {
+  protected function loadField($type, &$parameter, $result) {
     switch ($type) {
       case 'string':
         $parameter = $result;
@@ -194,7 +194,7 @@ class Model {
              * @var $model \MABI\Model
              */
             $model = call_user_func($type . '::init', $this->app);
-            $model->loadParameters($result);
+            $model->load($result);
             $parameter = $model;
           }
           else {
@@ -207,14 +207,19 @@ class Model {
   }
 
   /**
-   * Loads parameters from a PHP database into the model object using reflection
+   * Loads the data for the model from a PHP array or a json string into the current model object using reflection
+   * and MABI annotations.
    *
-   * @param $resultArray array
-   * @param $forceId string
+   * @param $resultArray array|string Either an associative array that maps to the model or a JSON string which can be turned into one
+   * @param $forceId string Whether to force the ID to this value instead of attempting to read it from the resultArray
    *
    * @throws \Exception
    */
-  public function loadParameters($resultArray, $forceId = NULL) {
+  public function load($resultArray, $forceId = NULL) {
+    if (!is_array($resultArray)) {
+      $resultArray = json_decode($resultArray, TRUE);
+    }
+
     $rClass = new \ReflectionClass($this);
     $rProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
     foreach ($rProperties as $rProperty) {
@@ -237,14 +242,14 @@ class Model {
           $outArr = array();
           if (!empty($resultArray[$rProperty->getName()])) {
             foreach ($resultArray[$rProperty->getName()] as $listResult) {
-              $this->loadParameter($type, $parameter, $listResult);
+              $this->loadField($type, $parameter, $listResult);
               $outArr[] = $parameter;
             }
           }
           $this->{$rProperty->getName()} = $outArr;
         }
         else {
-          $this->loadParameter($type, $this->{$rProperty->getName()}, $resultArray[$rProperty->getName()]);
+          $this->loadField($type, $this->{$rProperty->getName()}, $resultArray[$rProperty->getName()]);
         }
       }
       unset($resultArray[$rProperty->getName()]);
@@ -274,7 +279,7 @@ class Model {
     if ($result == NULL) {
       return FALSE;
     }
-    $this->loadParameters($result);
+    $this->load($result);
     return TRUE;
   }
 
@@ -292,7 +297,7 @@ class Model {
     if ($result == NULL) {
       return FALSE;
     }
-    $this->loadParameters($result);
+    $this->load($result);
     return TRUE;
   }
 
@@ -371,7 +376,7 @@ class Model {
   public function insert() {
     $dataConnection = $this->app->getDataConnection($this->connection);
     $propArray = $dataConnection->insert($this->table, $this->getPropertyArray());
-    $this->loadParameters($propArray);
+    $this->load($propArray);
   }
 
   /**
@@ -381,7 +386,7 @@ class Model {
     $dataConnection = $this->app->getDataConnection($this->connection);
     $propArray = $this->getPropertyArray();
     $dataConnection->save($this->table, $propArray, $this->idColumn, $this->{$this->idProperty});
-    $this->loadParameters($propArray);
+    $this->load($propArray);
   }
 
   /**

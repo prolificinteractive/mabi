@@ -109,7 +109,7 @@ class RESTModelControllerTest extends \PHPUnit_Framework_TestCase {
     // Test POST /{collection}
     $this->setUpRESTApp(array(
       'REQUEST_METHOD' => 'POST',
-      'slim.input' => 'name=modelb',
+      'slim.input' => '{"name":"modelb"}',
       'PATH_INFO' => '/modelb'
     ));
     $this->dataConnectionMock->expects($this->once())

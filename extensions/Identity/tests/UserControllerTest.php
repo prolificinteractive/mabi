@@ -43,7 +43,7 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase {
   public function testNoPasswordPostCollection() {
     $this->setUpRESTApp(array(
       'REQUEST_METHOD' => 'POST',
-      'slim.input' => 'firstName=photis&lastName=patriotis&email=ppatriotis@gmail.com',
+      'slim.input' => '{"firstName":"photis","lastName":"patriotis","email":"ppatriotis@gmail.com"}',
       'PATH_INFO' => '/users'
     ));
 
@@ -54,7 +54,7 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase {
   public function testShortPasswordPostCollection() {
     $this->setUpRESTApp(array(
       'REQUEST_METHOD' => 'POST',
-      'slim.input' => 'firstName=photis&lastName=patriotis&email=ppatriotis@gmail.com&password=123',
+      'slim.input' => '{"firstName":"photis","lastName":"patriotis","email":"ppatriotis@gmail.com","password":"123"}',
       'PATH_INFO' => '/users'
     ));
 
@@ -65,7 +65,7 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase {
   public function testMissingEmailPostCollection() {
     $this->setUpRESTApp(array(
       'REQUEST_METHOD' => 'POST',
-      'slim.input' => 'firstName=photis&lastName=patriotis&password=123456',
+      'slim.input' => '{"firstName":"photis","lastName":"patriotis","password":"123456"}',
       'PATH_INFO' => '/users'
     ));
 
@@ -76,7 +76,7 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase {
   public function testExistingEmailPostCollection() {
     $this->setUpRESTApp(array(
       'REQUEST_METHOD' => 'POST',
-      'slim.input' => 'firstName=photis&lastName=patriotis&email=ppatriotis@gmail.com&password=123456',
+      'slim.input' => '{"firstName":"photis","lastName":"patriotis","email":"ppatriotis@gmail.com","password":"123456"}',
       'PATH_INFO' => '/users'
     ));
 
@@ -91,7 +91,7 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase {
   public function testSuccessfulPostCollection() {
     $this->setUpRESTApp(array(
       'REQUEST_METHOD' => 'POST',
-      'slim.input' => 'firstName=photis&lastName=patriotis2&email=ppatriotis2@gmail.com&password=123456',
+      'slim.input' => '{"firstName":"photis","lastName":"patriotis2","email":"ppatriotis2@gmail.com","password":"123456"}',
       'PATH_INFO' => '/users'
     ));
 

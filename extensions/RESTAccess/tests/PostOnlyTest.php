@@ -25,7 +25,7 @@ class PostOnlyTest extends MiddlewareTestCase {
     $this->setUpRESTApp(array(
       'PATH_INFO' => '/modelbs',
       'REQUEST_METHOD' => 'POST',
-      'slim.input' => 'name=modelb',
+      'slim.input' => '{"name":"modelb"}',
     ), array($middleware));
 
     $this->dataConnectionMock->expects($this->once())

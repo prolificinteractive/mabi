@@ -43,7 +43,7 @@ class SessionControllerTest extends \PHPUnit_Framework_TestCase {
   public function testMissingPasswordPostCollection() {
     $this->setUpRESTApp(array(
       'REQUEST_METHOD' => 'POST',
-      'slim.input' => 'email=ppatriotis@gmail.com&password=1235',
+      'slim.input' => '{"email":"ppatriotis@gmail.com","password":"1235"}',
       'PATH_INFO' => '/sessions'
     ));
 
@@ -54,7 +54,7 @@ class SessionControllerTest extends \PHPUnit_Framework_TestCase {
   public function testInvalidPasswordPostCollection() {
     $this->setUpRESTApp(array(
       'REQUEST_METHOD' => 'POST',
-      'slim.input' => 'email=ppatriotis@gmail.com',
+      'slim.input' => '{"email":"ppatriotis@gmail.com"}',
       'PATH_INFO' => '/sessions'
     ));
 
@@ -69,7 +69,7 @@ class SessionControllerTest extends \PHPUnit_Framework_TestCase {
   public function testSuccessfulPostCollection() {
     $this->setUpRESTApp(array(
       'REQUEST_METHOD' => 'POST',
-      'slim.input' => 'email=ppatriotis@gmail.com&password=123',
+      'slim.input' => '{"email":"ppatriotis@gmail.com","password":"123"}',
       'PATH_INFO' => '/sessions'
     ));
 

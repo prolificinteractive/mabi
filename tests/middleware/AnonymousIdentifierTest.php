@@ -14,7 +14,7 @@ class AnonymousIdentifierTest extends MiddlewareTestCase {
 
     $this->app->call();
 
-    $this->assertEquals('test1', $this->app->getSlim()->request()->anonymousId);
+    $this->assertEquals('test1', $this->app->getRequest()->anonymousId);
   }
 
   public function testDocs() {

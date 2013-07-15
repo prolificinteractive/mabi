@@ -34,7 +34,7 @@ class UserController extends RESTModelController {
    */
   public function _restPostCollection() {
     $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
-    $this->model->loadParameters($this->getApp()->getSlim()->request()->post());
+    $this->model->loadParameters($this->getApp()->getRequest()->post());
 
     if (empty($this->model->password) || strlen($this->model->password) < 6) {
       $this->getApp()->returnError('Password must be at least 6 characters', 400, 1004);

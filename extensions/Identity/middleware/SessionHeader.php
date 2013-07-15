@@ -22,12 +22,12 @@ class SessionHeader extends Middleware {
    * call the next downstream middleware.
    */
   public function call() {
-    $sessionId = $this->getController()->getApp()->getSlim()->request()->headers('SESSION');
+    $sessionId = $this->getApp()->getRequest()->headers('SESSION');
 
-    $foundSession = Session::init($this->getController()->getApp());
+    $foundSession = Session::init($this->getApp());
     if($foundSession->findById($sessionId)) {
       $this->session = $foundSession;
-      $this->getController()->getApp()->getSlim()->request()->session = $this->session;
+      $this->getApp()->getRequest()->session = $this->session;
       $this->session->lastAccessed = new \DateTime('now');
     }
 

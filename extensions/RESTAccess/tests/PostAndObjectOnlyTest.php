@@ -17,7 +17,7 @@ class PostAndObjectOnlyTest extends MiddlewareTestCase {
 
     $this->app->call();
 
-    $this->assertEquals(401, $this->app->getSlim()->response()->status());
+    $this->assertEquals(401, $this->app->getResponse()->status());
   }
 
   public function testPassedCall() {
@@ -34,7 +34,7 @@ class PostAndObjectOnlyTest extends MiddlewareTestCase {
 
     $this->app->call();
 
-    $this->assertEquals(200, $this->app->getSlim()->response()->status());
+    $this->assertEquals(200, $this->app->getResponse()->status());
   }
 
   public function testSkipDocs() {

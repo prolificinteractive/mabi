@@ -30,7 +30,7 @@ class SharedSecret extends \MABI\Middleware {
      */
     $applicationModelClass = '\MABI\DefaultApplicationModel';
 
-    $mabi = $this->getController()->getApp();
+    $mabi = $this->getApp();
 
     $modelClasses = $mabi->getModelClasses();
     foreach ($modelClasses as $modelClass) {
@@ -60,10 +60,10 @@ class SharedSecret extends \MABI\Middleware {
     }
 
     $this->apiApplication = $applicationModelClass::init($mabi);
-    if (!$this->apiApplication->findByField($sharedSecretProp, $mabi->getSlim()->request()->headers('SHARED-SECRET'))) {
+    if (!$this->apiApplication->findByField($sharedSecretProp, $mabi->getRequest()->headers('SHARED-SECRET'))) {
       $this->apiApplication = FALSE;
     }
-    $mabi->getSlim()->request()->apiApplication = $this->apiApplication;
+    $mabi->getRequest()->apiApplication = $this->apiApplication;
 
     if (!empty($this->next)) {
       $this->next->call();

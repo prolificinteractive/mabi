@@ -47,7 +47,7 @@ class RESTModelController extends ModelController {
 
   public function _restPostCollection() {
     $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
-    $this->model->loadParameters($this->getApp()->getSlim()->request()->post());
+    $this->model->loadParameters($this->getApp()->getRequest()->post());
     $this->model->insert();
     echo $this->model->outputJSON();
   }
@@ -68,7 +68,7 @@ class RESTModelController extends ModelController {
   }
 
   public function _restPutObject($id) {
-    $this->model->loadParameters($this->getApp()->getSlim()->request()->post(), $id);
+    $this->model->loadParameters($this->getApp()->getRequest()->post(), $id);
     $this->model->save();
   }
 

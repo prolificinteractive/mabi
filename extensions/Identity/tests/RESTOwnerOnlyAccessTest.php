@@ -33,9 +33,9 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
 
     $this->app->call();
 
-    $this->assertEquals(200, $this->app->getSlim()->response()->status());
-    $this->assertNotEmpty($this->app->getSlim()->response()->body());
-    $output = json_decode($this->app->getSlim()->response()->body());
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $this->assertNotEmpty($this->app->getResponse()->body());
+    $output = json_decode($this->app->getResponse()->body());
     $this->assertNotEmpty($output);
     $this->assertEquals('test', $output->name);
   }
@@ -54,9 +54,9 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
 
     $this->app->call();
 
-    $this->assertEquals(401, $this->app->getSlim()->response()->status());
-    $this->assertNotEmpty($this->app->getSlim()->response()->body());
-    $this->assertEquals(1007, json_decode($this->app->getSlim()->response()->body())->error->code);
+    $this->assertEquals(401, $this->app->getResponse()->status());
+    $this->assertNotEmpty($this->app->getResponse()->body());
+    $this->assertEquals(1007, json_decode($this->app->getResponse()->body())->error->code);
   }
 
   public function testWrongOwnerCall() {
@@ -73,9 +73,9 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
 
     $this->app->call();
 
-    $this->assertEquals(401, $this->app->getSlim()->response()->status());
-    $this->assertNotEmpty($this->app->getSlim()->response()->body());
-    $this->assertEquals(1007, json_decode($this->app->getSlim()->response()->body())->error->code);
+    $this->assertEquals(401, $this->app->getResponse()->status());
+    $this->assertNotEmpty($this->app->getResponse()->body());
+    $this->assertEquals(1007, json_decode($this->app->getResponse()->body())->error->code);
   }
 
   public function testWrongOwnerCollectionCall() {
@@ -92,8 +92,8 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
 
     $this->app->call();
 
-    $this->assertEquals(200, $this->app->getSlim()->response()->status());
-    $this->assertNotEmpty($this->app->getSlim()->response()->body());
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $this->assertNotEmpty($this->app->getResponse()->body());
   }
 
   public function myFindOneByFieldCallback($field, $value, $table) {

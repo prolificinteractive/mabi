@@ -24,10 +24,10 @@ class SharedSecretTest extends MiddlewareTestCase {
 
     $this->app->call();
 
-    $this->assertEquals(200, $this->app->getSlim()->response()->status());
-    $this->assertNotEmpty($this->app->getSlim()->request()->apiApplication);
-    $this->assertInstanceOf('\MABI\DefaultApplicationModel', $this->app->getSlim()->request()->apiApplication);
-    $this->assertEquals('AppName', $this->app->getSlim()->request()->apiApplication->applicationName);
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $this->assertNotEmpty($this->app->getRequest()->apiApplication);
+    $this->assertInstanceOf('\MABI\DefaultApplicationModel', $this->app->getRequest()->apiApplication);
+    $this->assertEquals('AppName', $this->app->getRequest()->apiApplication->applicationName);
   }
 
   // todo: test custom application class

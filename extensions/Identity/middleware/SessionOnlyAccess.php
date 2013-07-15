@@ -18,8 +18,8 @@ class SessionOnlyAccess extends Middleware {
    */
   public function call() {
     // A session is required to access this call
-    if (empty($this->getController()->getApp()->getSlim()->request()->session)) {
-      $this->getController()->getApp()->returnError('Not properly authenticated for this route', 401, 1007);
+    if (empty($this->getApp()->getRequest()->session)) {
+      $this->getApp()->returnError('Not properly authenticated for this route', 401, 1007);
     }
 
     if (!empty($this->next)) {

@@ -146,7 +146,8 @@ class SessionController extends \MABI\Identity\SessionController {
 
       $this->model->created = new \DateTime('now');
       $this->model->lastAccessed = new \DateTime('now');
-      $this->model->user = $userModel->getId();
+      $this->model->user = $userModel;
+      $this->model->userId = $userModel->getId();
       $this->model->insert();
       echo $this->model->outputJSON();
     }

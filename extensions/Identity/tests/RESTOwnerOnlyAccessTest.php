@@ -108,12 +108,12 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
         if ($value == 'TEST-SESSION-ID-1') {
           return array(
             'created' => '1370663864',
-            'user' => 'TEST-USER-ID-1'
+            'userId' => 'TEST-USER-ID-1'
           );
         }
         return array(
           'created' => '1370663865',
-          'user' => 'TEST-USER-ID-2'
+          'userId' => 'TEST-USER-ID-2'
         );
       case 'modelbs':
       default:

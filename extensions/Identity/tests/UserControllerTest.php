@@ -109,7 +109,7 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase {
     $this->assertNotEmpty($this->app->getResponse()->body());
     $output = json_decode($this->app->getResponse()->body());
     $this->assertNotEmpty($output);
-    $this->assertEquals('2', $output->id);
+    $this->assertEquals('2', $output->userId);
     $this->assertEquals('4', $output->newSessionId);
   }
 
@@ -146,12 +146,12 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase {
     $this->assertThat($table, $this->logicalOr($this->equalTo('sessions'), $this->equalTo('users')));
     switch ($table) {
       case 'sessions':
-        $this->assertEquals($value['user'], '2');
+        $this->assertEquals($value['userId'], '2');
         return array(
           'id' => '4',
           'date_created' => time(),
           'lastAccessed' => time(),
-          'user' => '2',
+          'userId' => '2',
         );
         break;
       case 'users':

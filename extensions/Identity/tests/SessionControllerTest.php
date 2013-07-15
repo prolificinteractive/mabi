@@ -92,7 +92,7 @@ class SessionControllerTest extends \PHPUnit_Framework_TestCase {
     $this->assertNotEmpty($this->app->getResponse()->body());
     $output = json_decode($this->app->getResponse()->body());
     $this->assertNotEmpty($output);
-    $this->assertEquals('4', $output->id);
+    $this->assertEquals('4', $output->sessionId);
   }
 
   public function myFindOneByFieldCallback($field, $value, $table) {

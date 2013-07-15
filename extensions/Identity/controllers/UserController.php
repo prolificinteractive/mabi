@@ -66,7 +66,8 @@ class UserController extends RESTModelController {
     $session = call_user_func($this->sessionModelClass . '::init', $this->getApp());
     $session->created = new \DateTime('now');
     $session->lastAccessed = new \DateTime('now');
-    $session->user = $this->model->getId();
+    $session->user = $this->model;
+    $session->userId = $this->model->getId();
     $session->insert();
 
     $this->model->newSessionId = $session->getId();

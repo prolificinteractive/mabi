@@ -33,7 +33,7 @@ class SessionController extends RESTModelController {
    */
   function _restPostCollection() {
     $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
-    $this->model->loadParameters($this->getApp()->getSlim()->request()->post());
+    $this->model->loadParameters($this->getApp()->getRequest()->post());
 
     if (empty($this->model->password) || empty($this->model->email)) {
       $this->getApp()->returnError('Email and Password are required to create a session', 400, 1002);

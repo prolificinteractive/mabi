@@ -48,7 +48,7 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase {
     ));
 
     $this->app->call();
-    $this->assertEquals(400, $this->app->getSlim()->response()->status());
+    $this->assertEquals(400, $this->app->getResponse()->status());
   }
 
   public function testShortPasswordPostCollection() {
@@ -59,7 +59,7 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase {
     ));
 
     $this->app->call();
-    $this->assertEquals(400, $this->app->getSlim()->response()->status());
+    $this->assertEquals(400, $this->app->getResponse()->status());
   }
 
   public function testMissingEmailPostCollection() {
@@ -70,7 +70,7 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase {
     ));
 
     $this->app->call();
-    $this->assertEquals(400, $this->app->getSlim()->response()->status());
+    $this->assertEquals(400, $this->app->getResponse()->status());
   }
 
   public function testExistingEmailPostCollection() {
@@ -85,7 +85,7 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase {
       ->will($this->returnCallback(array($this, 'myFindOneByFieldCallback')));
 
     $this->app->call();
-    $this->assertEquals(409, $this->app->getSlim()->response()->status());
+    $this->assertEquals(409, $this->app->getResponse()->status());
   }
 
   public function testSuccessfulPostCollection() {
@@ -105,9 +105,9 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase {
       ->will($this->returnCallback(array($this, 'myInsertCallback')));
 
     $this->app->call();
-    $this->assertEquals(200, $this->app->getSlim()->response()->status());
-    $this->assertNotEmpty($this->app->getSlim()->response()->body());
-    $output = json_decode($this->app->getSlim()->response()->body());
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $this->assertNotEmpty($this->app->getResponse()->body());
+    $output = json_decode($this->app->getResponse()->body());
     $this->assertNotEmpty($output);
     $this->assertEquals('2', $output->id);
     $this->assertEquals('4', $output->newSessionId);

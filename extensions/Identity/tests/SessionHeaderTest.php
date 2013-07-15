@@ -32,10 +32,10 @@ class SessionHeaderTest extends MiddlewareTestCase {
 
     $this->app->call();
 
-    $this->assertEquals(200, $this->app->getSlim()->response()->status());
-    $this->assertNotEmpty($this->app->getSlim()->request()->session);
-    $this->assertInstanceOf('\MABI\Identity\Session', $this->app->getSlim()->request()->session);
-    $this->assertEquals('TEST-USER-ID-1', $this->app->getSlim()->request()->session->user);
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $this->assertNotEmpty($this->app->getRequest()->session);
+    $this->assertInstanceOf('\MABI\Identity\Session', $this->app->getRequest()->session);
+    $this->assertEquals('TEST-USER-ID-1', $this->app->getRequest()->session->user);
   }
 
   public function testDocs() {

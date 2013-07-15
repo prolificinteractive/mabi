@@ -27,6 +27,14 @@ class App extends Extension {
     return $this->slim;
   }
 
+  public function getRequest() {
+    $this->slim->request();
+  }
+
+  public function getResponse() {
+    $this->slim->response();
+  }
+
   /**
    * @var App
    */
@@ -81,7 +89,7 @@ class App extends Extension {
       'error' => empty($applicationErrorCode) ? array('message' => $message) :
         array('code' => $applicationErrorCode, 'message' => $message)
     ));
-    $this->getApp()->getSlim()->response()->status($httpStatusCode);
+    $this->getResponse()->status($httpStatusCode);
     throw new Stop($message);
   }
 

@@ -340,7 +340,23 @@ function processRequest(req, res, next) {
         };
 
     if (['POST','DELETE','PUT'].indexOf(httpMethod) !== -1) {
-        var requestBody = query.stringify(params);
+        if(config.jsonRequests) {
+            // Extract body param if it's a json request, and just use it as the post body
+            for( var param in params )
+            {
+                if (params.hasOwnProperty(param))
+                {
+                    if (params[param] !== '' && locations[param] == 'body' )
+                    {
+                        var requestBody = params[param];
+                        break;
+                    }
+                }
+            }
+        }
+        else {
+            var requestBody = query.stringify(params);
+        }
     }
 
     if (apiConfig.oauth) {

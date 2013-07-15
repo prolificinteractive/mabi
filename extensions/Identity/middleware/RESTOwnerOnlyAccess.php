@@ -39,7 +39,7 @@ class RESTOwnerOnlyAccess extends Middleware {
    */
   public function call() {
     // Owner access does not apply for Collection level functions
-    $callable = $this->getController()->getApp()->getSlim()->router()->getCurrentRoute()->getCallable();
+    $callable = $this->getRouteCallable();
     if (empty($callable) || $this->isCollectionCallable($callable[1])) {
       if (!empty($this->next)) {
         $this->next->call();
@@ -48,15 +48,15 @@ class RESTOwnerOnlyAccess extends Middleware {
     }
 
     // A session is required to access these objects
-    if (!isset($this->getController()->getApp()->getSlim()->request()->session)) {
-      $this->getController()->getApp()->returnError('Not properly authenticated for this route', 401, 1007);
+    if (!isset($this->getApp()->getRequest()->session)) {
+      $this->getApp()->returnError('Not properly authenticated for this route', 401, 1007);
     }
 
     /**
      * @var $restController \MABI\RESTModelController
      * @var $session \MABI\Identity\Session
      */
-    $session = $this->getController()->getApp()->getSlim()->request()->session;
+    $session = $this->getApp()->getRequest()->session;
     $restController = $this->getController();
 
     $rClass = new \ReflectionClass($restController->getModelClass());
@@ -74,7 +74,7 @@ class RESTOwnerOnlyAccess extends Middleware {
       $session->user != $restController->getModel()->{$ownerProperty}
     ) {
       // Don't give access to endpoint if the sessions don't match
-      $this->getController()->getApp()->returnError('Not properly authenticated for this route', 401, 1007);
+      $this->getApp()->returnError('Not properly authenticated for this route', 401, 1007);
     }
 
     if (!empty($this->next)) {

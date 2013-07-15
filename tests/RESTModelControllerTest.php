@@ -101,8 +101,8 @@ class RESTModelControllerTest extends \PHPUnit_Framework_TestCase {
         )
       )));
     $this->app->call();
-    $this->assertEquals(200, $this->app->getSlim()->response()->status());
-    $result = json_decode($this->app->getSlim()->response()->body());
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $result = json_decode($this->app->getResponse()->body());
     $this->assertNotEmpty($result);
     $this->assertInternalType('array', $result);
 
@@ -125,8 +125,8 @@ class RESTModelControllerTest extends \PHPUnit_Framework_TestCase {
         )
       )));
     $this->app->call();
-    $this->assertEquals(200, $this->app->getSlim()->response()->status());
-    $result = json_decode($this->app->getSlim()->response()->body());
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $result = json_decode($this->app->getResponse()->body());
     $this->assertNotEmpty($result);
     $this->assertInstanceOf('stdClass', $result);
 
@@ -141,8 +141,8 @@ class RESTModelControllerTest extends \PHPUnit_Framework_TestCase {
         'partner' => array('modelBId' => 1, 'name' => 'test')
       )));
     $this->app->call();
-    $this->assertEquals(200, $this->app->getSlim()->response()->status());
-    $result = json_decode($this->app->getSlim()->response()->body());
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $result = json_decode($this->app->getResponse()->body());
     $this->assertNotEmpty($result);
     $this->assertInstanceOf('stdClass', $result);
 
@@ -163,8 +163,8 @@ class RESTModelControllerTest extends \PHPUnit_Framework_TestCase {
       ->method('restGetTestFunc')
       ->will($this->returnValue('test'));
     $this->app->call();
-    $this->assertEquals(200, $this->app->getSlim()->response()->status());
-    $this->assertEquals('', $this->app->getSlim()->response()->body());
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $this->assertEquals('', $this->app->getResponse()->body());
 
     // Test custom post
     $this->setUpRESTApp(array('REQUEST_METHOD' => 'POST', 'PATH_INFO' => '/modelb/1/testfunc'));
@@ -179,8 +179,8 @@ class RESTModelControllerTest extends \PHPUnit_Framework_TestCase {
       ->method('restPostTestFunc')
       ->will($this->returnValue('test'));
     $this->app->call();
-    $this->assertEquals(200, $this->app->getSlim()->response()->status());
-    $this->assertEquals('', $this->app->getSlim()->response()->body());
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $this->assertEquals('', $this->app->getResponse()->body());
 
     // Test custom delete
     $this->setUpRESTApp(array('REQUEST_METHOD' => 'DELETE', 'PATH_INFO' => '/modelb/1/testfunc'));
@@ -195,8 +195,8 @@ class RESTModelControllerTest extends \PHPUnit_Framework_TestCase {
       ->method('restDeleteTestFunc')
       ->will($this->returnValue('test'));
     $this->app->call();
-    $this->assertEquals(200, $this->app->getSlim()->response()->status());
-    $this->assertEquals('', $this->app->getSlim()->response()->body());
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $this->assertEquals('', $this->app->getResponse()->body());
 
     // Test custom put
     $this->setUpRESTApp(array('REQUEST_METHOD' => 'PUT', 'PATH_INFO' => '/modelb/1/testfunc'));
@@ -211,8 +211,8 @@ class RESTModelControllerTest extends \PHPUnit_Framework_TestCase {
       ->method('restPutTestFunc')
       ->will($this->returnValue('test'));
     $this->app->call();
-    $this->assertEquals(200, $this->app->getSlim()->response()->status());
-    $this->assertEquals('', $this->app->getSlim()->response()->body());
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $this->assertEquals('', $this->app->getResponse()->body());
   }
 
   /**

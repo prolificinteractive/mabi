@@ -66,8 +66,8 @@ class ControllerTest extends \PHPUnit_Framework_TestCase {
       ->method('getTestFunc')
       ->will($this->returnValue('test'));
     $this->app->call();
-    $this->assertEquals(200, $this->app->getSlim()->response()->status());
-    $this->assertEquals('', $this->app->getSlim()->response()->body());
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $this->assertEquals('', $this->app->getResponse()->body());
 
     // Test custom post
     $this->setUpControllerApp(array('REQUEST_METHOD' => 'POST', 'PATH_INFO' => '/justa/testfunc'));
@@ -75,8 +75,8 @@ class ControllerTest extends \PHPUnit_Framework_TestCase {
       ->method('postTestFunc')
       ->will($this->returnValue('test'));
     $this->app->call();
-    $this->assertEquals(200, $this->app->getSlim()->response()->status());
-    $this->assertEquals('', $this->app->getSlim()->response()->body());
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $this->assertEquals('', $this->app->getResponse()->body());
 
     // Test custom put
     $this->setUpControllerApp(array('REQUEST_METHOD' => 'PUT', 'PATH_INFO' => '/justa/testfunc'));
@@ -84,8 +84,8 @@ class ControllerTest extends \PHPUnit_Framework_TestCase {
       ->method('putTestFunc')
       ->will($this->returnValue('test'));
     $this->app->call();
-    $this->assertEquals(200, $this->app->getSlim()->response()->status());
-    $this->assertEquals('', $this->app->getSlim()->response()->body());
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $this->assertEquals('', $this->app->getResponse()->body());
 
     // Test custom delete
     $this->setUpControllerApp(array('REQUEST_METHOD' => 'DELETE', 'PATH_INFO' => '/justa/testfunc'));
@@ -93,8 +93,8 @@ class ControllerTest extends \PHPUnit_Framework_TestCase {
       ->method('deleteTestFunc')
       ->will($this->returnValue('test'));
     $this->app->call();
-    $this->assertEquals(200, $this->app->getSlim()->response()->status());
-    $this->assertEquals('', $this->app->getSlim()->response()->body());
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $this->assertEquals('', $this->app->getResponse()->body());
   }
 
   /**

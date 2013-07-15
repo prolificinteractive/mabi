@@ -14,8 +14,8 @@ class APIApplicationOnlyAccess extends \MABI\Middleware {
    * call the next downstream middleware.
    */
   public function call() {
-    if (empty($this->getController()->getApp()->getSlim()->request()->apiApplication)) {
-      $this->getController()->getApp()->returnError('Not properly authenticated for this route', 401, 1007);
+    if (empty($this->getApp()->getRequest()->apiApplication)) {
+      $this->getApp()->returnError('Not properly authenticated for this route', 401, 1007);
     }
 
     if (!empty($this->next)) {

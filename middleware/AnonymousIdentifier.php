@@ -16,8 +16,8 @@ class AnonymousIdentifier extends \MABI\Middleware {
    * call the next downstream middleware.
    */
   public function call() {
-    $this->anonymousId = $this->getController()->getApp()->getSlim()->request()->headers('ANONUUID');
-    $this->getController()->getApp()->getSlim()->request()->anonymousId = $this->anonymousId;
+    $this->anonymousId = $this->getApp()->getRequest()->headers('ANONUUID');
+    $this->getApp()->getRequest()->anonymousId = $this->anonymousId;
     if (!empty($this->next)) {
       $this->next->call();
     }

@@ -17,9 +17,9 @@ abstract class RESTAccessMiddleware extends Middleware {
    * @throws \Slim\Exception\Stop
    */
   public function call() {
-    $callable = $this->getController()->getApp()->getSlim()->router()->getCurrentRoute()->getCallable();
+    $callable = $this->getRouteCallable();
     if (empty($callable) || !$this->doesHaveAccessToMethod($callable[1])) {
-      $this->getController()->getApp()->returnError('Not properly authenticated for this route', 401, 1007);
+      $this->getApp()->returnError('Not properly authenticated for this route', 401, 1007);
     }
 
     if (!empty($this->next)) {

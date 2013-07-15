@@ -24,6 +24,14 @@ abstract class Middleware {
     $this->controller = $controller;
   }
 
+  public function getRouteCallable() {
+    return $this->getController()->getApp()->getSlim()->router()->getCurrentRoute()->getCallable();
+  }
+
+  public function getApp() {
+    return $this->getController()->getApp();
+  }
+
   /**
    * todo: docs
    *

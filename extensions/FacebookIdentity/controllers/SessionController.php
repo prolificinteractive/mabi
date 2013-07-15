@@ -119,7 +119,7 @@ class SessionController extends \MABI\Identity\SessionController {
    */
   function _restPostCollection() {
     $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
-    $this->model->loadParameters($this->getApp()->getSlim()->request()->post());
+    $this->model->loadParameters($this->getApp()->getRequest()->post());
 
     if (empty($this->model->accessToken)) {
       if ($this->getFacebookOnly()) {

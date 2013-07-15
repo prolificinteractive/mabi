@@ -28,11 +28,11 @@ class App extends Extension {
   }
 
   public function getRequest() {
-    $this->slim->request();
+    return $this->slim->request();
   }
 
   public function getResponse() {
-    $this->slim->response();
+    return $this->slim->response();
   }
 
   /**

@@ -117,12 +117,33 @@ class MongoDataConnection extends DataConnection {
     return $result;
   }
 
+  function findByField($field, $value, $table, array $fields = array()) {
+    if ($field == "_id") {
+      $value = new \MongoId($value);
+    }
+    $return = $this->db->selectCollection($table)->find(array($field => $value), $fields);
+
+    $mongodata = array();
+    while ($return->hasNext()) {
+      $return->getNext();
+      $mongodata[] = $return->current();
+      /* todo: review if needed
+      if ($this->config['set_string_id'] && !empty($mongodata['_id']) && is_object($mongodata['_id'])) {
+        $mongodata['_id'] = $mongodata['_id']->__toString();
+      }
+      */
+    }
+    array_walk_recursive($mongodata, array($this, 'serializeMongoId'));
+
+    return $mongodata;
+  }
+
   function query($table, $query) {
-    if(isset($query['group'])) {
-    $return = $this->db->selectCollection($table)->group(
-      $query['group']['_id'],
-      $query['group']['initial'],
-      $query['group']['reduce']);
+    if (isset($query['group'])) {
+      $return = $this->db->selectCollection($table)->group(
+        $query['group']['_id'],
+        $query['group']['initial'],
+        $query['group']['reduce']);
       return $return;
     }
 

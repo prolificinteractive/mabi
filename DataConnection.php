@@ -13,6 +13,8 @@ abstract class DataConnection {
 
   abstract function findOneByField($field, $value, $table, array $fields = array());
 
+  abstract function findByField($field, $value, $table, array $fields = array());
+
   abstract function deleteByField($field, $value, $table);
 
   abstract function clearAll($table);

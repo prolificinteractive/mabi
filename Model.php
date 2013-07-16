@@ -316,6 +316,31 @@ class Model {
     return TRUE;
   }
 
+  /**
+   * todo: docs
+   *
+   * @param $fieldName string
+   * @param $value string
+   *
+   * @return Model[]
+   */
+  public function findAllByField($fieldName, $value) {
+    $dataConnection = $this->app->getDataConnection($this->connection);
+    $foundObjects = $dataConnection->findByField($fieldName, $value, $this->table, $this->readFields);
+    $foundModels = array();
+    if (is_array($foundObjects)) {
+      foreach ($foundObjects as $foundObject) {
+        /**
+         * @var $model \MABI\Model
+         */
+        $model = call_user_func($this->modelClass . '::init', $this->app);
+        $model->loadParameters($foundObject);
+        $foundModels[] = $model;
+      }
+    }
+    return $foundModels;
+  }
+
   protected function getPropertyArrayValue($value, $removeInternal = FALSE) {
     if (!is_object($value)) {
       return $value;

@@ -75,6 +75,25 @@ class UserController extends RESTModelController {
   }
 
   /**
+   * Deleting a user object should also destroy all of the user's authenticated sessions
+   *
+   * @param $id
+   */
+  public function _restDeleteObject($id) {
+    parent::_restDeleteObject($id);
+
+    /**
+     * @var $sessionModel Session
+     * @var $sessions Session[]
+     */
+    $sessionModel = call_user_func($this->sessionModelClass . '::init', $this->getApp());
+    $sessions = $sessionModel->findAllByField('userId', $this->model->userId);
+    foreach($sessions as $session) {
+      $session->delete();
+    }
+  }
+
+  /**
    * @endpoint ignore
    */
   public function postForgotPassword() {

@@ -3,6 +3,7 @@
 namespace MABI\Identity\Testing;
 
 include_once __DIR__ . '/../Identity.php';
+include_once __DIR__ . '/../../../tests/MockDataConnection.php';
 
 use MABI\Identity\Identity;
 use MABI\RESTAccess\RESTAccess;
@@ -29,11 +30,9 @@ class SessionControllerTest extends \PHPUnit_Framework_TestCase {
     \Slim\Environment::mock($env);
     $this->app = new \MABI\App();
 
-    $this->dataConnectionMock = $this->getMock('\MABI\DataConnection');
-    $this->dataConnectionMock
-      ->expects($this->any())
-      ->method('getDefaultIdColumn')
-      ->will($this->returnValue('id'));
+    $this->dataConnectionMock = $this->getMock('\MABI\Testing\MockDataConnection',
+      array('findOneByField', 'query', 'insert', 'save', 'deleteByField', 'clearAll', 'getNewId', 'findAll')
+    );
 
     $this->app->addDataConnection('default', $this->dataConnectionMock);
 

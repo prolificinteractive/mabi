@@ -237,6 +237,13 @@ class Model {
   public function loadParameters($resultArray, $forceId = NULL) {
     $rClass = new \ReflectionClass($this);
     $rProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
+
+    if (!empty($resultArray[$this->idColumn])) {
+      $dataConnection = $this->app->getDataConnection($this->connection);
+      $this->{$this->idProperty} = $dataConnection->convertFromNativeId($resultArray[$this->idColumn]);
+      unset($resultArray[$this->idColumn]);
+    }
+
     foreach ($rProperties as $rProperty) {
       if (!array_key_exists($rProperty->name, $resultArray)) {
         continue;
@@ -270,10 +277,6 @@ class Model {
       unset($resultArray[$rProperty->getName()]);
     }
 
-    if (!empty($resultArray[$this->idColumn])) {
-      $this->{$this->idProperty} = $resultArray[$this->idColumn];
-      unset($resultArray[$this->idColumn]);
-    }
     if (isset($forceId)) {
       $this->{$this->idProperty} = $forceId;
     }
@@ -316,7 +319,7 @@ class Model {
     return TRUE;
   }
 
-  protected function getPropertyArrayValue($value, $removeInternal = FALSE) {
+  protected function getPropertyArrayValue($value, $forOutput = FALSE) {
     if (!is_object($value)) {
       return $value;
     }
@@ -328,7 +331,7 @@ class Model {
          * @var $subModel \MABI\Model
          */
         $subModel = $value;
-        return $subModel->getPropertyArray($removeInternal);
+        return $subModel->getPropertyArray($forOutput);
       }
       elseif ($propClass->name == 'DateTime' || $propClass == '\DateTime') {
         /**
@@ -342,7 +345,7 @@ class Model {
     return NULL;
   }
 
-  public function getPropertyArray($removeInternal = FALSE) {
+  public function getPropertyArray($forOutput = FALSE) {
     $rClass = new \ReflectionClass($this);
 
     $outArr = array();
@@ -351,10 +354,10 @@ class Model {
       /*
        * Ignores writing any model property with 'external' option
        */
-      if (!$removeInternal && in_array('external', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
+      if (!$forOutput && in_array('external', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
         continue;
       }
-      if ($removeInternal && in_array('internal', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
+      if ($forOutput && in_array('internal', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
         continue;
       }
       if (in_array('system', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
@@ -363,22 +366,23 @@ class Model {
 
       if (is_array($this->{$rProperty->getName()})) {
         foreach ($this->{$rProperty->getName()} as $k => $v) {
-          $outArr[$rProperty->getName()][$k] = $this->getPropertyArrayValue($v, $removeInternal);
+          $outArr[$rProperty->getName()][$k] = $this->getPropertyArrayValue($v, $forOutput);
         }
       }
       else {
-        $outArr[$rProperty->getName()] = $this->getPropertyArrayValue($this->{$rProperty->getName()}, $removeInternal);
+        $outArr[$rProperty->getName()] = $this->getPropertyArrayValue($this->{$rProperty->getName()}, $forOutput);
       }
     }
     if (!empty($this->{$this->idProperty})) {
-      if (!$removeInternal) {
-        $outArr[$this->idColumn] = $this->{$this->idProperty};
+      if (!$forOutput) {
+        $dataConnection = $this->app->getDataConnection($this->connection);
+        $outArr[$this->idColumn] = $dataConnection->convertToNativeId($this->{$this->idProperty});
       }
       else {
         $outArr[$this->idProperty] = $this->{$this->idProperty};
       }
     }
-    if (!empty($this->_remainingReadResults) && !$removeInternal) {
+    if (!empty($this->_remainingReadResults) && !$forOutput) {
       $outArr = array_merge($outArr, $this->_remainingReadResults);
     }
 

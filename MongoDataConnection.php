@@ -7,7 +7,7 @@ include_once __DIR__ . '/DataConnection.php';
 /**
  * todo: docs
  */
-class MongoDataConnection extends DataConnection {
+class MongoDataConnection implements DataConnection {
 
   /**
    * @var \MongoDB
@@ -59,6 +59,22 @@ class MongoDataConnection extends DataConnection {
     return '_id';
   }
 
+  function getNewId() {
+    $newId = new \MongoId();
+    return $newId->__toString();
+  }
+
+  function convertToNativeId($stringId) {
+    return new \MongoId($stringId);
+  }
+
+  function convertFromNativeId($nativeId) {
+    if (is_object($nativeId) && get_class($nativeId) == 'MongoId') {
+      return $nativeId->__toString();
+    }
+    return $nativeId;
+  }
+
   public function findAll($table) {
     $return = $this->db->selectCollection($table)->find();
 
@@ -72,25 +88,16 @@ class MongoDataConnection extends DataConnection {
       }
       */
     }
-    array_walk_recursive($mongodata, array($this, 'serializeMongoId'));
 
     return $mongodata;
   }
 
   public function insert($table, $data) {
-    if (empty($data['_id'])) {
-      $data['_id'] = new \MongoId();
-    }
     $this->db->selectCollection($table)->insert($data);
-    $data['_id'] = (string) $data['_id'];
     return $data;
   }
 
   function save($table, $data, $field, $value) {
-    if ($field == "_id") {
-      $value = new \MongoId($value);
-      $data[$field] = $value;
-    }
     $this->db->selectCollection($table)->update(array($field => $value), $data);
   }
 
@@ -98,31 +105,21 @@ class MongoDataConnection extends DataConnection {
     $this->db->selectCollection($table)->drop();
   }
 
-  private function serializeMongoId(&$item, $key) {
-    if (is_object($item) && get_class($item) == 'MongoId') {
-      $item = $item->__toString();
-    }
-  }
-
   public function findOneByField($field, $value, $table, array $fields = array()) {
-    if ($field == "_id") {
-      $value = new \MongoId($value);
-    }
     $result = $this->db->selectCollection($table)->findOne(array($field => $value), $fields);
     if (empty($result)) {
       return NULL;
     }
 
-    array_walk_recursive($result, array($this, 'serializeMongoId'));
     return $result;
   }
 
   function query($table, $query) {
-    if(isset($query['group'])) {
-    $return = $this->db->selectCollection($table)->group(
-      $query['group']['_id'],
-      $query['group']['initial'],
-      $query['group']['reduce']);
+    if (isset($query['group'])) {
+      $return = $this->db->selectCollection($table)->group(
+        $query['group']['_id'],
+        $query['group']['initial'],
+        $query['group']['reduce']);
       return $return;
     }
 
@@ -154,9 +151,6 @@ class MongoDataConnection extends DataConnection {
    * @param $table
    */
   function deleteByField($field, $value, $table) {
-    if ($field == "_id") {
-      $value = new \MongoId($value);
-    }
     $this->db->selectCollection($table)->remove(array($field => $value));
   }
 }

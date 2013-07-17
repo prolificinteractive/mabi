@@ -305,7 +305,8 @@ class Model {
    */
   public function findById($id) {
     $dataConnection = $this->app->getDataConnection($this->connection);
-    $result = $dataConnection->findOneByField($this->idColumn, $id, $this->table, $this->readFields);
+    $result = $dataConnection->findOneByField($this->idColumn, $dataConnection->convertToNativeId($id),
+      $this->table, $this->readFields);
     if ($result == NULL) {
       return FALSE;
     }
@@ -323,6 +324,9 @@ class Model {
    */
   public function findByField($fieldName, $value) {
     $dataConnection = $this->app->getDataConnection($this->connection);
+    if($fieldName == $this->idColumn) {
+      $value = $dataConnection->convertToNativeId($value);
+    }
     $result = $dataConnection->findOneByField($fieldName, $value, $this->table, $this->readFields);
     if ($result == NULL) {
       return FALSE;
@@ -416,7 +420,8 @@ class Model {
   public function save() {
     $dataConnection = $this->app->getDataConnection($this->connection);
     $propArray = $this->getPropertyArray();
-    $dataConnection->save($this->table, $propArray, $this->idColumn, $this->{$this->idProperty});
+    $dataConnection->save($this->table, $propArray, $this->idColumn,
+      $dataConnection->convertToNativeId($this->{$this->idProperty}));
     $this->loadParameters($propArray);
   }
 
@@ -425,7 +430,8 @@ class Model {
    */
   public function delete() {
     $dataConnection = $this->app->getDataConnection($this->connection);
-    $dataConnection->deleteByField($this->idColumn, $this->{$this->idProperty}, $this->table);
+    $dataConnection->deleteByField($this->idColumn, $dataConnection->convertToNativeId($this->{$this->idProperty}),
+      $this->table);
   }
 
   /**

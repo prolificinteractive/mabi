@@ -6,6 +6,8 @@ include_once dirname(__FILE__) . '/DataConnection.php';
 include_once dirname(__FILE__) . '/ModelLoader.php';
 include_once dirname(__FILE__) . '/Slim/Slim.php';
 
+\Slim\Slim::registerAutoloader();
+
 /**
  * todo: docs
  */
@@ -32,6 +34,18 @@ class App {
   protected $slim;
 
   /**
+   * @var Array
+   */
+  protected $config = array();
+
+  /**
+   * @return \Slim\Slim
+   */
+  public function getSlim() {
+    return $this->slim;
+  }
+
+  /**
    * @var App
    */
   protected static $singletonApp = NULL;
@@ -40,8 +54,8 @@ class App {
    * todo: docs
    */
   static function getApp() {
-    if(empty(self::$singletonApp)) {
-      self::$singletonApp= new App();
+    if (empty(self::$singletonApp)) {
+      self::$singletonApp = new App();
     }
 
     return self::$singletonApp;
@@ -65,6 +79,27 @@ class App {
   /**
    * todo: docs
    *
+   * @param $key
+   * @param $value
+   */
+  public function setConfig($key, $value) {
+    $this->config[$key] = $value;
+  }
+
+  /**
+   * todo: docs
+   *
+   * @param $key
+   *
+   * @return mixed
+   */
+  public function getConfig($key) {
+    return $this->config[$key];
+  }
+
+  /**
+   * todo: docs
+   *
    * @param $modelClass string
    */
   function addModel($modelClass) {
@@ -80,9 +115,9 @@ class App {
     $this->modelLoaders = $modelLoaders;
 
     $this->modelClasses = array();
-    foreach($modelLoaders as $modelLoader) {
+    foreach ($modelLoaders as $modelLoader) {
       $modelClasses = $modelLoader->loadModels();
-      foreach($modelClasses as $modelClass) {
+      foreach ($modelClasses as $modelClass) {
         $this->modelClasses[] = $modelClass;
       }
     }
@@ -92,15 +127,19 @@ class App {
     return $this->dataConnections[$name];
   }
 
+  public function getModelClasses() {
+    return $this->modelClasses;
+  }
+
   /**
    * todo: docs
    *
    * @param $controllerLoaders ControllerLoader[]
    */
   public function setControllerLoaders($controllerLoaders) {
-    foreach($controllerLoaders as $controllerLoader) {
-      $controllers = $controllerLoader->loadControllers();
-      foreach($controllers as $controller) {
+    foreach ($controllerLoaders as $controllerLoader) {
+      $controllers = $controllerLoader->getControllers();
+      foreach ($controllers as $controller) {
         $controller->loadRoutes($this->slim);
       }
     }

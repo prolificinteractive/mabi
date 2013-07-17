@@ -6,5 +6,5 @@ abstract class ControllerLoader {
   /**
    * @return Controller[]
    */
-  abstract function loadControllers();
+  abstract function getControllers();
 }

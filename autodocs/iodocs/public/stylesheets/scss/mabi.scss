@@ -1,27 +1,29 @@
 .endpoint {
+  .description {
+    ul {
+      list-style-type: disc;
+      padding-left: 40px;
+    }
+
+    li {
+      display: list-item;
+      text-align: -webkit-match-parent;
+      list-style-type: disc;
+    }
+
+    p {
+      margin-bottom: 14px;
+      margin-left: 0px;
+      margin-right: 0px;
+      margin-top: 14px;
+    }
+  }
+
   .endpointdetails {
     padding: 10px 10px 20px 10px;
 
     .description {
       padding-bottom: 10px;
-
-      ul {
-        list-style-type: disc;
-        padding-left: 40px;
-      }
-
-      li {
-        display: list-item;
-        text-align: -webkit-match-parent;
-        list-style-type: disc;
-      }
-
-      p {
-        margin-bottom: 14px;
-        margin-left: 0px;
-        margin-right: 0px;
-        margin-top: 14px;
-      }
     }
 
     .modeltable {
@@ -36,4 +38,9 @@
       }
     }
   }
+
+  .method .description {
+    padding: 10px 10px 20px 10px;
+  }
+
 }

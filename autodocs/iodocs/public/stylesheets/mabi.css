@@ -17,6 +17,7 @@
   .endpoint .endpointdetails .modeltable {
     width: 100%; }
     .endpoint .endpointdetails .modeltable th, .endpoint .endpointdetails .modeltable td {
+      text-align: left;
       padding: 2px 5px 2px 5px; }
     .endpoint .endpointdetails .modeltable .desccol {
       width: 100%; }

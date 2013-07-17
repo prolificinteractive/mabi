@@ -79,7 +79,13 @@ class Model {
     return $this->idProperty;
   }
 
-  /**
+  public static function initWithNewId($app) {
+    $newModelObj = self::init($app);
+    $newModelObj->{$newModelObj->idProperty} = $newModelObj->getNewId();
+    return $newModelObj;
+  }
+
+    /**
    * todo: docs
    *
    * @param $app App
@@ -126,6 +132,11 @@ class Model {
     $newModelObj->{$newModelObj->idProperty} = NULL;
 
     return $newModelObj;
+  }
+
+  public function getNewId() {
+    $dataConnection = $this->app->getDataConnection($this->connection);
+    return $dataConnection->getNewId();
   }
 
   /**

@@ -85,7 +85,7 @@ class Model {
     return $newModelObj;
   }
 
-    /**
+  /**
    * todo: docs
    *
    * @param $app App
@@ -253,6 +253,7 @@ class Model {
       $dataConnection = $this->app->getDataConnection($this->connection);
       $this->{$this->idProperty} = $dataConnection->convertFromNativeId($resultArray[$this->idColumn]);
       unset($resultArray[$this->idColumn]);
+      unset($resultArray[$this->idProperty]);
     }
 
     foreach ($rProperties as $rProperty) {

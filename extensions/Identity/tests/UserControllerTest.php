@@ -116,7 +116,7 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase {
     $this->assertThat($field, $this->logicalOr($this->equalTo('id'), $this->equalTo('email')));
     switch ($field) {
       case 'id':
-        $this->assertNull($value);
+        $this->assertEquals($value, 0);
         $this->assertEquals('sessions', $table);
         return FALSE;
         break;

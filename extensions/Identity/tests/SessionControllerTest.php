@@ -98,7 +98,7 @@ class SessionControllerTest extends \PHPUnit_Framework_TestCase {
     $this->assertThat($field, $this->logicalOr($this->equalTo('id'), $this->equalTo('email')));
     switch ($field) {
       case 'id':
-        $this->assertNull($value);
+        $this->assertEquals($value, 0);
         $this->assertEquals('sessions', $table);
         return FALSE;
         break;
@@ -107,7 +107,7 @@ class SessionControllerTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals('ppatriotis@gmail.com', $value);
         $this->assertEquals('users', $table);
         return array(
-          'id' => '1',
+          'id' => 1,
           'created' => 1372375580,
           'firstName' => 'Photis',
           'lastName' => 'Patriotis',

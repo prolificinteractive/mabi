@@ -22,7 +22,7 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
   public function testSuccessfulCall() {
     $middleware = new RESTOwnerOnlyAccess();
 
-    $this->setUpRESTApp(array('PATH_INFO' => '/modelbs/4', 'SESSION' => 'TEST-SESSION-ID-1'),
+    $this->setUpRESTApp(array('PATH_INFO' => '/modelbs/4', 'SESSION' => '111444'),
       array(new SessionHeader(), $middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
@@ -62,7 +62,7 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
   public function testWrongOwnerCall() {
     $middleware = new RESTOwnerOnlyAccess();
 
-    $this->setUpRESTApp(array('PATH_INFO' => '/modelbs/4', 'SESSION' => 'TEST-SESSION-ID-2'),
+    $this->setUpRESTApp(array('PATH_INFO' => '/modelbs/4', 'SESSION' => '111445'),
       array(new SessionHeader(), $middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
@@ -81,7 +81,7 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
   public function testWrongOwnerCollectionCall() {
     $middleware = new RESTOwnerOnlyAccess();
 
-    $this->setUpRESTApp(array('PATH_INFO' => '/modelbs', 'SESSION' => 'TEST-SESSION-ID-2'),
+    $this->setUpRESTApp(array('PATH_INFO' => '/modelbs', 'SESSION' => '111445'),
       array(new SessionHeader(), $middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
@@ -102,23 +102,23 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
 
     switch ($table) {
       case 'sessions':
-        $this->assertThat($value, $this->logicalOr($this->equalTo('TEST-SESSION-ID-1'),
-          $this->equalTo('TEST-SESSION-ID-2')));
+        $this->assertThat($value, $this->logicalOr($this->equalTo(111444),
+          $this->equalTo(111445)));
 
-        if ($value == 'TEST-SESSION-ID-1') {
+        if ($value == 111444) {
           return array(
             'created' => '1370663864',
-            'userId' => 'TEST-USER-ID-1'
+            'userId' => 11
           );
         }
         return array(
           'created' => '1370663865',
-          'userId' => 'TEST-USER-ID-2'
+          'userId' => 12
         );
       case 'modelbs':
       default:
         $this->assertEquals('4', $value);
-        return array('modelBId' => 1, 'name' => 'test', 'testOwner' => 'TEST-USER-ID-1');
+        return array('modelBId' => 1, 'name' => 'test', 'testOwner' => 11);
     }
   }
 
@@ -127,7 +127,7 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
     $middleware = new RESTOwnerOnlyAccess();
     $sessHeaderMiddleware = new SessionHeader();
 
-    $this->setUpRESTApp(array('PATH_INFO' => '/modelbs/4', 'SESSION' => 'TEST-SESSION-ID-1'),
+    $this->setUpRESTApp(array('PATH_INFO' => '/modelbs/4', 'SESSION' => '111444'),
       array($sessHeaderMiddleware, $middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);

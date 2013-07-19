@@ -7,6 +7,7 @@ include_once __DIR__ . '/../App.php';
 include_once __DIR__ . '/../Model.php';
 include_once __DIR__ . '/../DirectoryModelLoader.php';
 include_once __DIR__ . '/../DataConnection.php';
+include_once __DIR__ . '/MockDataConnection.php';
 
 class ModelTest extends \PHPUnit_Framework_TestCase {
 
@@ -29,11 +30,9 @@ class ModelTest extends \PHPUnit_Framework_TestCase {
     \Slim\Environment::mock();
     $this->app = new \MABI\App();
 
-    $this->dataConnectionMock = $this->getMock('\MABI\DataConnection');
-    $this->dataConnectionMock
-      ->expects($this->any())
-      ->method('getDefaultIdColumn')
-      ->will($this->returnValue('id'));
+    $this->dataConnectionMock = $this->getMock('\MABI\Testing\MockDataConnection',
+      array('findOneByField', 'query', 'insert', 'save', 'deleteByField', 'clearAll', 'getNewId', 'findAll')
+    );
 
     $this->app->addDataConnection('default', $this->dataConnectionMock);
 

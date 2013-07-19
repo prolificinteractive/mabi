@@ -203,6 +203,7 @@ class RESTModelController extends ModelController {
       return $methodDoc;
     }
 
+    $methodDoc['InternalMethodName'] = $method;
     $methodDoc['MethodName'] = $methodName;
     $methodDoc['HTTPMethod'] = $httpMethod;
     $methodDoc['URI'] = $url;
@@ -287,6 +288,7 @@ class RESTModelController extends ModelController {
 
       $methodDoc = array();
 
+      $methodDoc['InternalMethodName'] = $rMethod->name;
       if (strpos($rMethod->name, 'restGet', 0) === 0) {
         $methodDoc['MethodName'] = substr($rMethod->name, 7);
         $methodDoc['HTTPMethod'] = 'GET';

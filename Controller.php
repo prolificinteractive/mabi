@@ -251,6 +251,7 @@ class Controller {
 
       $methodDoc = array();
 
+      $methodDoc['InternalMethodName'] = $rMethod->name;
       if (strpos($rMethod->name, 'get', 0) === 0) {
         $methodDoc['MethodName'] = substr($rMethod->name, 3);
         $methodDoc['HTTPMethod'] = 'GET';

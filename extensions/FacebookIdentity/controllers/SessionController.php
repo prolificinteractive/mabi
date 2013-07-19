@@ -8,7 +8,14 @@ include_once __DIR__ . '/../../Identity/controllers/SessionController.php';
 use MABI\Identity\Identity;
 
 /**
- * todo: docs
+ * Manages the endpoints for the maintaining authenticated sessions for Users. These are required for many
+ * calls that secure user information or must identify the user. The endpoints include creating a new session
+ * using a POST to the collection, and getting, updating and deleting extra session information.
+ *
+ * Authenticating into the API is analogous to creating a new session, as logging out of the API is analogous to
+ * deleting the session.
+ *
+ * There is no expiration mechanism built into the sessions, but this can be done in a custom implementation.
  *
  * @middleware \MABI\RESTAccess\PostAndObjectOnly
  * @middleware \MABI\Identity\Middleware\SessionHeader
@@ -92,11 +99,21 @@ class SessionController extends \MABI\Identity\SessionController {
   }
 
   /**
-   * Creates a session. todo: docs
+   * @docs-name Authenticate (Create New Session)
    *
-   * @docs-param email string body optional todo: docs
-   * @docs-param password string body optional todo: docs
-   * @docs-param accessToken string body optional todo: docs
+   * Creates a session. Depending on whether the facebookOnly flag is set, the required POST fields will change.
+   *
+   * If facebookOnly is set, then this endpoint requires and only accepts the accessToken field
+   *
+   * If facebookOnly is NOT set, then this endpoint requires either both email and password to be set OR just
+   * acceessToken
+   *
+   * If a Facebook accessToken is used and the user does not exist already in the API, a new user will be automatically
+   * created and the returning newUserCreated field will be true.
+   *
+   * @docs-param email string body optional The email of the user to create the session for
+   * @docs-param password string body optional The password of the user to create the session for
+   * @docs-param accessToken string body optional The Facebook accessToken Facebook accessToken that is used to authenticate the user
    *
    * @throws \Slim\Exception\Stop
    */
@@ -129,7 +146,8 @@ class SessionController extends \MABI\Identity\SessionController {
 
       $this->model->created = new \DateTime('now');
       $this->model->lastAccessed = new \DateTime('now');
-      $this->model->user = $userModel->getId();
+      $this->model->user = $userModel;
+      $this->model->userId = $userModel->getId();
       $this->model->insert();
       echo $this->model->outputJSON();
     }

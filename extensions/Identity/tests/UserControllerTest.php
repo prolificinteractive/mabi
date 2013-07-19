@@ -3,6 +3,7 @@
 namespace MABI\Identity\Testing;
 
 include_once __DIR__ . '/../Identity.php';
+include_once __DIR__ . '/../../../tests/MockDataConnection.php';
 
 use MABI\Identity\Identity;
 use MABI\RESTAccess\RESTAccess;
@@ -29,11 +30,9 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase {
     \Slim\Environment::mock($env);
     $this->app = new \MABI\App();
 
-    $this->dataConnectionMock = $this->getMock('\MABI\DataConnection');
-    $this->dataConnectionMock
-      ->expects($this->any())
-      ->method('getDefaultIdColumn')
-      ->will($this->returnValue('id'));
+    $this->dataConnectionMock = $this->getMock('\MABI\Testing\MockDataConnection',
+      array('findOneByField', 'query', 'insert', 'save', 'deleteByField', 'clearAll', 'getNewId', 'findAll')
+    );
 
     $this->app->addDataConnection('default', $this->dataConnectionMock);
 
@@ -109,7 +108,7 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase {
     $this->assertNotEmpty($this->app->getResponse()->body());
     $output = json_decode($this->app->getResponse()->body());
     $this->assertNotEmpty($output);
-    $this->assertEquals('2', $output->id);
+    $this->assertEquals('2', $output->userId);
     $this->assertEquals('4', $output->newSessionId);
   }
 
@@ -146,18 +145,18 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase {
     $this->assertThat($table, $this->logicalOr($this->equalTo('sessions'), $this->equalTo('users')));
     switch ($table) {
       case 'sessions':
-        $this->assertEquals($value['user'], '2');
+        $this->assertEquals($value['userId'], '2');
         return array(
-          'id' => '4',
+          'id' => 4,
           'date_created' => time(),
           'lastAccessed' => time(),
-          'user' => '2',
+          'userId' => '2',
         );
         break;
       case 'users':
       default:
         return array(
-          'id' => '2',
+          'id' => 2,
           'created' => 1372375585,
           'firstName' => 'photis',
           'lastName' => 'patriotis2',

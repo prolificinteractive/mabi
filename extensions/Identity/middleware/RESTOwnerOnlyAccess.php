@@ -70,8 +70,8 @@ class RESTOwnerOnlyAccess extends Middleware {
     }
 
     $model = $restController->getModel();
-    if (empty($session) || empty($model) || empty($session->user) || empty($model->{$ownerProperty}) ||
-      $session->user != $restController->getModel()->{$ownerProperty}
+    if (empty($session) || empty($model) || empty($session->userId) || empty($model->{$ownerProperty}) ||
+      $session->userId != $restController->getModel()->{$ownerProperty}
     ) {
       // Don't give access to endpoint if the sessions don't match
       $this->getApp()->returnError('Not properly authenticated for this route', 401, 1007);

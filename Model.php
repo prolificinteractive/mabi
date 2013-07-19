@@ -33,7 +33,7 @@ class Model {
   /**
    * @var string
    */
-  protected $idProperty = 'id';
+  protected $idProperty;
 
   /**
    * @var string
@@ -79,6 +79,12 @@ class Model {
     return $this->idProperty;
   }
 
+  public static function initWithNewId($app) {
+    $newModelObj = self::init($app);
+    $newModelObj->{$newModelObj->idProperty} = $newModelObj->getNewId();
+    return $newModelObj;
+  }
+
   /**
    * todo: docs
    *
@@ -99,13 +105,38 @@ class Model {
       $newModelObj->table = strtolower(Inflector::pluralize(ReflectionHelper::stripClassName($modelClass)));
     }
 
+    // Gets the default ID column on the DataConnection side
     if (empty($newModelObj->idColumn)) {
       $newModelObj->idColumn = $newModelObj->app->getDataConnection($newModelObj->connection)->getDefaultIdColumn();
+    }
+
+    // Allows overrides of idProperty for the name of the ID on the MABI side
+    if (empty($newModelObj->idProperty)) {
+      //
+      $rClass = new \ReflectionClass($newModelObj);
+      $rProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
+      foreach ($rProperties as $rProperty) {
+        /*
+         * Looks for the '@field id' directive to set as the id property
+         */
+        if (in_array('id', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
+          $newModelObj->idProperty = $rProperty->getName();
+          break;
+        }
+      }
+      if (empty($newModelObj->idProperty)) {
+        $newModelObj->idProperty = 'id';
+      }
     }
 
     $newModelObj->{$newModelObj->idProperty} = NULL;
 
     return $newModelObj;
+  }
+
+  public function getNewId() {
+    $dataConnection = $this->app->getDataConnection($this->connection);
+    return $dataConnection->getNewId();
   }
 
   /**
@@ -222,6 +253,14 @@ class Model {
 
     $rClass = new \ReflectionClass($this);
     $rProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
+
+    if (!empty($resultArray[$this->idColumn])) {
+      $dataConnection = $this->app->getDataConnection($this->connection);
+      $this->{$this->idProperty} = $dataConnection->convertFromNativeId($resultArray[$this->idColumn]);
+      unset($resultArray[$this->idColumn]);
+      unset($resultArray[$this->idProperty]);
+    }
+
     foreach ($rProperties as $rProperty) {
       if (!array_key_exists($rProperty->name, $resultArray)) {
         continue;
@@ -255,10 +294,6 @@ class Model {
       unset($resultArray[$rProperty->getName()]);
     }
 
-    if (!empty($resultArray[$this->idColumn])) {
-      $this->{$this->idProperty} = $resultArray[$this->idColumn];
-      unset($resultArray[$this->idColumn]);
-    }
     if (isset($forceId)) {
       $this->{$this->idProperty} = $forceId;
     }
@@ -275,7 +310,8 @@ class Model {
    */
   public function findById($id) {
     $dataConnection = $this->app->getDataConnection($this->connection);
-    $result = $dataConnection->findOneByField($this->idColumn, $id, $this->table, $this->readFields);
+    $result = $dataConnection->findOneByField($this->idColumn, $dataConnection->convertToNativeId($id),
+      $this->table, $this->readFields);
     if ($result == NULL) {
       return FALSE;
     }
@@ -293,6 +329,9 @@ class Model {
    */
   public function findByField($fieldName, $value) {
     $dataConnection = $this->app->getDataConnection($this->connection);
+    if($fieldName == $this->idColumn) {
+      $value = $dataConnection->convertToNativeId($value);
+    }
     $result = $dataConnection->findOneByField($fieldName, $value, $this->table, $this->readFields);
     if ($result == NULL) {
       return FALSE;
@@ -301,7 +340,7 @@ class Model {
     return TRUE;
   }
 
-  protected function getPropertyArrayValue($value, $removeInternal = FALSE) {
+  protected function getPropertyArrayValue($value, $forOutput = FALSE) {
     if (!is_object($value)) {
       return $value;
     }
@@ -313,7 +352,7 @@ class Model {
          * @var $subModel \MABI\Model
          */
         $subModel = $value;
-        return $subModel->getPropertyArray($removeInternal);
+        return $subModel->getPropertyArray($forOutput);
       }
       elseif ($propClass->name == 'DateTime' || $propClass == '\DateTime') {
         /**
@@ -327,7 +366,7 @@ class Model {
     return NULL;
   }
 
-  public function getPropertyArray($removeInternal = FALSE) {
+  public function getPropertyArray($forOutput = FALSE) {
     $rClass = new \ReflectionClass($this);
 
     $outArr = array();
@@ -336,10 +375,10 @@ class Model {
       /*
        * Ignores writing any model property with 'external' option
        */
-      if (!$removeInternal && in_array('external', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
+      if (!$forOutput && in_array('external', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
         continue;
       }
-      if ($removeInternal && in_array('internal', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
+      if ($forOutput && in_array('internal', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
         continue;
       }
       if (in_array('system', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
@@ -348,22 +387,23 @@ class Model {
 
       if (is_array($this->{$rProperty->getName()})) {
         foreach ($this->{$rProperty->getName()} as $k => $v) {
-          $outArr[$rProperty->getName()][$k] = $this->getPropertyArrayValue($v, $removeInternal);
+          $outArr[$rProperty->getName()][$k] = $this->getPropertyArrayValue($v, $forOutput);
         }
       }
       else {
-        $outArr[$rProperty->getName()] = $this->getPropertyArrayValue($this->{$rProperty->getName()}, $removeInternal);
+        $outArr[$rProperty->getName()] = $this->getPropertyArrayValue($this->{$rProperty->getName()}, $forOutput);
       }
     }
     if (!empty($this->{$this->idProperty})) {
-      if (!$removeInternal) {
-        $outArr[$this->idColumn] = $this->{$this->idProperty};
+      if (!$forOutput) {
+        $dataConnection = $this->app->getDataConnection($this->connection);
+        $outArr[$this->idColumn] = $dataConnection->convertToNativeId($this->{$this->idProperty});
       }
       else {
         $outArr[$this->idProperty] = $this->{$this->idProperty};
       }
     }
-    if (!empty($this->_remainingReadResults) && !$removeInternal) {
+    if (!empty($this->_remainingReadResults) && !$forOutput) {
       $outArr = array_merge($outArr, $this->_remainingReadResults);
     }
 
@@ -385,7 +425,8 @@ class Model {
   public function save() {
     $dataConnection = $this->app->getDataConnection($this->connection);
     $propArray = $this->getPropertyArray();
-    $dataConnection->save($this->table, $propArray, $this->idColumn, $this->{$this->idProperty});
+    $dataConnection->save($this->table, $propArray, $this->idColumn,
+      $dataConnection->convertToNativeId($this->{$this->idProperty}));
     $this->load($propArray);
   }
 
@@ -394,7 +435,8 @@ class Model {
    */
   public function delete() {
     $dataConnection = $this->app->getDataConnection($this->connection);
-    $dataConnection->deleteByField($this->idColumn, $this->{$this->idProperty}, $this->table);
+    $dataConnection->deleteByField($this->idColumn, $dataConnection->convertToNativeId($this->{$this->idProperty}),
+      $this->table);
   }
 
   /**

@@ -18,13 +18,13 @@ class SessionHeaderTest extends MiddlewareTestCase {
   public function testCall() {
     $middleware = new SessionHeader();
 
-    $this->setUpRESTApp(array('PATH_INFO' => '/modelbs', 'SESSION' => 'TEST-SESSION-ID-1'), array($middleware));
+    $this->setUpRESTApp(array('PATH_INFO' => '/modelbs', 'SESSION' => '111444'), array($middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
 
     $this->dataConnectionMock->expects($this->once())
       ->method('findOneByField')
-      ->with('id', 'TEST-SESSION-ID-1', 'sessions', array())
+      ->with('id', 111444, 'sessions', array())
       ->will($this->returnValue(array(
         'created' => '1370663864',
         'user' => 'TEST-USER-ID-1'
@@ -41,7 +41,7 @@ class SessionHeaderTest extends MiddlewareTestCase {
   public function testDocs() {
     $middleware = new SessionHeader();
 
-    $this->setUpRESTApp(array('PATH_INFO' => '/modelbs', 'SESSION' => 'TEST-SESSION-ID-1'), array($middleware));
+    $this->setUpRESTApp(array('PATH_INFO' => '/modelbs', 'SESSION' => '111444'), array($middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
 

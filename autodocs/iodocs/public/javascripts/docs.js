@@ -19,6 +19,11 @@
         $('form', this.parentNode).slideToggle();
     })
 
+    // Toggle show/hide of method details, form, and results
+    $('li.model > div.title').click(function() {
+        $('table', this.parentNode).slideToggle();
+    })
+
     // Toggle an endpoint
     $('li.endpoint > h3.title span.name').click(function() {
         $('ul.methods', this.parentNode.parentNode).slideToggle();

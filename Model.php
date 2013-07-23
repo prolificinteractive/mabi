@@ -477,6 +477,7 @@ class Model {
     }
 
     return array(
+      'name' => get_called_class(),
       'fielddocs' => $fieldDocs,
 // todo: Add 'SampleJSON' so that it can be copied into requests
     );

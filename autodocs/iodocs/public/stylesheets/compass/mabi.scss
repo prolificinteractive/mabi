@@ -1,0 +1,165 @@
+@import "compass";
+
+$modelColor: lightgray;
+
+/*
+  font-family for monospace
+*/
+@mixin monospace() {
+  font-family: 'Inconsolata', 'Monaco', 'Consolas', 'Bitstream Vera Mono', monospace;
+}
+
+.models {
+  margin-bottom: 14px;
+  padding-bottom: 7px;
+  border-bottom: solid 1px rgb(238, 238, 238);
+
+  .model {
+    font-size: 14px;
+    border: 1px solid #eee;
+    @include border-radius(5px);
+    margin: 10px 0;
+
+    background: $modelColor;
+    border-color: darken($modelColor, 15%);
+
+    & .label {
+      background-color: saturate(darken($modelColor, 60%), 50%);
+    }
+
+    th, td {
+      border-bottom: 1px solid darken($modelColor, 20%);
+    }
+
+    .title {
+      overflow: hidden;
+      @include border-radius(5px);
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+
+        span {
+          text-decoration: underline;
+
+          &.http-method {
+            text-decoration: none;
+          }
+        }
+
+      }
+
+      span {
+        margin: 0 10px 0;
+        line-height: 33px;
+        float: left;
+      }
+
+      .name {
+        font-size: 16px;
+      }
+
+      .label {
+        padding: 0 10px;
+        width: 40px;
+        font-size: 12px;
+        text-align: center;
+        margin: 0;
+        @include monospace;
+        @include border-radius(5px);
+        color: #fff;
+        line-height: 33px;
+        float: left;
+      }
+
+    }
+
+    table {
+      margin: 15px;
+    }
+
+    tr.required {
+      font-weight: bold;
+    }
+
+    th {
+      font-weight: bold;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 5px 10px;
+      vertical-align: middle;
+    }
+
+    td, pre {
+      @include monospace;
+    }
+
+    td.description {
+    }
+
+    h2 {
+      margin-top: 15px;
+      margin-bottom: 3px;
+    }
+
+    pre {
+      font-size: 12px;
+      overflow: auto;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      background-color: rgba(255, 255, 255, 0.4);
+
+      &.response {
+        max-height: 500px;
+      }
+
+      &.error {
+        background-color: rgba(255, 66, 66, 0.2);
+      }
+    }
+
+    .desccol {
+      font-family: 'Helvetica Neue', Arial, Helvetica, sans-serif;
+      font-size: 12px;
+      width: 100%;
+    }
+  }
+}
+
+.endpoint {
+  .description {
+    ul {
+      list-style-type: disc;
+      padding-left: 40px;
+    }
+
+    li {
+      display: list-item;
+      text-align: -webkit-match-parent;
+      list-style-type: disc;
+    }
+
+    p {
+      margin-bottom: 14px;
+      margin-left: 0px;
+      margin-right: 0px;
+      margin-top: 14px;
+    }
+  }
+
+  .endpointdetails {
+    padding: 10px 10px 20px 10px;
+
+    /*
+    .description {
+      padding-bottom: 10px;
+    }
+    */
+  }
+
+  .method .description {
+    padding: 10px 10px 20px 10px;
+  }
+
+}

@@ -47,12 +47,20 @@ class ModelController extends Controller {
 
     $rClass = new \ReflectionClass(get_called_class());
 
+    $includeModelClasses = array();
     if (in_array('show-model', ReflectionHelper::getDocDirective($rClass->getDocComment(), 'docs'))) {
+      $includeModelClasses[] = $this->modelClass;
+    }
+    foreach(ReflectionHelper::getDocDirective($rClass->getDocComment(), 'docs-attach-model') as $includeModelClass) {
+      $includeModelClasses[] = $includeModelClass;
+    }
+
+    foreach($includeModelClasses as $includeModelClass) {
       /**
        * @var $model \MABI\Model
        */
-      $model = call_user_func($this->modelClass . '::init', $this->getApp());
-      $doc['model'] = $model->getDocOutput($parser);
+      $model = call_user_func($includeModelClass . '::init', $this->getApp());
+      $doc['models'][] = $model->getDocOutput($parser);
     }
 
     return $doc;

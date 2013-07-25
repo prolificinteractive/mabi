@@ -7,6 +7,8 @@ include_once __DIR__ . '/../../../RESTModelController.php';
 use \MABI\RESTModelController;
 
 /**
+ * @docs show-model
+ *
  * Manages the endpoints for the maintaining authenticated sessions for Users. These are required for many
  * calls that secure user information or must identify the user. The endpoints include creating a new session
  * using a POST to the collection, and getting, updating and deleting extra session information.

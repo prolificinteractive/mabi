@@ -287,6 +287,14 @@ class Controller {
       }
     }
 
+    foreach(ReflectionHelper::getDocDirective($rClass->getDocComment(), 'docs-attach-model') as $includeModelClass) {
+      /**
+       * @var $model \MABI\Model
+       */
+      $model = call_user_func($includeModelClass . '::init', $this->getApp());
+      $doc['models'][] = $model->getDocOutput($parser);
+    }
+
     return $doc;
   }
 }

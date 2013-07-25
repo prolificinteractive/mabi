@@ -52,7 +52,10 @@ class ModelController extends Controller {
        * @var $model \MABI\Model
        */
       $model = call_user_func($this->modelClass . '::init', $this->getApp());
-      $doc['model'] = $model->getDocOutput($parser);
+      if (empty($doc['models'])) {
+        $doc['models'] = array();
+      }
+      array_unshift($doc['models'], $model->getDocOutput($parser));
     }
 
     return $doc;

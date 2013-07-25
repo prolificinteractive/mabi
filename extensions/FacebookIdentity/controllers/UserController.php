@@ -7,6 +7,8 @@ include_once __DIR__ . '/../../Identity/controllers/UserController.php';
 use MABI\Parser;
 
 /**
+ * @docs show-model
+ *
  * Manages the endpoints for the User model. This includes creating a new user using a POST to the collection, and
  * getting, updating and deleting the user information.
  *

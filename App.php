@@ -79,9 +79,10 @@ class App extends Extension {
    * @throws \Exception
    */
   public function returnError($message, $httpStatusCode = NULL, $applicationErrorCode = NULL) {
-    if(is_array($message)) {
-      if(array_key_exists('message', $message) && array_key_exists('httpcode', $message) &&
-        array_key_exists('code', $message)) {
+    if (is_array($message)) {
+      if (array_key_exists('message', $message) && array_key_exists('httpcode', $message) &&
+        array_key_exists('code', $message)
+      ) {
         $message = $message['message'];
         $httpStatusCode = $message['httpcode'];
         $applicationErrorCode = $message['code'];
@@ -99,9 +100,21 @@ class App extends Extension {
     throw new Stop($message);
   }
 
+  public function errorHandler($e) {
+    $this->slim->getLog()->error($e);
+    $this->getResponse()->status(500);
+    echo json_encode(array(
+      'error' => array('code' => 1020, 'message' => 'A system error occurred')
+    ));
+  }
+
   public function run() {
     foreach ($this->getControllers() as $controller) {
       $controller->loadRoutes($this->slim);
+    }
+
+    if (!$this->slim->config('debug')) {
+      $this->slim->error(array($this, 'errorHandler'));
     }
 
     $this->slim->run();
@@ -110,6 +123,10 @@ class App extends Extension {
   public function call() {
     foreach ($this->getControllers() as $controller) {
       $controller->loadRoutes($this->slim);
+    }
+
+    if (!$this->slim->config('debug')) {
+      $this->slim->error(array($this, 'errorHandler'));
     }
 
     $this->slim->call();

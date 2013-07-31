@@ -82,11 +82,6 @@ class MongoDataConnection implements DataConnection {
     while ($return->hasNext()) {
       $return->getNext();
       $mongodata[] = $return->current();
-      /* todo: review if needed
-      if ($this->config['set_string_id'] && !empty($mongodata['_id']) && is_object($mongodata['_id'])) {
-        $mongodata['_id'] = $mongodata['_id']->__toString();
-      }
-      */
     }
 
     return $mongodata;
@@ -133,11 +128,6 @@ class MongoDataConnection implements DataConnection {
     while ($return->hasNext()) {
       $return->getNext();
       $mongodata[] = $return->current();
-      /* todo: review if needed
-      if ($this->config['set_string_id'] && !empty($mongodata['_id']) && is_object($mongodata['_id'])) {
-        $mongodata['_id'] = $mongodata['_id']->__toString();
-      }
-      */
     }
 
     return $mongodata;

@@ -72,6 +72,10 @@ class Model {
     return $this->{$this->idProperty};
   }
 
+  public function setId($id) {
+    $this->{$this->idProperty} = $id;
+  }
+
   /**
    * @return string
    */
@@ -237,26 +241,35 @@ class Model {
     }
   }
 
+  public function loadFromExternalSource($source) {
+    $this->load($source, TRUE);
+  }
+
   /**
    * Loads the data for the model from a PHP array or a json string into the current model object using reflection
    * and MABI annotations.
    *
    * @param $resultArray array|string Either an associative array that maps to the model or a JSON string which can be turned into one
-   * @param $forceId string Whether to force the ID to this value instead of attempting to read it from the resultArray
+   * @param $sanitizeArray bool Whether to clean up $resultArray
    *
    * @throws \Exception
    */
-  public function load($resultArray, $forceId = NULL) {
+  protected function load($resultArray, $sanitizeArray = FALSE) {
     if (!is_array($resultArray)) {
       $resultArray = json_decode($resultArray, TRUE);
+      if (!is_array($resultArray)) {
+        throw new \Exception("Invalid JSON used to load a model");
+      }
     }
 
     $rClass = new \ReflectionClass($this);
     $rProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
 
     if (!empty($resultArray[$this->idColumn])) {
-      $dataConnection = $this->app->getDataConnection($this->connection);
-      $this->{$this->idProperty} = $dataConnection->convertFromNativeId($resultArray[$this->idColumn]);
+      if (!$sanitizeArray) {
+        $dataConnection = $this->app->getDataConnection($this->connection);
+        $this->{$this->idProperty} = $dataConnection->convertFromNativeId($resultArray[$this->idColumn]);
+      }
       unset($resultArray[$this->idColumn]);
       unset($resultArray[$this->idProperty]);
     }
@@ -265,6 +278,14 @@ class Model {
       if (!array_key_exists($rProperty->name, $resultArray)) {
         continue;
       }
+
+      // Ignores setting any model property with 'internal' or 'system' options if sanitizing the input
+      $fieldOptions = ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field');
+      if ($sanitizeArray && (in_array('internal', $fieldOptions) || in_array('system', $fieldOptions))) {
+        unset($resultArray[$rProperty->getName()]);
+        continue;
+      }
+
       // Pulls out the type following the pattern @var <TYPE> from the doc comments of the property
       $varDocs = ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'var');
       if (empty($varDocs)) {
@@ -292,10 +313,6 @@ class Model {
         }
       }
       unset($resultArray[$rProperty->getName()]);
-    }
-
-    if (isset($forceId)) {
-      $this->{$this->idProperty} = $forceId;
     }
 
     $this->_remainingReadResults = $resultArray;
@@ -329,7 +346,7 @@ class Model {
    */
   public function findByField($fieldName, $value) {
     $dataConnection = $this->app->getDataConnection($this->connection);
-    if($fieldName == $this->idColumn) {
+    if ($fieldName == $this->idColumn) {
       $value = $dataConnection->convertToNativeId($value);
     }
     $result = $dataConnection->findOneByField($fieldName, $value, $this->table, $this->readFields);

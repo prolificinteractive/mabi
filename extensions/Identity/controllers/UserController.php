@@ -31,16 +31,13 @@ class UserController extends RESTModelController {
    * Creates a new user. Will pass back the created user model, and will also create a new session (in newSessionId)
    * so that the user may authenticate immediately.
    *
-   * @docs-param firstName string body optional The first name of the new user
-   * @docs-param lastName string body optional The last name of the new user
-   * @docs-param email string body required The email address of the new user. This must be unique in the database.
-   * @docs-param password string body required The password for the new user. Please see requirements in the Model.
+   * @docs-param user string body required A user object to create in the database
    *
    * @throws \Slim\Exception\Stop
    */
   public function _restPostCollection() {
     $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
-    $this->model->load($this->getApp()->getRequest()->getBody());
+    $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
 
     if (empty($this->model->password) || strlen($this->model->password) < 6) {
       $this->getApp()->returnError('Password must be at least 6 characters', 400, 1004);
@@ -74,6 +71,13 @@ class UserController extends RESTModelController {
 
     $this->model->newSessionId = $session->getId();
     echo $this->model->outputJSON();
+  }
+
+  public function _restPutObject($id) {
+    $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
+    $this->model->setId($id);
+
+    $this->model->save();
   }
 
   /**

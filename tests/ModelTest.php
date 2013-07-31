@@ -241,6 +241,24 @@ class ModelTest extends \PHPUnit_Framework_TestCase {
     $this->assertNotEmpty($fmodel->subObjList[0]->name);
   }
 
+  public function testLoadFromJSONError1() {
+    $this->setExpectedException('Exception');
+    /**
+     * @var $fmodel \mabiTesting\FullModel
+     */
+    $fmodel = \mabiTesting\FullModel::init($this->app);
+    $fmodel->loadFromExternalSource('{invalid:"json"}');
+  }
+
+  public function testLoadFromJSONError2() {
+    $this->setExpectedException('Exception');
+    /**
+     * @var $fmodel \mabiTesting\FullModel
+     */
+    $fmodel = \mabiTesting\FullModel::init($this->app);
+    $fmodel->loadFromExternalSource('null');
+  }
+
   // todo: public function testInsertAllFieldTypes() {
   // todo: test external, system, and internal fields
   // todo: test remaining results

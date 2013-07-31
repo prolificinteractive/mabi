@@ -47,7 +47,7 @@ class RESTModelController extends ModelController {
 
   public function _restPostCollection() {
     $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
-    $this->model->load($this->getApp()->getRequest()->getBody());
+    $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
 
     $dupModel = call_user_func($this->modelClass . '::init', $this->getApp());
     if ($dupModel->findById($this->model->getId())) {
@@ -73,8 +73,15 @@ class RESTModelController extends ModelController {
     echo $this->model->outputJSON();
   }
 
+  /**
+   * @param $id
+   *
+   * @docs-param body string body required The object to update in the database
+   */
   public function _restPutObject($id) {
-    $this->model->load($this->getApp()->getRequest()->getBody(), $id);
+    $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
+    $this->model->setId($id);
+
     $this->model->save();
   }
 

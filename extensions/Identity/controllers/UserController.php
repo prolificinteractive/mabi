@@ -73,7 +73,7 @@ class UserController extends RESTModelController {
     echo $this->model->outputJSON();
   }
 
-  public function _restPutObject($id) {
+  public function _restPutResource($id) {
     $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
     $this->model->setId($id);
 

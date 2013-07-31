@@ -66,7 +66,7 @@ class RESTModelController extends ModelController {
     // todo: implement
   }
 
-  public function _restGetObject($id) {
+  public function _restGetResource($id) {
     /**
      * @var $model Model
      */
@@ -78,14 +78,14 @@ class RESTModelController extends ModelController {
    *
    * @docs-param body string body required The object to update in the database
    */
-  public function _restPutObject($id) {
+  public function _restPutResource($id) {
     $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
     $this->model->setId($id);
 
     $this->model->save();
   }
 
-  public function _restDeleteObject($id) {
+  public function _restDeleteResource($id) {
     $this->model->delete();
   }
 
@@ -98,7 +98,7 @@ class RESTModelController extends ModelController {
   }
 
   protected function addStandardRestRoute(\Slim\Slim $slim, $httpMethod, $isObjectLevel = FALSE) {
-    $methodName = '_rest' . ucwords(strtolower($httpMethod)) . ($isObjectLevel ? 'Object' : 'Collection');
+    $methodName = '_rest' . ucwords(strtolower($httpMethod)) . ($isObjectLevel ? 'Resource' : 'Collection');
 
     $rMethod = new \ReflectionMethod(get_called_class(), $methodName);
     // If there is a '@endpoint ignore' property, the function is not served as an endpoint
@@ -269,17 +269,17 @@ class RESTModelController extends ModelController {
       $doc['methods'][] = $methodDoc;
     }
     $methodDoc = $this->getRestMethodDocJSON($parser, 'Get Resource',
-      'GET', "/{$this->base}/:id", $rClass, '_restGetObject', TRUE);
+      'GET', "/{$this->base}/:id", $rClass, '_restGetResource', TRUE);
     if (!empty($methodDoc)) {
       $doc['methods'][] = $methodDoc;
     }
     $methodDoc = $this->getRestMethodDocJSON($parser, 'Update Resource',
-      'PUT', "/{$this->base}/:id", $rClass, '_restPutObject', TRUE);
+      'PUT', "/{$this->base}/:id", $rClass, '_restPutResource', TRUE);
     if (!empty($methodDoc)) {
       $doc['methods'][] = $methodDoc;
     }
     $methodDoc = $this->getRestMethodDocJSON($parser, 'Delete Resource',
-      'DELETE', "/{$this->base}/:id", $rClass, '_restDeleteObject', TRUE);
+      'DELETE', "/{$this->base}/:id", $rClass, '_restDeleteResource', TRUE);
     if (!empty($methodDoc)) {
       $doc['methods'][] = $methodDoc;
     }

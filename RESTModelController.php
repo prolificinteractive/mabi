@@ -10,10 +10,6 @@ include_once __DIR__ . '/ModelController.php';
  * todo: docs
  */
 class RESTModelController extends ModelController {
-  /**
-   * @var \MABI\Model
-   */
-  protected $model = NULL;
 
   public function __construct($extension) {
     parent::__construct($extension);
@@ -23,33 +19,11 @@ class RESTModelController extends ModelController {
     if (get_called_class() == 'MABI\RESTModelController') {
       $this->documentationName = ucwords(ReflectionHelper::stripClassName($this->modelClass));
     }
-
-    if (class_exists($this->modelClass)) {
-      $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
-    }
-  }
-
-  public static function generate($modelClass, Extension $extension) {
-    $controller = parent::generate($modelClass, $extension);
-    $controller->model = call_user_func($controller->modelClass . '::init', $controller->getApp());
-    return $controller;
-  }
-
-  /**
-   * @endpoint ignore
-   * @return \Mabi\Model
-   */
-  public function getModel() {
-    return $this->model;
   }
 
   public function _restGetCollection() {
-    /**
-     * @var $model Model
-     */
-    $model = call_user_func($this->modelClass . '::init', $this->getApp());
     $outputArr = array();
-    foreach ($model->findAll() as $foundModel) {
+    foreach ($this->model->findAll() as $foundModel) {
       $outputArr[] = $foundModel->getPropertyArray(TRUE);
     }
     echo json_encode($outputArr);
@@ -58,8 +32,7 @@ class RESTModelController extends ModelController {
   public function _restPostCollection() {
     $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
 
-    $dupModel = call_user_func($this->modelClass . '::init', $this->getApp());
-    if ($dupModel->findById($this->model->getId())) {
+    if ($this->model->findById($this->model->getId())) {
       $this->getApp()->returnError('An entry with the id ' . $this->model->getId() . ' already exists.', 409, 1008);
     }
 

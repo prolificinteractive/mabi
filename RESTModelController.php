@@ -23,6 +23,16 @@ class RESTModelController extends ModelController {
     if (get_called_class() == 'MABI\RESTModelController') {
       $this->documentationName = ucwords(ReflectionHelper::stripClassName($this->modelClass));
     }
+
+    if (class_exists($this->modelClass)) {
+      $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
+    }
+  }
+
+  public static function generate($modelClass, Extension $extension) {
+    $controller = parent::generate($modelClass, $extension);
+    $controller->model = call_user_func($controller->modelClass . '::init', $controller->getApp());
+    return $controller;
   }
 
   /**
@@ -46,7 +56,6 @@ class RESTModelController extends ModelController {
   }
 
   public function _restPostCollection() {
-    $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
     $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
 
     $dupModel = call_user_func($this->modelClass . '::init', $this->getApp());
@@ -93,7 +102,6 @@ class RESTModelController extends ModelController {
    * @param $route \Slim\Route
    */
   public function _readModel($route) {
-    $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
     $this->model->findById($route->getParam('id'));
   }
 

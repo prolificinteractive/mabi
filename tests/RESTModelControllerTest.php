@@ -33,6 +33,12 @@ class RESTModelControllerTest extends \PHPUnit_Framework_TestCase {
   public function testGeneratedRESTModelControllerLoader() {
     \Slim\Environment::mock();
     $this->app = new \MABI\App();
+
+    $this->dataConnectionMock = $this->getMock('\MABI\Testing\MockDataConnection',
+      array('findOneByField', 'query', 'insert', 'save', 'deleteByField', 'clearAll', 'getNewId', 'findAll')
+    );
+    $this->app->addDataConnection('default', $this->dataConnectionMock);
+
     $this->app->setModelLoaders(array(new \MABI\DirectoryModelLoader(__DIR__ . '/TestApp/TestModelDir', 'mabiTesting')));
     $this->app->getExtensionModelClasses();
 
@@ -72,6 +78,10 @@ class RESTModelControllerTest extends \PHPUnit_Framework_TestCase {
     $refModelClassProperty = $refObject->getProperty('modelClass');
     $refModelClassProperty->setAccessible(TRUE);
     $refModelClassProperty->setValue($this->controllerMock, $modelClass);
+    $refModelProperty = $refObject->getProperty('model');
+    $refModelProperty->setAccessible(TRUE);
+    $refModelProperty->setValue($this->controllerMock,
+      call_user_func($modelClass . '::init', $this->app));
     $refBaseProperty = $refObject->getProperty('base');
     $refBaseProperty->setAccessible(TRUE);
     $refBaseProperty->setValue($this->controllerMock, strtolower(\MABI\ReflectionHelper::stripClassName($modelClass)));

@@ -72,6 +72,14 @@ class ExtensionTest extends \PHPUnit_Framework_TestCase {
   function testSetModelLoaders() {
     $app = new App();
     $newExt = new Extension($app);
+
+    $this->dataConnectionMock = $this->getMock('\MABI\Testing\MockDataConnection',
+      array('findOneByField', 'query', 'insert', 'save', 'deleteByField', 'clearAll', 'getNewId', 'findAll')
+    );
+    $app->addDataConnection('default', $this->dataConnectionMock);
+
+    $app->setModelLoaders(array(new \MABI\DirectoryModelLoader(__DIR__ . '/TestApp/TestModelDir', 'mabiTesting')));
+
     $app->setMiddlewareDirectories(array(__DIR__ . '/../middleware'));
     $app->setControllerLoaders(array(new DirectoryControllerLoader('TestApp/TestControllerDir', $app, 'mabiTesting')));
     $newExt->setControllerLoaders(array(new DirectoryControllerLoader('TestApp/TestExtensionDir/TestControllerDir', $app, 'mabiTesting\testExtension')));
@@ -91,6 +99,14 @@ class ExtensionTest extends \PHPUnit_Framework_TestCase {
 
   function testGetDocJSON() {
     $app = new App();
+
+    $this->dataConnectionMock = $this->getMock('\MABI\Testing\MockDataConnection',
+      array('findOneByField', 'query', 'insert', 'save', 'deleteByField', 'clearAll', 'getNewId', 'findAll')
+    );
+    $app->addDataConnection('default', $this->dataConnectionMock);
+
+    $app->setModelLoaders(array(new \MABI\DirectoryModelLoader(__DIR__ . '/TestApp/TestModelDir', 'mabiTesting')));
+
     $app->setControllerLoaders(array(new DirectoryControllerLoader('TestApp/TestControllerDir', $app, 'mabiTesting')));
     $parser = new MarkdownParser();
     $docsOutput = $app->getDocJSON($parser);

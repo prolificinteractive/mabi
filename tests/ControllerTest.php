@@ -9,6 +9,7 @@ include_once __DIR__ . '/../DirectoryControllerLoader.php';
 include_once __DIR__ . '/../GeneratedRESTModelControllerLoader.php';
 include_once __DIR__ . '/../DirectoryModelLoader.php';
 include_once __DIR__ . '/../autodocs/MarkdownParser.php';
+include_once __DIR__ . '/MockDataConnection.php';
 
 class ControllerTest extends \PHPUnit_Framework_TestCase {
   /**
@@ -29,6 +30,13 @@ class ControllerTest extends \PHPUnit_Framework_TestCase {
   public function testDirectoryControllerLoader() {
     \Slim\Environment::mock();
     $this->app = new \MABI\App();
+
+    $this->dataConnectionMock = $this->getMock('\MABI\Testing\MockDataConnection',
+      array('findOneByField', 'query', 'insert', 'save', 'deleteByField', 'clearAll', 'getNewId', 'findAll')
+    );
+    $this->app->addDataConnection('default', $this->dataConnectionMock);
+
+    $this->app->setModelLoaders(array(new \MABI\DirectoryModelLoader(__DIR__ . '/TestApp/TestModelDir', 'mabiTesting')));
     $controllerLoader = new \MABI\DirectoryControllerLoader('TestApp/TestControllerDir', $this->app, 'mabiTesting');
     $controllers = $controllerLoader->getControllers();
     $this->assertNotEmpty($controllers);
@@ -39,6 +47,12 @@ class ControllerTest extends \PHPUnit_Framework_TestCase {
     \Slim\Environment::mock($env);
     $this->app = new \MABI\App();
 
+    $this->dataConnectionMock = $this->getMock('\MABI\Testing\MockDataConnection',
+      array('findOneByField', 'query', 'insert', 'save', 'deleteByField', 'clearAll', 'getNewId', 'findAll')
+    );
+    $this->app->addDataConnection('default', $this->dataConnectionMock);
+
+    $this->app->setModelLoaders(array(new \MABI\DirectoryModelLoader(__DIR__ . '/TestApp/TestModelDir', 'mabiTesting')));
     $dirControllerLoader = new \MABI\DirectoryControllerLoader('TestApp/TestControllerDir', $this->app, 'mabiTesting');
     $this->controllerMock = $this->getMock('\mabiTesting\JustAController', array(
         'getTestFunc',
@@ -104,6 +118,12 @@ class ControllerTest extends \PHPUnit_Framework_TestCase {
     \Slim\Environment::mock();
     $this->app = new \MABI\App();
 
+    $this->dataConnectionMock = $this->getMock('\MABI\Testing\MockDataConnection',
+      array('findOneByField', 'query', 'insert', 'save', 'deleteByField', 'clearAll', 'getNewId', 'findAll')
+    );
+    $this->app->addDataConnection('default', $this->dataConnectionMock);
+
+    $this->app->setModelLoaders(array(new \MABI\DirectoryModelLoader(__DIR__ . '/TestApp/TestModelDir', 'mabiTesting')));
     $dirControllerLoader = new \MABI\DirectoryControllerLoader('TestApp/TestControllerDir', $this->app, 'mabiTesting');
     $this->app->setControllerLoaders(array($dirControllerLoader));
     $controllers = $dirControllerLoader->getControllers();

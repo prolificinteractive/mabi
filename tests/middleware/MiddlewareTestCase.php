@@ -28,6 +28,12 @@ class MiddlewareTestCase extends \PHPUnit_Framework_TestCase {
     \Slim\Environment::mock($env);
     $this->app = new \MABI\App();
 
+    $this->dataConnectionMock = $this->getMock('\MABI\Testing\MockDataConnection',
+      array('findOneByField', 'query', 'insert', 'save', 'deleteByField', 'clearAll', 'getNewId', 'findAll')
+    );
+
+    $this->app->addDataConnection('default', $this->dataConnectionMock);
+
     $dirControllerLoader = new \MABI\DirectoryControllerLoader(__DIR__ . '/../TestApp/TestControllerDir', $this->app,
       'mabiTesting');
     foreach ($dirControllerLoader->getControllers() as $controller) {
@@ -41,14 +47,6 @@ class MiddlewareTestCase extends \PHPUnit_Framework_TestCase {
         }
       }
     }
-
-    $this->dataConnectionMock = $this->getMock('\MABI\DataConnection');
-    $this->dataConnectionMock
-      ->expects($this->any())
-      ->method('getDefaultIdColumn')
-      ->will($this->returnValue('id'));
-
-    $this->app->addDataConnection('default', $this->dataConnectionMock);
 
     $this->app->setControllerLoaders(array($dirControllerLoader));
   }

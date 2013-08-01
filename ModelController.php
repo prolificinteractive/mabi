@@ -22,7 +22,7 @@ class ModelController extends Controller {
   /**
    * @param $extension Extension
    */
-  public function __construct($extension) {
+  public function __construct(Extension $extension) {
     if (empty($this->modelClass)) {
       $this->modelClass = ReflectionHelper::getPrefixFromControllerClass(get_called_class());
     }
@@ -34,7 +34,7 @@ class ModelController extends Controller {
     parent::__construct($extension);
   }
 
-  public static function generate($modelClass, $extension) {
+  public static function generate($modelClass, Extension $extension) {
     $calledClass = get_called_class();
     $newController = new $calledClass($extension);
     $newController->modelClass = $modelClass;

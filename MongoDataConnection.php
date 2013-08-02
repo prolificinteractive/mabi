@@ -109,6 +109,18 @@ class MongoDataConnection implements DataConnection {
     return $result;
   }
 
+  function findAllByField($field, $value, $table, array $fields = array()) {
+    $return = $this->db->selectCollection($table)->find(array($field => $value), $fields);
+
+    $mongodata = array();
+    while ($return->hasNext()) {
+      $return->getNext();
+      $mongodata[] = $return->current();
+    }
+
+    return $mongodata;
+  }
+
   function query($table, $query) {
     if (isset($query['group'])) {
       $return = $this->db->selectCollection($table)->group(

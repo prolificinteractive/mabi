@@ -357,6 +357,34 @@ class Model {
     return TRUE;
   }
 
+  /**
+   * todo: docs
+   *
+   * @param $fieldName string
+   * @param $value string
+   *
+   * @return \MABI\Model[]
+   */
+  public function findAllByField($fieldName, $value) {
+    $dataConnection = $this->app->getDataConnection($this->connection);
+    if ($fieldName == $this->idColumn) {
+      $value = $dataConnection->convertToNativeId($value);
+    }
+    $foundObjects = $dataConnection->findAllByField($fieldName, $value, $this->table, $this->readFields);
+    $foundModels = array();
+    if (is_array($foundObjects)) {
+      foreach ($foundObjects as $foundObject) {
+        /**
+         * @var $model \MABI\Model
+         */
+        $model = call_user_func($this->modelClass . '::init', $this->app);
+        $model->load($foundObject);
+        $foundModels[] = $model;
+      }
+    }
+    return $foundModels;
+  }
+
   protected function getPropertyArrayValue($value, $forOutput = FALSE) {
     if (!is_object($value)) {
       return $value;
@@ -442,6 +470,9 @@ class Model {
   public function save() {
     $dataConnection = $this->app->getDataConnection($this->connection);
     $propArray = $this->getPropertyArray();
+    if ($this->idColumn != $this->idProperty && isset($propArray[$this->idProperty])) {
+      unset($propArray[$this->idProperty]);
+    }
     $dataConnection->save($this->table, $propArray, $this->idColumn,
       $dataConnection->convertToNativeId($this->{$this->idProperty}));
     $this->load($propArray);

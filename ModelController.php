@@ -51,6 +51,9 @@ class ModelController extends Controller {
   }
 
   public static function generate($modelClass, Extension $extension) {
+    /**
+     * @var $newController \MABI\ModelController
+     */
     $calledClass = get_called_class();
     $newController = new $calledClass($extension);
     $newController->modelClass = $modelClass;

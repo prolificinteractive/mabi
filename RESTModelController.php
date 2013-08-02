@@ -65,10 +65,12 @@ class RESTModelController extends ModelController {
     $this->model->setId($id);
 
     $this->model->save();
+    echo $this->model->outputJSON();
   }
 
   public function _restDeleteResource($id) {
     $this->model->delete();
+    echo $this->model->outputJSON();
   }
 
   /**

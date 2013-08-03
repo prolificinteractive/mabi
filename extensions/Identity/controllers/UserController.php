@@ -36,7 +36,6 @@ class UserController extends RESTModelController {
    * @throws \Slim\Exception\Stop
    */
   public function _restPostCollection() {
-    $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
     $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
 
     if (empty($this->model->password) || strlen($this->model->password) < 6) {
@@ -47,11 +46,7 @@ class UserController extends RESTModelController {
       $this->getApp()->returnError('Email is required', 400, 1005);
     }
 
-    $user = User::init($this->getApp());
-    $user->findByField('email', $this->model->email);
-    $userId = $user->getId();
-
-    if (!empty($userId)) {
+    if ($this->model->findByField('email', $this->model->email)) {
       $this->getApp()->returnError('An account with this email already exists', 409, 1006);
     }
 
@@ -74,10 +69,50 @@ class UserController extends RESTModelController {
   }
 
   public function _restPutResource($id) {
-    $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
-    $this->model->setId($id);
+    $updatedUser = call_user_func($this->modelClass . '::init', $this->getApp());
+    $updatedUser->loadFromExternalSource($this->getApp()->getRequest()->getBody());
+    $updatedUser->setId($id);
 
-    $this->model->save();
+    if (!empty($updatedUser->password)) {
+      if (strlen($updatedUser->password) < 6) {
+        $this->getApp()->returnError('Password must be at least 6 characters', 400, 1004);
+      }
+
+      $updatedUser->passHash = Identity::passHash($updatedUser->password, $this->model->salt);
+      $updatedUser->password = NULL;
+
+      /**
+       * Deletes all sessions except for the current one for the user whose password changed
+       *
+       * @var $session Session
+       */
+      $session = call_user_func($this->sessionModelClass . '::init', $this->getApp());
+
+      $deleteSessions = $session->findAllByField('userId', $id);
+      foreach ($deleteSessions as $session) {
+        if ($session->sessionId == $this->getApp()->getRequest()->session->sessionId) {
+          continue;
+        }
+        $session->delete();
+      }
+    }
+    else {
+      $updatedUser->passHash = $this->model->passHash;
+    }
+
+    if (empty($updatedUser->email)) {
+      $this->getApp()->returnError('Email is required', 400, 1005);
+    }
+
+    if ($updatedUser->email != $this->model->email && $updatedUser->findByField('email', $updatedUser->email)) {
+      $this->getApp()->returnError('An account with this email already exists', 409, 1006);
+    }
+
+    $updatedUser->created = $this->model->created;
+    $updatedUser->salt = $this->model->salt;
+
+    $updatedUser->save();
+    echo $updatedUser->outputJSON();
   }
 
   /**

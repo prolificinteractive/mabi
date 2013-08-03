@@ -42,7 +42,6 @@ class SessionController extends RESTModelController {
    * @throws \Slim\Exception\Stop
    */
   function _restPostCollection() {
-    $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
     $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
 
     if (empty($this->model->password) || empty($this->model->email)) {

@@ -8,36 +8,16 @@ include_once __DIR__ . '/../../Identity/Identity.php';
 use MABI\FacebookIdentity\FacebookIdentity;
 use MABI\Identity\Identity;
 use MABI\RESTAccess\RESTAccess;
+use MABI\Testing\AppTestCase;
 
-include_once 'PHPUnit/Autoload.php';
-
-class SessionControllerTest extends \PHPUnit_Framework_TestCase {
-  /**
-   * @var \PHPUnit_Framework_MockObject_MockObject
-   */
-  protected $dataConnectionMock;
-
+class SessionControllerTest extends AppTestCase {
   /**
    * @var \PHPUnit_Framework_MockObject_MockObject
    */
   protected $controllerMock;
 
-  /**
-   * @var \MABI\App
-   */
-  protected $app;
-
   private function setUpRESTApp($env = array()) {
-    \Slim\Environment::mock($env);
-    $this->app = new \MABI\App();
-
-    $this->dataConnectionMock = $this->getMock('\MABI\DataConnection');
-    $this->dataConnectionMock
-      ->expects($this->any())
-      ->method('getDefaultIdColumn')
-      ->will($this->returnValue('id'));
-
-    $this->app->addDataConnection('default', $this->dataConnectionMock);
+    $this->setUpApp($env);
 
     $mockFBIdentity = $this->getMock('MABI\FacebookIdentity\FacebookIdentity',
       array('getFBInfo'),

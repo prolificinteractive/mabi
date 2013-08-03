@@ -13,7 +13,7 @@ class PostOnlyTest extends MiddlewareTestCase {
 
   public function testStoppedCall() {
     $middleware = new PostOnly();
-    $this->setUpRESTApp(array('PATH_INFO' => '/modelbs'), array($middleware));
+    $this->setUpApp(array('PATH_INFO' => '/modelbs'), array($middleware));
 
     $this->app->call();
 
@@ -22,7 +22,7 @@ class PostOnlyTest extends MiddlewareTestCase {
 
   public function testPassedCall() {
     $middleware = new PostOnly();
-    $this->setUpRESTApp(array(
+    $this->setUpApp(array(
       'PATH_INFO' => '/modelbs',
       'REQUEST_METHOD' => 'POST',
       'slim.input' => '{"name":"modelb"}',
@@ -48,7 +48,7 @@ class PostOnlyTest extends MiddlewareTestCase {
 
   public function testSkipDocs() {
     $middleware = new PostOnly();
-    $this->setUpRESTApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware));
+    $this->setUpApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware));
 
     $docArray = array(
       'HTTPMethod' => 'test',
@@ -66,7 +66,7 @@ class PostOnlyTest extends MiddlewareTestCase {
 
   public function testFullDocs() {
     $middleware = new PostOnly();
-    $this->setUpRESTApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware));
+    $this->setUpApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware));
 
     $docArray = array(
       'HTTPMethod' => 'test',

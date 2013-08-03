@@ -2,41 +2,21 @@
 
 namespace MABI\Testing;
 
-include_once 'PHPUnit/Autoload.php';
-include_once __DIR__ . '/../App.php';
-include_once __DIR__ . '/../DirectoryModelLoader.php';
 include_once __DIR__ . '/../DirectoryControllerLoader.php';
 include_once __DIR__ . '/../GeneratedRESTModelControllerLoader.php';
-include_once __DIR__ . '/../DirectoryModelLoader.php';
 include_once __DIR__ . '/../autodocs/MarkdownParser.php';
-include_once __DIR__ . '/MockDataConnection.php';
+include_once __DIR__ . '/SampleAppTestCase.php';
 
-class ControllerTest extends \PHPUnit_Framework_TestCase {
-  /**
-   * @var \PHPUnit_Framework_MockObject_MockObject
-   */
-  protected $dataConnectionMock;
+class ControllerTest extends SampleAppTestCase {
 
   /**
    * @var \PHPUnit_Framework_MockObject_MockObject
    */
   protected $controllerMock;
 
-  /**
-   * @var \MABI\App
-   */
-  protected $app;
-
   public function testDirectoryControllerLoader() {
-    \Slim\Environment::mock();
-    $this->app = new \MABI\App();
+    $this->setUpApp();
 
-    $this->dataConnectionMock = $this->getMock('\MABI\Testing\MockDataConnection',
-      array('findOneByField', 'query', 'insert', 'save', 'deleteByField', 'clearAll', 'getNewId', 'findAll')
-    );
-    $this->app->addDataConnection('default', $this->dataConnectionMock);
-
-    $this->app->setModelLoaders(array(new \MABI\DirectoryModelLoader(__DIR__ . '/TestApp/TestModelDir', 'mabiTesting')));
     $controllerLoader = new \MABI\DirectoryControllerLoader('TestApp/TestControllerDir', $this->app, 'mabiTesting');
     $controllers = $controllerLoader->getControllers();
     $this->assertNotEmpty($controllers);
@@ -44,15 +24,8 @@ class ControllerTest extends \PHPUnit_Framework_TestCase {
   }
 
   private function setUpControllerApp($env = array()) {
-    \Slim\Environment::mock($env);
-    $this->app = new \MABI\App();
+    $this->setUpApp($env);
 
-    $this->dataConnectionMock = $this->getMock('\MABI\Testing\MockDataConnection',
-      array('findOneByField', 'query', 'insert', 'save', 'deleteByField', 'clearAll', 'getNewId', 'findAll')
-    );
-    $this->app->addDataConnection('default', $this->dataConnectionMock);
-
-    $this->app->setModelLoaders(array(new \MABI\DirectoryModelLoader(__DIR__ . '/TestApp/TestModelDir', 'mabiTesting')));
     $dirControllerLoader = new \MABI\DirectoryControllerLoader('TestApp/TestControllerDir', $this->app, 'mabiTesting');
     $this->controllerMock = $this->getMock('\mabiTesting\JustAController', array(
         'getTestFunc',
@@ -115,25 +88,18 @@ class ControllerTest extends \PHPUnit_Framework_TestCase {
    * test that middleware was added appropriately
    */
   function testMiddleware() {
-    \Slim\Environment::mock();
-    $this->app = new \MABI\App();
+    $this->setUpApp();
 
-    $this->dataConnectionMock = $this->getMock('\MABI\Testing\MockDataConnection',
-      array('findOneByField', 'query', 'insert', 'save', 'deleteByField', 'clearAll', 'getNewId', 'findAll')
-    );
-    $this->app->addDataConnection('default', $this->dataConnectionMock);
-
-    $this->app->setModelLoaders(array(new \MABI\DirectoryModelLoader(__DIR__ . '/TestApp/TestModelDir', 'mabiTesting')));
     $dirControllerLoader = new \MABI\DirectoryControllerLoader('TestApp/TestControllerDir', $this->app, 'mabiTesting');
     $this->app->setControllerLoaders(array($dirControllerLoader));
     $controllers = $dirControllerLoader->getControllers();
-    foreach($controllers as $controller) {
-      if(get_class($controller) == 'mabiTesting\JustAController') {
+    foreach ($controllers as $controller) {
+      if (get_class($controller) == 'mabiTesting\JustAController') {
         /**
          * @var $middlewares \MABI\Middleware[]
          */
         $middlewares = $controller->getMiddlewares();
-        $this->assertInternalType('array',$middlewares);
+        $this->assertInternalType('array', $middlewares);
         $this->assertNotEmpty($middlewares);
         $this->assertInstanceOf('MABI\Middleware\AnonymousIdentifier', $middlewares[0]);
       }

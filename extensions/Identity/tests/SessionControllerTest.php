@@ -64,7 +64,7 @@ class SessionControllerTest extends AppTestCase {
         'id' => '4',
         'date_created' => time(),
         'lastAccessed' => time(),
-        'user' => '1',
+        'userId' => '1',
       )));
 
     $this->app->call();
@@ -73,6 +73,7 @@ class SessionControllerTest extends AppTestCase {
     $output = json_decode($this->app->getResponse()->body());
     $this->assertNotEmpty($output);
     $this->assertEquals('4', $output->sessionId);
+    $this->assertEquals('1', $output->userId);
   }
 
   public function myFindOneByFieldCallback($field, $value, $table) {

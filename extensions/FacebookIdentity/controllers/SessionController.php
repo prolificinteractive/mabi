@@ -38,6 +38,22 @@ class SessionController extends \MABI\Identity\SessionController {
   protected $mockData = NULL;
 
   /**
+   * @param object $mockData
+   */
+  public function setMockData($mockData) {
+    $this->mockData = $mockData;
+  }
+
+  public function __construct($extension) {
+    parent::__construct($extension);
+
+    $mockConfig = $extension->getApp()->getConfig('FacebookSessionMockData');
+    if (empty($this->mockData) && !empty($mockConfig)) {
+      $this->mockData = $mockConfig;
+    }
+  }
+
+  /**
    * @var bool
    */
   protected $facebookOnly = FALSE;
@@ -88,6 +104,10 @@ class SessionController extends \MABI\Identity\SessionController {
      * @var $userModel \MABI\FacebookIdentity\User
      */
     $userModel = call_user_func($this->userModelClass . '::init', $this->getApp());
+
+    if ($userModel->findByField('email', $fbData->email)) {
+      $this->getApp()->returnError('An account with this email already exists', 409, 1006);
+    }
 
     $userModel->firstName = $fbData->first_name;
     $userModel->lastName = $fbData->last_name;

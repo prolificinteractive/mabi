@@ -1,4 +1,4 @@
-MABI
+Start your REST Mobile APIs Fast and Grow It
 ====
 A Mobile API Framework that will help you get a REST API off the ground quickly and help it grow along with your
 application. It helps create standardized communications between Mobile Devices and the Server for better communication

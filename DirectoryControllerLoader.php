@@ -2,15 +2,16 @@
 
 namespace MABI;
 
-include_once dirname(__FILE__) . '/Utilities.php';
-include_once dirname(__FILE__) . '/ControllerLoader.php';
+include_once __DIR__ . '/Utilities.php';
+include_once __DIR__ . '/ControllerLoader.php';
+include_once __DIR__ . '/ModelController.php';
 
 class DirectoryControllerLoader extends ControllerLoader {
 
   /**
-   * @var \MABI\App
+   * @var \MABI\Extension
    */
-  protected $app;
+  protected $extension;
 
   /**
    * @var string
@@ -32,13 +33,8 @@ class DirectoryControllerLoader extends ControllerLoader {
    */
   protected $overriddenModelClasses = array();
 
-  /**
-   * @var \MABI\Controller[]
-   */
-  protected $controllers = array();
-
-  public function __construct($directory, $app, $namespace = NULL) {
-    $this->app = $app;
+  public function __construct($directory, $extension, $namespace = NULL) {
+    $this->extension = $extension;
     $this->directory = $directory;
     $this->namespace = empty($namespace) ? '' : $namespace;
 
@@ -50,7 +46,7 @@ class DirectoryControllerLoader extends ControllerLoader {
       $controllerClass = ReflectionHelper::createClassName($this->namespace, basename($controllerClassFile, '.php'));
       $this->controllerClasses[] = $controllerClass;
 
-      $controller = new $controllerClass($this->app);
+      $controller = new $controllerClass($this->extension);
       $rclass = new \ReflectionClass($controller);
       if ($rclass->isSubclassOf('\MABI\ModelController')) {
         /**
@@ -70,7 +66,6 @@ class DirectoryControllerLoader extends ControllerLoader {
    * @return Controller[]
    */
   public function getControllers() {
-    // TODO: Implement getControllers() method.
     return $this->controllers;
   }
 

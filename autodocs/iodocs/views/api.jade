@@ -56,6 +56,29 @@ ul
                         a(href='#') List Methods
                     li.expand-methods
                         a(href='#') Expand Methods
+            div.endpointdetails
+                div.description!=endpoint.description
+            - if (endpoint.models && endpoint.models.length > 0)
+                ul.models
+                    - each model in endpoint.models
+                        - if(model.fielddocs && model.fielddocs.length > 0)
+                            li.model
+                                div.title
+                                    span.label MODEL
+                                    span.name #{model.name}
+                                    span.description #{model.description ? model.description : 'Field Names & Descriptions'}
+                                table.parameterslist(style="display: none;")
+                                    thead
+                                        tr
+                                            th.namecol Name
+                                            th.typecol Type
+                                            th.desccol Description
+                                    tbody
+                                        - each field in model.fielddocs
+                                            tr
+                                                td.namecol!=field.name
+                                                td.typecol!=field.type
+                                                td.desccol!=field.doc
             - if (endpoint.methods.length)
             ul.methods.hidden
                 - each method in endpoint.methods
@@ -74,9 +97,7 @@ ul
                             input(type='hidden', name='oauth', value=secure)
                             input(type='hidden', name='methodUri', value=method.URI)
 
-                            span.description!= method.Synopsis
-                            br
-                            br
+                            div.description!= method.Synopsis
                             - if (method.parameters.length > 0)
                                 table.parameters
                                     thead

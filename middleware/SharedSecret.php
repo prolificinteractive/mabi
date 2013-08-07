@@ -2,7 +2,8 @@
 
 namespace MABI\Middleware;
 
-include_once dirname(__FILE__) . '/../DefaultApplicationModel.php';
+include_once __DIR__ . '/../DefaultApplicationModel.php';
+include_once __DIR__ . '/../Middleware.php';
 
 use MABI\ReflectionHelper;
 
@@ -29,7 +30,7 @@ class SharedSecret extends \MABI\Middleware {
      */
     $applicationModelClass = '\MABI\DefaultApplicationModel';
 
-    $mabi = $this->getController()->getApp();
+    $mabi = $this->getApp();
 
     $modelClasses = $mabi->getModelClasses();
     foreach ($modelClasses as $modelClass) {
@@ -38,20 +39,20 @@ class SharedSecret extends \MABI\Middleware {
       }
 
       $rClass = new \ReflectionClass($modelClass);
-      $modelOptions = ReflectionHelper::getDocProperty($rClass->getDocComment(), 'option');
+      $modelOptions = ReflectionHelper::getDocDirective($rClass->getDocComment(), 'model');
       if (in_array('ApplicationModel', $modelOptions)) {
         $applicationModelClass = $modelClass;
         break;
       }
     }
 
-    // Find the shared secret property (named sharedSecret -> annotated 'option SharedSecret')
+    // Find the shared secret property (named sharedSecret or annotated 'field SharedSecret')
     $rClass = new \ReflectionClass($applicationModelClass);
     $modelProps = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
     $sharedSecretProp = 'sharedSecret';
     foreach ($modelProps as $modelProp) {
       $rProp = new \ReflectionProperty($applicationModelClass, $modelProp->name);
-      $propOptions = ReflectionHelper::getDocProperty($rProp->getDocComment(), 'option');
+      $propOptions = ReflectionHelper::getDocDirective($rProp->getDocComment(), 'field');
       if (in_array('SharedSecret', $propOptions)) {
         $sharedSecretProp = $modelProp->name;
         break;
@@ -59,13 +60,31 @@ class SharedSecret extends \MABI\Middleware {
     }
 
     $this->apiApplication = $applicationModelClass::init($mabi);
-    if (!$this->apiApplication->findByField($sharedSecretProp, $mabi->getSlim()->request()->headers('shared-secret'))) {
+    if (!$this->apiApplication->findByField($sharedSecretProp, $mabi->getRequest()->headers('SHARED-SECRET'))) {
       $this->apiApplication = FALSE;
     }
-    $mabi->getSlim()->request()->apiApplication = $this->apiApplication;
+    $mabi->getRequest()->apiApplication = $this->apiApplication;
 
     if (!empty($this->next)) {
       $this->next->call();
+    }
+  }
+
+  public function documentMethod(\ReflectionClass $rClass, \ReflectionMethod $rMethod, array &$methodDoc) {
+    parent::documentMethod($rClass, $rMethod, $methodDoc);
+
+    $methodDoc['parameters'][] = array(
+      'Name' => 'shared-secret',
+      'Required' => 'N',
+      'Type' => 'string',
+      'Location' => 'header',
+      'Description' => 'The guid that identifies which application is attempting to access this endpoint. Only
+        the application itself and the internal API should be able to see this value, therefore, it should always
+        be transmitted over HTTPs.'
+    );
+
+    if (!empty($this->next)) {
+      $this->next->documentMethod($rClass, $rMethod, $methodDoc);
     }
   }
 }

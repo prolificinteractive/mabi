@@ -1,0 +1,34 @@
+<phpunit>
+    <testsuites>
+        <testsuite name="MABI">
+            <directory>.</directory>
+        </testsuite>
+        <testsuite name="RESTAccess">
+            <directory>../extensions/RESTAccess/tests</directory>
+        </testsuite>
+        <testsuite name="Identity">
+            <directory>../extensions/Identity/tests</directory>
+            <directory>../extensions/Identity/tests/middleware</directory>
+        </testsuite>
+        <testsuite name="FacebookIdentity">
+            <directory>../extensions/FacebookIdentity/tests</directory>
+        </testsuite>
+    </testsuites>
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory>..</directory>
+            <exclude>
+                <directory>../Slim</directory>
+                <directory>../autodocs</directory>
+                <directory>../tests</directory>
+                <directory>../extensions/RESTAccess/tests</directory>
+                <directory>../extensions/Identity/tests</directory>
+                <directory>../extensions/FacebookIdentity/tests</directory>
+                <file>../Inflector.php</file>
+            </exclude>
+        </whitelist>
+    </filter>
+    <logging>
+        <log type="coverage-html" target="./report"/>
+    </logging>
+</phpunit>

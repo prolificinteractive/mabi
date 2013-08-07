@@ -2,6 +2,8 @@
 
 namespace MABI;
 
+include_once __DIR__ . '/Controller.php';
+
 abstract class Middleware {
   /**
    * @var \MABI\Controller
@@ -20,6 +22,14 @@ abstract class Middleware {
    */
   public function setController($controller) {
     $this->controller = $controller;
+  }
+
+  public function getRouteCallable() {
+    return $this->getController()->getApp()->getSlim()->router()->getCurrentRoute()->getCallable();
+  }
+
+  public function getApp() {
+    return $this->getController()->getApp();
   }
 
   /**
@@ -54,6 +64,9 @@ abstract class Middleware {
    */
   public function getNextMiddleware() {
     return $this->next;
+  }
+
+  public function documentMethod(\ReflectionClass $rClass, \ReflectionMethod $rMethod, array &$methodDoc) {
   }
 
   /**

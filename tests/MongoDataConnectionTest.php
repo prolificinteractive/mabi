@@ -3,6 +3,7 @@
 include_once 'PHPUnit/Autoload.php';
 include_once __DIR__ . '/../MongoDataConnection.php';
 
+/*
 class MongoDataConnectionTest extends PHPUnit_Framework_TestCase {
 
   public function testCreate() {
@@ -17,3 +18,4 @@ class MongoDataConnectionTest extends PHPUnit_Framework_TestCase {
     $this->assertInternalType('array', $result);
   }
 }
+*/

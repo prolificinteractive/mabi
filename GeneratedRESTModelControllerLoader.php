@@ -2,8 +2,8 @@
 
 namespace MABI;
 
-include_once dirname(__FILE__) . '/ControllerLoader.php';
-include_once dirname(__FILE__) . '/RESTModelController.php';
+include_once __DIR__ . '/ControllerLoader.php';
+include_once __DIR__ . '/RESTModelController.php';
 
 /**
  * automatically generates RESTful controllers
@@ -20,9 +20,9 @@ include_once dirname(__FILE__) . '/RESTModelController.php';
 class GeneratedRESTModelControllerLoader extends ControllerLoader {
 
   /**
-   * @var \MABI\App
+   * @var \MABI\Extension
    */
-  protected $app;
+  protected $extension;
 
   /**
    * @var string[]
@@ -34,29 +34,23 @@ class GeneratedRESTModelControllerLoader extends ControllerLoader {
    */
   protected $controllers = array();
 
-  public function __construct($modelClasses, $app) {
-    $this->app = $app;
+  public function __construct($modelClasses, $extension) {
+    $this->extension = $extension;
     $this->modelClasses = $modelClasses;
 
     foreach ($this->modelClasses as $modelClass) {
       $rClass = new \ReflectionClass($modelClass);
-      $properties = ReflectionHelper::getDocProperty($rClass->getDocComment(), 'restful');
+      $properties = ReflectionHelper::getDocDirective($rClass->getDocComment(), 'model');
       if (!in_array('NoController', $properties)) {
         /**
          * @var $controller Controller
          */
-        $controller = RESTModelController::generate($modelClass, $this->app);
+        $controller = RESTModelController::generate($modelClass, $this->extension);
 
-        $middlewares = ReflectionHelper::getDocProperty($rClass->getDocComment(), 'middleware');
+        // Load the middleware that's specified in the Model
+        $middlewares = ReflectionHelper::getDocDirective($rClass->getDocComment(), 'middleware');
         foreach ($middlewares as $middlewareClass) {
-          $middlewareFile = ReflectionHelper::stripClassName($middlewareClass) . '.php';
-          include_once dirname(__FILE__) . '/middleware/' . $middlewareFile;
-
-          /**
-           * @var $middleware \MABI\Middleware
-           */
-          $middleware = new $middlewareClass();
-          $controller->addMiddleware($middleware);
+          $controller->addMiddlewareByClass($middlewareClass);
         }
         $this->controllers[] = $controller;
       }

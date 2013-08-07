@@ -2,8 +2,8 @@
 
 namespace MABI;
 
-include_once dirname(__FILE__) . '/Inflector.php';
-include_once dirname(__FILE__) . '/Utilities.php';
+include_once __DIR__ . '/Inflector.php';
+include_once __DIR__ . '/Utilities.php';
 
 /**
  * todo: docs
@@ -33,7 +33,7 @@ class Model {
   /**
    * @var string
    */
-  protected $idProperty = 'id';
+  protected $idProperty;
 
   /**
    * @var string
@@ -44,7 +44,7 @@ class Model {
   protected $writeAccess;
 
   /**
-   * @options system
+   * @field system
    * @var array
    */
   public $_remainingReadResults;
@@ -68,6 +68,23 @@ class Model {
     return $this->table;
   }
 
+  public function getId() {
+    return $this->{$this->idProperty};
+  }
+
+  /**
+   * @return string
+   */
+  public function getIdProperty() {
+    return $this->idProperty;
+  }
+
+  public static function initWithNewId($app) {
+    $newModelObj = self::init($app);
+    $newModelObj->{$newModelObj->idProperty} = $newModelObj->getNewId();
+    return $newModelObj;
+  }
+
   /**
    * todo: docs
    *
@@ -88,12 +105,38 @@ class Model {
       $newModelObj->table = strtolower(Inflector::pluralize(ReflectionHelper::stripClassName($modelClass)));
     }
 
+    // Gets the default ID column on the DataConnection side
     if (empty($newModelObj->idColumn)) {
       $newModelObj->idColumn = $newModelObj->app->getDataConnection($newModelObj->connection)->getDefaultIdColumn();
     }
 
-    // todo: implement
+    // Allows overrides of idProperty for the name of the ID on the MABI side
+    if (empty($newModelObj->idProperty)) {
+      //
+      $rClass = new \ReflectionClass($newModelObj);
+      $rProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
+      foreach ($rProperties as $rProperty) {
+        /*
+         * Looks for the '@field id' directive to set as the id property
+         */
+        if (in_array('id', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
+          $newModelObj->idProperty = $rProperty->getName();
+          break;
+        }
+      }
+      if (empty($newModelObj->idProperty)) {
+        $newModelObj->idProperty = 'id';
+      }
+    }
+
+    $newModelObj->{$newModelObj->idProperty} = NULL;
+
     return $newModelObj;
+  }
+
+  public function getNewId() {
+    $dataConnection = $this->app->getDataConnection($this->connection);
+    return $dataConnection->getNewId();
   }
 
   /**
@@ -102,17 +145,18 @@ class Model {
    * @return Model[]
    */
   public function findAll() {
-    // todo: implement
     $dataConnection = $this->app->getDataConnection($this->connection);
     $foundObjects = $dataConnection->findAll($this->table, $this->readFields);
     $foundModels = array();
-    foreach ($foundObjects as $foundObject) {
-      /**
-       * @var $model \MABI\Model
-       */
-      $model = call_user_func($this->modelClass . '::init', $this->app);
-      $model->loadParameters($foundObject);
-      $foundModels[] = $model;
+    if (is_array($foundObjects)) {
+      foreach ($foundObjects as $foundObject) {
+        /**
+         * @var $model \MABI\Model
+         */
+        $model = call_user_func($this->modelClass . '::init', $this->app);
+        $model->loadParameters($foundObject);
+        $foundModels[] = $model;
+      }
     }
     return $foundModels;
   }
@@ -161,7 +205,13 @@ class Model {
         $parameter = floatval($result);
         break;
       case 'DateTime':
-        $parameter = new \DateTime('@' . $result);
+      case '\DateTime':
+        if (empty($result)) {
+          $parameter = NULL;
+        }
+        else {
+          $parameter = new \DateTime('@' . $result);
+        }
         break;
       case '':
       case 'array':
@@ -191,22 +241,29 @@ class Model {
    * Loads parameters from a PHP database into the model object using reflection
    *
    * @param $resultArray array
+   * @param $forceId string
    *
    * @throws \Exception
    */
-  public function loadParameters($resultArray) {
+  public function loadParameters($resultArray, $forceId = NULL) {
     $rClass = new \ReflectionClass($this);
-    $myProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
-    foreach ($myProperties as $property) {
-      if (!array_key_exists($property->name, $resultArray)) {
+    $rProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
+
+    if (!empty($resultArray[$this->idColumn])) {
+      $dataConnection = $this->app->getDataConnection($this->connection);
+      $this->{$this->idProperty} = $dataConnection->convertFromNativeId($resultArray[$this->idColumn]);
+      unset($resultArray[$this->idColumn]);
+      unset($resultArray[$this->idProperty]);
+    }
+
+    foreach ($rProperties as $rProperty) {
+      if (!array_key_exists($rProperty->name, $resultArray)) {
         continue;
       }
-      $rProp = new \ReflectionProperty($this, $property->name);
-      $propComment = $rProp->getDocComment();
       // Pulls out the type following the pattern @var <TYPE> from the doc comments of the property
-      $varDocs = ReflectionHelper::getDocProperty($propComment, 'var');
+      $varDocs = ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'var');
       if (empty($varDocs)) {
-        $this->{$property->getName()} = $resultArray[$property->getName()];
+        $this->{$rProperty->getName()} = $resultArray[$rProperty->getName()];
       }
       else {
         $type = $varDocs[0];
@@ -217,22 +274,23 @@ class Model {
           // with that type
           $type = $matches[1];
           $outArr = array();
-          foreach ($resultArray[$property->getName()] as $listResult) {
-            $this->loadParameter($type, $parameter, $listResult);
-            $outArr[] = $parameter;
+          if (!empty($resultArray[$rProperty->getName()])) {
+            foreach ($resultArray[$rProperty->getName()] as $listResult) {
+              $this->loadParameter($type, $parameter, $listResult);
+              $outArr[] = $parameter;
+            }
           }
-          $this->{$property->getName()} = $outArr;
+          $this->{$rProperty->getName()} = $outArr;
         }
         else {
-          $this->loadParameter($type, $this->{$property->getName()}, $resultArray[$property->getName()]);
+          $this->loadParameter($type, $this->{$rProperty->getName()}, $resultArray[$rProperty->getName()]);
         }
       }
-      unset($resultArray[$property->getName()]);
+      unset($resultArray[$rProperty->getName()]);
     }
 
-    if (!empty($resultArray[$this->idColumn])) {
-      $this->{$this->idProperty} = $resultArray[$this->idColumn];
-      unset($resultArray[$this->idColumn]);
+    if (isset($forceId)) {
+      $this->{$this->idProperty} = $forceId;
     }
 
     $this->_remainingReadResults = $resultArray;
@@ -247,7 +305,8 @@ class Model {
    */
   public function findById($id) {
     $dataConnection = $this->app->getDataConnection($this->connection);
-    $result = $dataConnection->findOneByField($this->idColumn, $id, $this->table, $this->readFields);
+    $result = $dataConnection->findOneByField($this->idColumn, $dataConnection->convertToNativeId($id),
+      $this->table, $this->readFields);
     if ($result == NULL) {
       return FALSE;
     }
@@ -265,6 +324,9 @@ class Model {
    */
   public function findByField($fieldName, $value) {
     $dataConnection = $this->app->getDataConnection($this->connection);
+    if($fieldName == $this->idColumn) {
+      $value = $dataConnection->convertToNativeId($value);
+    }
     $result = $dataConnection->findOneByField($fieldName, $value, $this->table, $this->readFields);
     if ($result == NULL) {
       return FALSE;
@@ -273,48 +335,70 @@ class Model {
     return TRUE;
   }
 
-  protected function getPropertyArray($removeInternal = FALSE) {
+  protected function getPropertyArrayValue($value, $forOutput = FALSE) {
+    if (!is_object($value)) {
+      return $value;
+    }
+    else {
+      $propClass = new \ReflectionClass($value);
+
+      if ($propClass->isSubclassOf('\MABI\Model')) {
+        /**
+         * @var $subModel \MABI\Model
+         */
+        $subModel = $value;
+        return $subModel->getPropertyArray($forOutput);
+      }
+      elseif ($propClass->name == 'DateTime' || $propClass == '\DateTime') {
+        /**
+         * @var $date \DateTime
+         */
+        $date = $value;
+        return $date->getTimestamp();
+      }
+    }
+
+    return NULL;
+  }
+
+  public function getPropertyArray($forOutput = FALSE) {
     $rClass = new \ReflectionClass($this);
 
     $outArr = array();
-    $myProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
-    foreach ($myProperties as $property) {
+    $rProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
+    foreach ($rProperties as $rProperty) {
       /*
        * Ignores writing any model property with 'external' option
        */
-      if (!$removeInternal && in_array('external', ReflectionHelper::getDocProperty($property->getDocComment(), 'options'))) {
+      if (!$forOutput && in_array('external', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
         continue;
       }
-      if ($removeInternal && in_array('internal', ReflectionHelper::getDocProperty($property->getDocComment(), 'options'))) {
+      if ($forOutput && in_array('internal', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
         continue;
       }
-      if (in_array('system', ReflectionHelper::getDocProperty($property->getDocComment(), 'options'))) {
+      if (in_array('system', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
         continue;
       }
 
-      if (!is_object($this->{$property->getName()})) {
-        $outArr[$property->getName()] = $this->{$property->getName()};
+      if (is_array($this->{$rProperty->getName()})) {
+        foreach ($this->{$rProperty->getName()} as $k => $v) {
+          $outArr[$rProperty->getName()][$k] = $this->getPropertyArrayValue($v, $forOutput);
+        }
       }
       else {
-        $propClass = new \ReflectionClass($this->{$property->getName()});
-        if ($propClass->isSubclassOf('\MABI\Model')) {
-          /**
-           * @var $subModel \MABI\Model
-           */
-          $subModel = $this->{$property->getName()};
-          $outArr[$property->getName()] = $subModel->getPropertyArray();
-        }
+        $outArr[$rProperty->getName()] = $this->getPropertyArrayValue($this->{$rProperty->getName()}, $forOutput);
       }
     }
     if (!empty($this->{$this->idProperty})) {
-      if (!$removeInternal) {
-        $outArr[$this->idColumn] = $this->{$this->idProperty};
+      if (!$forOutput) {
+        $dataConnection = $this->app->getDataConnection($this->connection);
+        $outArr[$this->idColumn] = $dataConnection->convertToNativeId($this->{$this->idProperty});
       }
       else {
         $outArr[$this->idProperty] = $this->{$this->idProperty};
       }
     }
-    if (!empty($this->_remainingReadResults) && !$removeInternal) {
+    if (!empty($this->_remainingReadResults) && !$forOutput) {
       $outArr = array_merge($outArr, $this->_remainingReadResults);
     }
 
@@ -326,8 +410,7 @@ class Model {
    */
   public function insert() {
     $dataConnection = $this->app->getDataConnection($this->connection);
-    $propArray = $this->getPropertyArray();
-    $dataConnection->insert($this->table, $propArray);
+    $propArray = $dataConnection->insert($this->table, $this->getPropertyArray());
     $this->loadParameters($propArray);
   }
 
@@ -337,7 +420,8 @@ class Model {
   public function save() {
     $dataConnection = $this->app->getDataConnection($this->connection);
     $propArray = $this->getPropertyArray();
-    $dataConnection->save($this->table, $propArray, $this->idColumn, $this->{$this->idProperty});
+    $dataConnection->save($this->table, $propArray, $this->idColumn,
+      $dataConnection->convertToNativeId($this->{$this->idProperty}));
     $this->loadParameters($propArray);
   }
 
@@ -346,7 +430,8 @@ class Model {
    */
   public function delete() {
     $dataConnection = $this->app->getDataConnection($this->connection);
-    $dataConnection->deleteByField($this->idColumn, $this->{$this->idProperty}, $this->table);
+    $dataConnection->deleteByField($this->idColumn, $dataConnection->convertToNativeId($this->{$this->idProperty}),
+      $this->table);
   }
 
   /**
@@ -359,5 +444,42 @@ class Model {
 
   public function outputJSON() {
     return json_encode($this->getPropertyArray(TRUE));
+  }
+
+  public function getDocOutput(Parser $parser) {
+    $fieldDocs = array();
+
+    $rClass = new \ReflectionClass($this);
+    $rProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
+    foreach ($rProperties as $rProperty) {
+      /*
+       * Ignores writing any model property with 'internal' or 'system' options
+       */
+      if (in_array('internal', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field')) ||
+        in_array('system', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))
+      ) {
+        continue;
+      }
+
+      $varType = 'unknown';
+      // Pulls out the type following the pattern @var <TYPE> from the doc comments of the property
+      $varDocs = ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'var');
+      if (!empty($varDocs)) {
+        $varType = $varDocs[0];
+      }
+
+      $fieldDoc = array(
+        'name' => $rProperty->getName(),
+        'type' => $varType,
+        'doc' => $parser->parse(ReflectionHelper::getDocText($rProperty->getDocComment()))
+      );
+      $fieldDocs[ /* $rProperty->getName() */] = $fieldDoc;
+    }
+
+    return array(
+      'name' => get_called_class(),
+      'fielddocs' => $fieldDocs,
+// todo: Add 'SampleJSON' so that it can be copied into requests
+    );
   }
 }

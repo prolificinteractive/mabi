@@ -16,10 +16,19 @@ class ReflectionHelper {
     throw new \Exception('Cannot find model for model controller ' . $controllerClass);
   }
 
-  public static function getDocProperty($docComments, $property) {
+  public static function getDocDirective($docComments, $property) {
     $matches = array();
     preg_match_all('/\@' . $property . '\s(.*)\s/', $docComments, $matches);
     return $matches[1];
+  }
+
+  public static function getDocText($docComments) {
+    $docComments = preg_replace('/^\s*\/\*\*.*\\n/m','',$docComments);
+    $docComments = preg_replace('/^\s*\*\/\s*/m','',$docComments);
+    $docComments = preg_replace('/^\s*\*\s*\n/m',"\n",$docComments);
+    $docComments = preg_replace('/^\h*\*\h*/m','',$docComments);
+    $docComments = preg_replace('/^\@.*\\n/m','',$docComments);
+    return $docComments;
   }
 
   public static function createClassName($namespace, $className) {

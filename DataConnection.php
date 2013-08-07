@@ -2,20 +2,26 @@
 
 namespace MABI;
 
-abstract class DataConnection {
-  abstract function getDefaultIdColumn();
+interface DataConnection {
+  function getNewId();
 
-  abstract function insert($table, &$data);
+  function convertToNativeId($stringId);
 
-  abstract function save($table, $data, $field, $value);
+  function convertFromNativeId($nativeId);
 
-  abstract function findAll($table);
+  function getDefaultIdColumn();
 
-  abstract function findOneByField($field, $value, $table, array $fields = array());
+  function insert($table, $data);
 
-  abstract function deleteByField($field, $value, $table);
+  function save($table, $data, $field, $value);
 
-  abstract function clearAll($table);
+  function findAll($table);
 
-  abstract function query($table, $query);
+  function findOneByField($field, $value, $table, array $fields = array());
+
+  function deleteByField($field, $value, $table);
+
+  function clearAll($table);
+
+  function query($table, $query);
 }

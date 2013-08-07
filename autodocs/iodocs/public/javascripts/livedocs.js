@@ -52,7 +52,7 @@ var livedocs = (function() {
         credentials
             .addClass('authed')
             .append($(document.createElement('span')).text(msg))
-            .append($(document.createElement('img')).attr('src', '/images/accept.png'));
+            .append($(document.createElement('img')).attr('src', basePath + 'images/accept.png'));
     }
 
     return ld;

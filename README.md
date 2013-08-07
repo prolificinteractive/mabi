@@ -17,6 +17,10 @@ Example Project
 ====
 Coming soon...
 
+Documentation
+====
+Take a look at this project's [wiki](https://github.com/prolificinteractive/mabi/wiki).
+
 Contributing
 ====
 Currently the project is being maintained by [Photis Patriotis](photis@prolificinteractive.com) at

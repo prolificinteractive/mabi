@@ -56,6 +56,14 @@ class SessionController extends \MABI\Identity\SessionController {
   }
 
   /**
+   * @param object $mockData
+   */
+  public function setMockData($mockData)
+  {
+    $this->mockData = $mockData;
+  }
+
+  /**
    * Pulls the "Me" content from Facebook
    *
    * @param string $access_token The facebook connect access token

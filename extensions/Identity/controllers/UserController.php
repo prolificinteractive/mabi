@@ -50,7 +50,7 @@ class UserController extends RESTModelController {
       $this->getApp()->returnError('An account with this email already exists', 409, 1006);
     }
 
-    Identity::insertUser($this->model);
+    $this->model->insert();
 
     /**
      * Automatically creates a session for the newly created user
@@ -58,16 +58,20 @@ class UserController extends RESTModelController {
      * @var $session Session
      */
     $session = call_user_func($this->sessionModelClass . '::init', $this->getApp());
-    $session->created = new \DateTime('now');
-    $session->lastAccessed = new \DateTime('now');
     $session->user = $this->model;
-    $session->userId = $this->model->getId();
     $session->insert();
 
     $this->model->newSessionId = $session->getId();
     echo $this->model->outputJSON();
   }
 
+  /**
+   * todo: docs
+   *
+   * @docs-param user string body required A user object to create in the database
+   *
+   * @param $id string The id of the user you are trying to update
+   */
   public function _restPutResource($id) {
     $updatedUser = call_user_func($this->modelClass . '::init', $this->getApp());
     $updatedUser->loadFromExternalSource($this->getApp()->getRequest()->getBody());

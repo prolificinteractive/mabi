@@ -58,12 +58,7 @@ class SessionController extends RESTModelController {
       $this->getApp()->returnError('Password is invalid', 400, 1003);
     }
 
-    $this->model->created = new \DateTime('now');
-    $this->model->lastAccessed = new \DateTime('now');
     $this->model->user = $user;
-    $this->model->userId = $user->getId();
-    $this->model->email = NULL;
-    $this->model->password = NULL;
     $this->model->insert();
     echo $this->model->outputJSON();
   }

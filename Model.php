@@ -225,12 +225,17 @@ class Model {
         try {
           $rClass = new \ReflectionClass($type);
           if ($rClass->isSubclassOf('\MABI\Model')) {
-            /**
-             * @var $model \MABI\Model
-             */
-            $model = call_user_func($type . '::init', $this->app);
-            $model->load($result);
-            $parameter = $model;
+            if (empty($result)) {
+              $parameter = NULL;
+            }
+            else {
+              /**
+               * @var $model \MABI\Model
+               */
+              $model = call_user_func($type . '::init', $this->app);
+              $model->load($result);
+              $parameter = $model;
+            }
           }
           else {
             throw New \Exception('Class ' . $type . ' does not derive from \MABI\Model');
@@ -242,7 +247,11 @@ class Model {
   }
 
   public function loadFromExternalSource($source) {
-    $this->load($source, TRUE);
+    try {
+      $this->load($source, TRUE);
+    } catch (InvalidJSONException $ex) {
+      $this->app->returnError($ex->getMessage(), 400, 1009);
+    }
   }
 
   /**
@@ -252,13 +261,13 @@ class Model {
    * @param $resultArray array|string Either an associative array that maps to the model or a JSON string which can be turned into one
    * @param $sanitizeArray bool Whether to clean up $resultArray
    *
-   * @throws \Exception
+   * @throws InvalidJSONException
    */
   protected function load($resultArray, $sanitizeArray = FALSE) {
     if (!is_array($resultArray)) {
       $resultArray = json_decode($resultArray, TRUE);
       if (!is_array($resultArray)) {
-        throw new \Exception("Invalid JSON used to load a model");
+        throw new InvalidJSONException("Invalid JSON used to load a model");
       }
     }
 
@@ -535,4 +544,7 @@ class Model {
 // todo: Add 'SampleJSON' so that it can be copied into requests
     );
   }
+}
+
+class InvalidJSONException extends \Exception {
 }

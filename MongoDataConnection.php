@@ -14,6 +14,13 @@ class MongoDataConnection implements DataConnection {
    */
   protected $db = NULL;
 
+  /**
+   * @return \MongoDB
+   */
+  public function getDb() {
+    return $this->db;
+  }
+
   private static function createConnectionName($host, $port, $user, $password, $database, $version) {
     $connectionName = NULL;
 

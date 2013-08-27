@@ -28,17 +28,6 @@ class Identity extends Extension {
     $this->getExtensionModelClasses();
   }
 
-  /**
-   * @param User $userModel
-   */
-  public static function insertUser(User &$userModel) {
-    $userModel->salt = uniqid(mt_rand(), TRUE);
-    $userModel->passHash = Identity::passHash($userModel->password, $userModel->salt);
-    $userModel->password = NULL;
-    $userModel->created = new \DateTime('now');
-    $userModel->insert();
-  }
-
   public static function passHash($password, $salt) {
     return hash_hmac('sha256', $password, $salt);
   }

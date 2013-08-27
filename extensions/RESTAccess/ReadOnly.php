@@ -14,8 +14,8 @@ class ReadOnly extends RESTAccessMiddleware {
       case '_restPostCollection':
       case '_restPutCollection':
       case '_restDeleteCollection':
-      case '_restPutObject':
-      case '_restDeleteObject':
+      case '_restPutResource':
+      case '_restDeleteResource':
         return FALSE;
       default:
         return TRUE;

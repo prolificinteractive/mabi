@@ -10,10 +10,6 @@ include_once __DIR__ . '/ModelController.php';
  * todo: docs
  */
 class RESTModelController extends ModelController {
-  /**
-   * @var \Mabi\Model
-   */
-  protected $model = NULL;
 
   public function __construct($extension) {
     parent::__construct($extension);
@@ -25,29 +21,21 @@ class RESTModelController extends ModelController {
     }
   }
 
-  /**
-   * @endpoint ignore
-   * @return \Mabi\Model
-   */
-  public function getModel() {
-    return $this->model;
-  }
-
   public function _restGetCollection() {
-    /**
-     * @var $model Model
-     */
-    $model = call_user_func($this->modelClass . '::init', $this->getApp());
     $outputArr = array();
-    foreach ($model->findAll() as $foundModel) {
+    foreach ($this->model->findAll() as $foundModel) {
       $outputArr[] = $foundModel->getPropertyArray(TRUE);
     }
     echo json_encode($outputArr);
   }
 
   public function _restPostCollection() {
-    $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
-    $this->model->loadParameters($this->getApp()->getRequest()->post());
+    $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
+
+    if ($this->model->findById($this->model->getId())) {
+      $this->getApp()->returnError('An entry with the id ' . $this->model->getId() . ' already exists.', 409, 1008);
+    }
+
     $this->model->insert();
     echo $this->model->outputJSON();
   }
@@ -60,32 +48,40 @@ class RESTModelController extends ModelController {
     // todo: implement
   }
 
-  public function _restGetObject($id) {
+  public function _restGetResource($id) {
     /**
      * @var $model Model
      */
     echo $this->model->outputJSON();
   }
 
-  public function _restPutObject($id) {
-    $this->model->loadParameters($this->getApp()->getRequest()->post(), $id);
+  /**
+   * @param $id
+   *
+   * @docs-param body string body required The object to update in the database
+   */
+  public function _restPutResource($id) {
+    $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
+    $this->model->setId($id);
+
     $this->model->save();
+    echo $this->model->outputJSON();
   }
 
-  public function _restDeleteObject($id) {
+  public function _restDeleteResource($id) {
     $this->model->delete();
+    echo $this->model->outputJSON();
   }
 
   /**
    * @param $route \Slim\Route
    */
   public function _readModel($route) {
-    $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
     $this->model->findById($route->getParam('id'));
   }
 
   protected function addStandardRestRoute(\Slim\Slim $slim, $httpMethod, $isObjectLevel = FALSE) {
-    $methodName = '_rest' . ucwords(strtolower($httpMethod)) . ($isObjectLevel ? 'Object' : 'Collection');
+    $methodName = '_rest' . ucwords(strtolower($httpMethod)) . ($isObjectLevel ? 'Resource' : 'Collection');
 
     $rMethod = new \ReflectionMethod(get_called_class(), $methodName);
     // If there is a '@endpoint ignore' property, the function is not served as an endpoint
@@ -256,17 +252,17 @@ class RESTModelController extends ModelController {
       $doc['methods'][] = $methodDoc;
     }
     $methodDoc = $this->getRestMethodDocJSON($parser, 'Get Resource',
-      'GET', "/{$this->base}/:id", $rClass, '_restGetObject', TRUE);
+      'GET', "/{$this->base}/:id", $rClass, '_restGetResource', TRUE);
     if (!empty($methodDoc)) {
       $doc['methods'][] = $methodDoc;
     }
     $methodDoc = $this->getRestMethodDocJSON($parser, 'Update Resource',
-      'PUT', "/{$this->base}/:id", $rClass, '_restPutObject', TRUE);
+      'PUT', "/{$this->base}/:id", $rClass, '_restPutResource', TRUE);
     if (!empty($methodDoc)) {
       $doc['methods'][] = $methodDoc;
     }
     $methodDoc = $this->getRestMethodDocJSON($parser, 'Delete Resource',
-      'DELETE', "/{$this->base}/:id", $rClass, '_restDeleteObject', TRUE);
+      'DELETE', "/{$this->base}/:id", $rClass, '_restDeleteResource', TRUE);
     if (!empty($methodDoc)) {
       $doc['methods'][] = $methodDoc;
     }

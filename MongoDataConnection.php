@@ -89,11 +89,6 @@ class MongoDataConnection implements DataConnection {
     while ($return->hasNext()) {
       $return->getNext();
       $mongodata[] = $return->current();
-      /* todo: review if needed
-      if ($this->config['set_string_id'] && !empty($mongodata['_id']) && is_object($mongodata['_id'])) {
-        $mongodata['_id'] = $mongodata['_id']->__toString();
-      }
-      */
     }
 
     return $mongodata;
@@ -121,6 +116,18 @@ class MongoDataConnection implements DataConnection {
     return $result;
   }
 
+  function findAllByField($field, $value, $table, array $fields = array()) {
+    $return = $this->db->selectCollection($table)->find(array($field => $value), $fields);
+
+    $mongodata = array();
+    while ($return->hasNext()) {
+      $return->getNext();
+      $mongodata[] = $return->current();
+    }
+
+    return $mongodata;
+  }
+
   function query($table, $query) {
     if (isset($query['group'])) {
       $return = $this->db->selectCollection($table)->group(
@@ -140,11 +147,6 @@ class MongoDataConnection implements DataConnection {
     while ($return->hasNext()) {
       $return->getNext();
       $mongodata[] = $return->current();
-      /* todo: review if needed
-      if ($this->config['set_string_id'] && !empty($mongodata['_id']) && is_object($mongodata['_id'])) {
-        $mongodata['_id'] = $mongodata['_id']->__toString();
-      }
-      */
     }
 
     return $mongodata;

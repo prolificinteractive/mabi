@@ -118,7 +118,7 @@ class Extension {
     }
 
     $configs = array_merge($extensionConfigs, $this->config);
-    return $configs[$key];
+    return array_key_exists($key, $configs) ? $configs[$key] : NULL;
   }
 
   /**

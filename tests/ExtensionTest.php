@@ -8,15 +8,13 @@ use MABI\DirectoryControllerLoader;
 use MABI\DirectoryModelLoader;
 use MABI\Extension;
 
-include_once 'PHPUnit/Autoload.php';
 include_once __DIR__ . '/../Extension.php';
 include_once __DIR__ . '/../DirectoryModelLoader.php';
 include_once __DIR__ . '/../DirectoryControllerLoader.php';
 include_once __DIR__ . '/../GeneratedRESTModelControllerLoader.php';
-include_once __DIR__ . '/../autodocs/MarkdownParser.php';
-include_once __DIR__ . '/../autodocs/MarkdownParser.php';
+include_once __DIR__ . '/AppTestCase.php';
 
-class ExtensionTest extends \PHPUnit_Framework_TestCase {
+class ExtensionTest extends AppTestCase {
 
   public function setUp() {
     \Slim\Environment::mock();
@@ -70,16 +68,26 @@ class ExtensionTest extends \PHPUnit_Framework_TestCase {
   }
 
   function testSetModelLoaders() {
-    $app = new App();
-    $newExt = new Extension($app);
-    $app->setMiddlewareDirectories(array(__DIR__ . '/../middleware'));
-    $app->setControllerLoaders(array(new DirectoryControllerLoader('TestApp/TestControllerDir', $app, 'mabiTesting')));
-    $newExt->setControllerLoaders(array(new DirectoryControllerLoader('TestApp/TestExtensionDir/TestControllerDir', $app, 'mabiTesting\testExtension')));
-    $app->addExtension($newExt);
+    $this->setUpApp();
+
+    $newExt = new Extension($this->app);
+
+    $this->app->setModelLoaders(array(new DirectoryModelLoader(__DIR__ . '/TestApp/TestModelDir', 'mabiTesting')));
+
+    $this->app->setMiddlewareDirectories(array(__DIR__ . '/../middleware'));
+    $this->app->setControllerLoaders(array(
+      new DirectoryControllerLoader('TestApp/TestControllerDir', $this->app,
+        'mabiTesting')
+    ));
+    $newExt->setControllerLoaders(array(
+      new DirectoryControllerLoader('TestApp/TestExtensionDir/TestControllerDir',
+        $this->app, 'mabiTesting\testExtension')
+    ));
+    $this->app->addExtension($newExt);
 
     $outControllerClasses = array();
 
-    foreach ($app->getControllers() as $controller) {
+    foreach ($this->app->getControllers() as $controller) {
       $outControllerClasses[] = get_class($controller);
     }
 
@@ -90,10 +98,13 @@ class ExtensionTest extends \PHPUnit_Framework_TestCase {
   }
 
   function testGetDocJSON() {
-    $app = new App();
-    $app->setControllerLoaders(array(new DirectoryControllerLoader('TestApp/TestControllerDir', $app, 'mabiTesting')));
+    $this->setUpApp();
+
+    $this->app->setModelLoaders(array(new DirectoryModelLoader(__DIR__ . '/TestApp/TestModelDir', 'mabiTesting')));
+
+    $this->app->setControllerLoaders(array(new DirectoryControllerLoader('TestApp/TestControllerDir', $this->app, 'mabiTesting')));
     $parser = new MarkdownParser();
-    $docsOutput = $app->getDocJSON($parser);
+    $docsOutput = $this->app->getDocJSON($parser);
 
     $this->assertNotEmpty($docsOutput);
     $this->assertInternalType('array', $docsOutput);

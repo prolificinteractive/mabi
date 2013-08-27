@@ -27,10 +27,16 @@ class App extends Extension {
     return $this->slim;
   }
 
+  /**
+   * @return \Slim\Http\Request
+   */
   public function getRequest() {
     return $this->slim->request();
   }
 
+  /**
+   * @return \Slim\Http\Response
+   */
   public function getResponse() {
     return $this->slim->response();
   }
@@ -51,6 +57,9 @@ class App extends Extension {
     return self::$singletonApp;
   }
 
+  /**
+   * todo: docs
+   */
   static function clearSingletonApp() {
     self::$singletonApp = NULL;
   }

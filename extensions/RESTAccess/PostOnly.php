@@ -14,9 +14,9 @@ class PostOnly extends RESTAccessMiddleware {
       case '_restGetCollection':
       case '_restPutCollection':
       case '_restDeleteCollection':
-      case '_restGetObject':
-      case '_restPutObject':
-      case '_restDeleteObject':
+      case '_restGetResource':
+      case '_restPutResource':
+      case '_restDeleteResource':
         return FALSE;
       default:
         return TRUE;

@@ -3,46 +3,27 @@
 namespace MABI\Identity\Testing;
 
 include_once __DIR__ . '/../Identity.php';
-include_once __DIR__ . '/../../../tests/MockDataConnection.php';
 
 use MABI\Identity\Identity;
 use MABI\RESTAccess\RESTAccess;
+use MABI\Testing\AppTestCase;
 
-include_once 'PHPUnit/Autoload.php';
-
-class SessionControllerTest extends \PHPUnit_Framework_TestCase {
+class SessionControllerTest extends AppTestCase {
   /**
-   * @var \PHPUnit_Framework_MockObject_MockObject
+   * @var Identity
    */
-  protected $dataConnectionMock;
+  protected $identityExtension;
 
-  /**
-   * @var \PHPUnit_Framework_MockObject_MockObject
-   */
-  protected $controllerMock;
-
-  /**
-   * @var \MABI\App
-   */
-  protected $app;
-
-  private function setUpRESTApp($env = array()) {
-    \Slim\Environment::mock($env);
-    $this->app = new \MABI\App();
-
-    $this->dataConnectionMock = $this->getMock('\MABI\Testing\MockDataConnection',
-      array('findOneByField', 'query', 'insert', 'save', 'deleteByField', 'clearAll', 'getNewId', 'findAll')
-    );
-
-    $this->app->addDataConnection('default', $this->dataConnectionMock);
-
-    $this->app->addExtension(new Identity($this->app, new RESTAccess($this->app)));
+  public function setUpApp($env = array()) {
+    parent::setUpApp($env);
+    $identityExtension = new Identity($this->app, new RESTAccess($this->app));
+    $this->app->addExtension($identityExtension);
   }
 
   public function testMissingPasswordPostCollection() {
-    $this->setUpRESTApp(array(
+    $this->setUpApp(array(
       'REQUEST_METHOD' => 'POST',
-      'slim.input' => 'email=ppatriotis@gmail.com&password=1235',
+      'slim.input' => '{"email":"ppatriotis@gmail.com","password":"1235"}',
       'PATH_INFO' => '/sessions'
     ));
 
@@ -51,9 +32,9 @@ class SessionControllerTest extends \PHPUnit_Framework_TestCase {
   }
 
   public function testInvalidPasswordPostCollection() {
-    $this->setUpRESTApp(array(
+    $this->setUpApp(array(
       'REQUEST_METHOD' => 'POST',
-      'slim.input' => 'email=ppatriotis@gmail.com',
+      'slim.input' => '{"email":"ppatriotis@gmail.com"}',
       'PATH_INFO' => '/sessions'
     ));
 
@@ -66,9 +47,9 @@ class SessionControllerTest extends \PHPUnit_Framework_TestCase {
   }
 
   public function testSuccessfulPostCollection() {
-    $this->setUpRESTApp(array(
+    $this->setUpApp(array(
       'REQUEST_METHOD' => 'POST',
-      'slim.input' => 'email=ppatriotis@gmail.com&password=123',
+      'slim.input' => '{"email":"ppatriotis@gmail.com","password":"123"}',
       'PATH_INFO' => '/sessions'
     ));
 
@@ -83,7 +64,7 @@ class SessionControllerTest extends \PHPUnit_Framework_TestCase {
         'id' => '4',
         'date_created' => time(),
         'lastAccessed' => time(),
-        'user' => '1',
+        'userId' => '1',
       )));
 
     $this->app->call();
@@ -92,6 +73,7 @@ class SessionControllerTest extends \PHPUnit_Framework_TestCase {
     $output = json_decode($this->app->getResponse()->body());
     $this->assertNotEmpty($output);
     $this->assertEquals('4', $output->sessionId);
+    $this->assertEquals('1', $output->userId);
   }
 
   public function myFindOneByFieldCallback($field, $value, $table) {

@@ -5,8 +5,6 @@ namespace MABI\FacebookIdentity;
 include_once __DIR__ . '/../../../RESTModelController.php';
 include_once __DIR__ . '/../../Identity/controllers/SessionController.php';
 
-use MABI\Identity\Identity;
-
 /**
  * @docs show-model
  *
@@ -26,7 +24,7 @@ use MABI\Identity\Identity;
 class SessionController extends \MABI\Identity\SessionController {
 
   /**
-   * @var \Mabi\Identity\Session
+   * @var \Mabi\FacebookIdentity\Session
    */
   protected $model;
 
@@ -36,6 +34,22 @@ class SessionController extends \MABI\Identity\SessionController {
    * @var object
    */
   protected $mockData = NULL;
+
+  /**
+   * @param object $mockData
+   */
+  public function setMockData($mockData) {
+    $this->mockData = $mockData;
+  }
+
+  public function __construct($extension) {
+    parent::__construct($extension);
+
+    $mockConfig = $extension->getApp()->getConfig('FacebookSessionMockData');
+    if (empty($this->mockData) && !empty($mockConfig)) {
+      $this->mockData = $mockConfig;
+    }
+  }
 
   /**
    * @var bool
@@ -97,13 +111,17 @@ class SessionController extends \MABI\Identity\SessionController {
      */
     $userModel = call_user_func($this->userModelClass . '::init', $this->getApp());
 
+    if ($userModel->findByField('email', $fbData->email)) {
+      $this->getApp()->returnError('An account with this email already exists', 409, 1006);
+    }
+
     $userModel->firstName = $fbData->first_name;
     $userModel->lastName = $fbData->last_name;
     $userModel->email = $fbData->email;
     $userModel->password = uniqid();
     $userModel->facebookId = $fbData->id;
 
-    Identity::insertUser($userModel);
+    $userModel->insert();
 
     return $userModel;
   }
@@ -116,20 +134,17 @@ class SessionController extends \MABI\Identity\SessionController {
    * If facebookOnly is set, then this endpoint requires and only accepts the accessToken field
    *
    * If facebookOnly is NOT set, then this endpoint requires either both email and password to be set OR just
-   * acceessToken
+   * accessToken
    *
    * If a Facebook accessToken is used and the user does not exist already in the API, a new user will be automatically
    * created and the returning newUserCreated field will be true.
    *
-   * @docs-param email string body optional The email of the user to create the session for
-   * @docs-param password string body optional The password of the user to create the session for
-   * @docs-param accessToken string body optional The Facebook accessToken Facebook accessToken that is used to authenticate the user
+   * @docs-param session string body required A session object (with email & password or accessToken filled in)
    *
    * @throws \Slim\Exception\Stop
    */
   function _restPostCollection() {
-    $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
-    $this->model->loadParameters($this->getApp()->getRequest()->post());
+    $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
 
     if (empty($this->model->accessToken)) {
       if ($this->getFacebookOnly()) {
@@ -154,34 +169,9 @@ class SessionController extends \MABI\Identity\SessionController {
         $this->model->newUserCreated = TRUE;
       }
 
-      $this->model->created = new \DateTime('now');
-      $this->model->lastAccessed = new \DateTime('now');
       $this->model->user = $userModel;
-      $this->model->userId = $userModel->getId();
       $this->model->insert();
       echo $this->model->outputJSON();
     }
   }
-
-  protected function getDocParameters(\ReflectionMethod $rMethod) {
-    $docParameters = parent::getDocParameters($rMethod);
-
-    if ($rMethod->getName() == '_restPostCollection' && $this->getFacebookOnly()) {
-      // remove email & password if facebook only is enabled
-      foreach ($docParameters as $k => $docParameter) {
-        switch ($docParameter['Name']) {
-          case 'email':
-          case 'password':
-            unset($docParameters[$k]);
-            break;
-          case 'accessToken':
-            $docParameters[$k]['Required'] = 'Y';
-        }
-      }
-    }
-
-    return $docParameters;
-  }
-
-
 }

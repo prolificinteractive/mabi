@@ -5,7 +5,6 @@ namespace MABI\Testing;
 include_once 'PHPUnit/Autoload.php';
 include_once __DIR__ . '/../App.php';
 include_once __DIR__ . '/../MongoDataConnection.php';
-include_once __DIR__ . '/../DirectoryModelLoader.php';
 include_once __DIR__ . '/../DirectoryControllerLoader.php';
 include_once __DIR__ . '/../GeneratedRESTModelControllerLoader.php';
 include_once __DIR__ . '/../autodocs/MarkdownParser.php';
@@ -30,6 +29,13 @@ class AppTest extends \PHPUnit_Framework_TestCase {
     $app = \MABI\App::getSingletonApp();
     $this->assertNotEmpty($app);
     $this->assertEquals(\MABI\App::getSingletonApp(), $app);
+  }
+
+  function testClearSingleton() {
+    $sing1App = \MABI\App::getSingletonApp();
+    \MABI\App::clearSingletonApp();
+    $sing2App = \MABI\App::getSingletonApp();
+    $this->assertNotEquals($sing2App, $sing1App);
   }
 
   function testConfigSettings() {

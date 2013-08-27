@@ -4,65 +4,40 @@ namespace MABI\FacebookIdentity\Testing;
 
 include_once __DIR__ . '/../FacebookIdentity.php';
 include_once __DIR__ . '/../../Identity/Identity.php';
+include_once __DIR__ . '/../../../tests/AppTestCase.php';
 
 use MABI\FacebookIdentity\FacebookIdentity;
 use MABI\Identity\Identity;
 use MABI\RESTAccess\RESTAccess;
+use MABI\Testing\AppTestCase;
 
-include_once 'PHPUnit/Autoload.php';
-
-class SessionControllerTest extends \PHPUnit_Framework_TestCase {
+class SessionControllerTest extends AppTestCase {
   /**
-   * @var \PHPUnit_Framework_MockObject_MockObject
+   * @var FacebookIdentity
    */
-  protected $dataConnectionMock;
+  protected $fbIdentityExtension;
 
-  /**
-   * @var \PHPUnit_Framework_MockObject_MockObject
-   */
-  protected $controllerMock;
+  public function setUpApp($env = array(), $fbId, $fbEmail, $facebookOnly = FALSE) {
+    parent::setUpApp($env);
 
-  /**
-   * @var \MABI\App
-   */
-  protected $app;
+    $fbData = new \stdClass();
+    $fbData->id = $fbId;
+    $fbData->email = $fbEmail;
+    $fbData->first_name = 'photis';
+    $fbData->last_name = 'patriotis';
 
-  private function setUpRESTApp($env = array()) {
-    \Slim\Environment::mock($env);
-    $this->app = new \MABI\App();
-
-    $this->dataConnectionMock = $this->getMock('\MABI\DataConnection');
-    $this->dataConnectionMock
-      ->expects($this->any())
-      ->method('getDefaultIdColumn')
-      ->will($this->returnValue('id'));
-
-    $this->app->addDataConnection('default', $this->dataConnectionMock);
-
-    $mockFBIdentity = $this->getMock('MABI\FacebookIdentity\FacebookIdentity',
-      array('getFBInfo'),
-      array($this->app, new Identity($this->app, new RESTAccess($this->app)))
-    );
-
-    $mockFBIdentity->expects($this->once())
-      ->method('getFBInfo')
-      ->with('abcdfacebooktesttokenefgh')
-      ->will($this->returnValue(
-        json_decode(json_encode(array(
-          'email' => 'ppatriotis+fbtest@ex.com',
-          'id' => '12345',
-        )))
-      ));
-
-    $this->app->addExtension($mockFBIdentity);
+    $this->app->setConfig('FacebookSessionMockData', $fbData);
+    $this->fbIdentityExtension = new FacebookIdentity($this->app, new Identity($this->app, new RESTAccess($this->app)),
+      $facebookOnly);
+    $this->app->addExtension($this->fbIdentityExtension);
   }
 
   public function testSuccessfulSessionPostCollection() {
-    $this->setUpRESTApp(array(
+    $this->setUpApp(array(
       'REQUEST_METHOD' => 'POST',
-      'slim.input' => 'accessToken=abcdfacebooktesttokenefgh',
+      'slim.input' => '{"accessToken":"abcdfacebooktesttokenefgh"}',
       'PATH_INFO' => '/sessions'
-    ));
+    ), 1233344556, 'ppatriotis@gmail.com');
 
     $this->dataConnectionMock->expects($this->exactly(2))
       ->method('findOneByField')
@@ -75,7 +50,7 @@ class SessionControllerTest extends \PHPUnit_Framework_TestCase {
         'id' => '4',
         'date_created' => time(),
         'lastAccessed' => time(),
-        'user' => '1',
+        'userId' => '2',
       )));
 
     $this->app->call();
@@ -83,29 +58,123 @@ class SessionControllerTest extends \PHPUnit_Framework_TestCase {
     $this->assertNotEmpty($this->app->getResponse()->body());
     $output = json_decode($this->app->getResponse()->body());
     $this->assertNotEmpty($output);
-    $this->assertEquals('4', $output->id);
+    $this->assertEquals('4', $output->sessionId);
+    $this->assertEquals('2', $output->userId);
+    $this->assertEquals('photis', $output->user->firstName);
+    $this->assertEquals('1233344556', $output->user->facebookId);
+  }
+
+  public function testSuccessfulSessionPostCreateUserCollection() {
+    $this->setUpApp(array(
+      'REQUEST_METHOD' => 'POST',
+      'slim.input' => '{"accessToken":"abcdfacebooktesttokenefgh"}',
+      'PATH_INFO' => '/sessions'
+    ), 1233344557, 'ppatriotis2@gmail.com');
+
+    $this->dataConnectionMock->expects($this->exactly(3))
+      ->method('findOneByField')
+      ->will($this->returnCallback(array($this, 'myFindOneByFieldCallback')));
+
+    $this->dataConnectionMock->expects($this->exactly(2))
+      ->method('insert')
+      ->will($this->returnCallback(array($this, 'myInsertCallback')));
+
+    $this->app->call();
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $this->assertNotEmpty($this->app->getResponse()->body());
+    $output = json_decode($this->app->getResponse()->body());
+    $this->assertNotEmpty($output);
+    $this->assertEquals('4', $output->sessionId);
+    $this->assertEquals('3', $output->userId);
+    $this->assertEquals('photis', $output->user->firstName);
+    $this->assertEquals('ppatriotis2@gmail.com', $output->user->email);
+    $this->assertEquals('1233344557', $output->user->facebookId);
+  }
+
+  public function testSessionDocumentation() {
+    $this->setUpApp(array(
+      'REQUEST_METHOD' => 'POST',
+      'slim.input' => '{"accessToken":"abcdfacebooktesttokenefgh"}',
+      'PATH_INFO' => '/sessions'
+    ), 1233344556, 'ppatriotis@gmail.com');
+
+    $this->dataConnectionMock->expects($this->exactly(2))
+      ->method('findOneByField')
+      ->will($this->returnCallback(array($this, 'myFindOneByFieldCallback')));
+
+    $this->dataConnectionMock->expects($this->once())
+      ->method('insert')
+      ->with('sessions', $this->anything())
+      ->will($this->returnValue(array(
+        'id' => '4',
+        'date_created' => time(),
+        'lastAccessed' => time(),
+        'userId' => '2',
+      )));
+
+    $this->app->call();
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $this->assertNotEmpty($this->app->getResponse()->body());
+    $output = json_decode($this->app->getResponse()->body());
+    $this->assertNotEmpty($output);
+    $this->assertEquals('4', $output->sessionId);
+    $this->assertEquals('2', $output->userId);
+    $this->assertEquals('photis', $output->user->firstName);
+    $this->assertEquals('1233344556', $output->user->facebookId);
+  }
+
+  public function myInsertCallback($table, $data) {
+    $this->assertThat($table, $this->logicalOr($this->equalTo('sessions'), $this->equalTo('users')));
+
+    switch ($table) {
+      case 'sessions':
+        return array(
+          'id' => '4',
+          'date_created' => time(),
+          'lastAccessed' => time(),
+          'userId' => $data['userId'],
+        );
+      case 'users':
+        return array(
+          'id' => 3,
+          'created' => 1372375585,
+          'firstName' => 'photis',
+          'lastName' => 'patriotis',
+          'email' => 'ppatriotis2@gmail.com',
+          'passHash' => '604cefb585491865043db59f5f200c08af016dc636bcb37c858199e20f082c10',
+          'facebookId' => '1233344557',
+          // result of: hash_hmac('sha256', '123', 'salt4456');
+          'salt' => 'salt4456'
+        );
+      default:
+        return FALSE;
+    }
   }
 
   public function myFindOneByFieldCallback($field, $value, $table) {
     $this->assertThat($table, $this->logicalOr($this->equalTo('sessions'), $this->equalTo('users')));
+
     switch ($table) {
       case 'sessions':
-        $this->assertNull($value);
+        $this->assertEquals(0, $value);
         $this->assertEquals('id', $field);
         return FALSE;
       case 'users':
+        if ($field == 'facebookId' && $value == '1233344556') {
+          return array(
+            'id' => 2,
+            'created' => 1372375585,
+            'firstName' => 'photis',
+            'lastName' => 'patriotis',
+            'email' => 'ppatriotis@gmail.com',
+            'passHash' => '604cefb585491865043db59f5f200c08af016dc636bcb37c858199e20f082c10',
+            'facebookId' => '1233344556',
+            // result of: hash_hmac('sha256', '123', 'salt4456');
+            'salt' => 'salt4456'
+          );
+        }
       default:
-        return array(
-          'id' => '2',
-          'created' => 1372375585,
-          'firstName' => 'photis',
-          'lastName' => 'patriotis2',
-          'email' => 'ppatriotis2@gmail.com',
-          'passHash' => '604cefb585491865043db59f5f200c08af016dc636bcb37c858199e20f082c10',
-          'facebookId' => '12345',
-          // result of: hash_hmac('sha256', '123', 'salt4456');
-          'salt' => 'salt4456'
-        );
+        return FALSE;
     }
   }
 }

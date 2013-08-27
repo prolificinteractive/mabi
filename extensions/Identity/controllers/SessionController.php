@@ -37,14 +37,12 @@ class SessionController extends RESTModelController {
    * Creates a session. A valid email and password of an existing user must be passed in, and the new session
    * (with the session id) will be returned.
    *
-   * @docs-param email string body required The email of the user to create the session for
-   * @docs-param password string body required The password of the user to create the session for
+   * @docs-param session string body required A session object (with email & password filled in)
    *
    * @throws \Slim\Exception\Stop
    */
   function _restPostCollection() {
-    $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
-    $this->model->loadParameters($this->getApp()->getRequest()->post());
+    $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
 
     if (empty($this->model->password) || empty($this->model->email)) {
       $this->getApp()->returnError('Email and Password are required to create a session', 400, 1002);
@@ -60,12 +58,7 @@ class SessionController extends RESTModelController {
       $this->getApp()->returnError('Password is invalid', 400, 1003);
     }
 
-    $this->model->created = new \DateTime('now');
-    $this->model->lastAccessed = new \DateTime('now');
     $this->model->user = $user;
-    $this->model->userId = $user->getId();
-    $this->model->email = NULL;
-    $this->model->password = NULL;
     $this->model->insert();
     echo $this->model->outputJSON();
   }

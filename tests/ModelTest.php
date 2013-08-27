@@ -2,24 +2,12 @@
 
 namespace MABI\Testing;
 
-include_once 'PHPUnit/Autoload.php';
-include_once __DIR__ . '/../App.php';
 include_once __DIR__ . '/../Model.php';
 include_once __DIR__ . '/../DirectoryModelLoader.php';
 include_once __DIR__ . '/../DataConnection.php';
-include_once __DIR__ . '/MockDataConnection.php';
+include_once __DIR__ . '/SampleAppTestCase.php';
 
-class ModelTest extends \PHPUnit_Framework_TestCase {
-
-  /**
-   * @var \MABI\App
-   */
-  protected $app;
-
-  /**
-   * @var \PHPUnit_Framework_MockObject_MockObject
-   */
-  protected $dataConnectionMock;
+class ModelTest extends SampleAppTestCase {
 
   /**
    * @var \mabiTesting\ModelA
@@ -27,16 +15,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase {
   protected $insertedModel;
 
   public function setUp() {
-    \Slim\Environment::mock();
-    $this->app = new \MABI\App();
-
-    $this->dataConnectionMock = $this->getMock('\MABI\Testing\MockDataConnection',
-      array('findOneByField', 'query', 'insert', 'save', 'deleteByField', 'clearAll', 'getNewId', 'findAll')
-    );
-
-    $this->app->addDataConnection('default', $this->dataConnectionMock);
-
-    $this->app->setModelLoaders(array(new \MABI\DirectoryModelLoader('TestApp/TestModelDir', 'mabiTesting')));
+    $this->setUpApp();
   }
 
   public function testModelLoader() {
@@ -239,6 +218,24 @@ class ModelTest extends \PHPUnit_Framework_TestCase {
     $this->assertInstanceOf('\mabiTesting\ModelB', $fmodel->subObjList[0]);
     $this->assertNotEmpty($fmodel->subObjList[0]);
     $this->assertNotEmpty($fmodel->subObjList[0]->name);
+  }
+
+  public function testLoadFromJSONError1() {
+    $this->setExpectedException('Exception');
+    /**
+     * @var $fmodel \mabiTesting\FullModel
+     */
+    $fmodel = \mabiTesting\FullModel::init($this->app);
+    $fmodel->loadFromExternalSource('{invalid:"json"}');
+  }
+
+  public function testLoadFromJSONError2() {
+    $this->setExpectedException('Exception');
+    /**
+     * @var $fmodel \mabiTesting\FullModel
+     */
+    $fmodel = \mabiTesting\FullModel::init($this->app);
+    $fmodel->loadFromExternalSource('null');
   }
 
   // todo: public function testInsertAllFieldTypes() {

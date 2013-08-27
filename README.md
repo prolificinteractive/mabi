@@ -33,3 +33,7 @@ Requirements
 * Mongodb (although other databases will soon be implemented)
 ** Mongodb PHP extension is required
 * NodeJS (for running the automated documentation)
+
+License
+====
+This project is released under the MIT License. See the [LICENSE](LICENCE) file for more information.

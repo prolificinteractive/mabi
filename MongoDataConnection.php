@@ -140,6 +140,9 @@ class MongoDataConnection implements DataConnection {
 
     $mquery = $query['query'];
     $return = $this->db->selectCollection($table)->find($mquery);
+    if (!empty($query['skip'])) {
+      $return = $return->skip($query['skip']);
+    }
     if (!empty($query['limit'])) {
       $return = $return->limit($query['limit']);
     }

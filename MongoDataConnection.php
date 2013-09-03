@@ -133,12 +133,16 @@ class MongoDataConnection implements DataConnection {
       $return = $this->db->selectCollection($table)->group(
         $query['group']['_id'],
         $query['group']['initial'],
-        $query['group']['reduce']);
+        $query['group']['reduce'],
+        $query['group']['condition']);
       return $return;
     }
 
     $mquery = $query['query'];
     $return = $this->db->selectCollection($table)->find($mquery);
+    if (!empty($query['skip'])) {
+      $return = $return->skip($query['skip']);
+    }
     if (!empty($query['limit'])) {
       $return = $return->limit($query['limit']);
     }

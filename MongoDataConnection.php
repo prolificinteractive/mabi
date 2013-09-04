@@ -130,11 +130,18 @@ class MongoDataConnection implements DataConnection {
 
   function query($table, $query) {
     if (isset($query['group'])) {
-      $return = $this->db->selectCollection($table)->group(
-        $query['group']['_id'],
-        $query['group']['initial'],
-        $query['group']['reduce'],
-        $query['group']['condition']);
+      if (empty($query['group']['condition'])) {
+        $return = $this->db->selectCollection($table)->group(
+          $query['group']['_id'],
+          $query['group']['initial'],
+          $query['group']['reduce']);
+      } else {
+        $return = $this->db->selectCollection($table)->group(
+          $query['group']['_id'],
+          $query['group']['initial'],
+          $query['group']['reduce'],
+          $query['group']['condition']);
+      }
       return $return;
     }
 

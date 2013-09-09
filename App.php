@@ -51,6 +51,10 @@ class App extends Extension {
     return self::$singletonApp;
   }
 
+  static function clearSingletonApp() {
+    self::$singletonApp = NULL;
+  }
+
   public function __construct() {
     if (file_exists(__DIR__ . '/middleware')) {
       array_push($this->middlewareDirectories, __DIR__ . '/middleware');

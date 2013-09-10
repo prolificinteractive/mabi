@@ -90,9 +90,9 @@ class App extends Extension {
       if (array_key_exists('message', $message) && array_key_exists('httpcode', $message) &&
         array_key_exists('code', $message)
       ) {
-        $message = $message['message'];
         $httpStatusCode = $message['httpcode'];
         $applicationErrorCode = $message['code'];
+        $message = $message['message'];
       }
       else {
         throw new \Exception('Improper error message definition');

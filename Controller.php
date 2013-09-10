@@ -274,7 +274,6 @@ class Controller {
       $action = strtolower($methodDoc['MethodName']);
       $methodDoc['URI'] = "/{$this->base}/{$action}";
       $methodDoc['Synopsis'] = $parser->parse(ReflectionHelper::getDocText($rMethod->getDocComment()));
-
       $methodDoc['parameters'] = $this->getDocParameters($rMethod);
 
       // Allow controller middlewares to modify the documentation for this method

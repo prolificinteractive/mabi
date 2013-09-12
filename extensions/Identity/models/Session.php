@@ -70,6 +70,15 @@ class Session extends Model {
    */
   public $password;
 
+  /**
+   * The plaintext password that is used to authenticate the user. This should only be filled for incoming POSTs
+   * to create new sessions. Otherwise it will always be NULL.
+   *
+   * @var string
+   * @field external
+   */
+  public $authToken;
+
   public function insert() {
     $this->created = new \DateTime('now');
     $this->lastAccessed = new \DateTime('now');

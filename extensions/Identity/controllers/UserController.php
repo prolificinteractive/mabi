@@ -4,6 +4,7 @@ namespace MABI\Identity;
 
 include_once __DIR__ . '/../../../RESTModelController.php';
 
+use \MABI\EmailSupport;
 use \MABI\RESTModelController;
 
 /**
@@ -24,6 +25,59 @@ class UserController extends RESTModelController {
   protected $model;
 
   protected $sessionModelClass = '\MABI\Identity\Session';
+
+  /**
+   * @var \MABI\EmailSupport\Provider
+   */
+  protected $emailProvider = null;
+
+  /**
+   * @var \MABI\EmailSupport\Template
+   */
+  protected $forgotEmailTemplate = null;
+
+  protected $replaceArray = array();
+
+  protected $passwordResetMessage = "
+    <div style='overflow: hidden;'>
+      Hey !first_name,
+      <br>
+      <br>
+      To reset your password, please click the following link:
+      <br>
+      <a href='!resetURL'>!resetURL</a>
+      <br>
+      <br>
+      If you don't want to reset your password, you can ignore this message - someone probably typed in your username or email by mistake.
+      <br>
+      Thanks!
+      <br>
+      </div>
+    </div>";
+
+
+  public function __construct($extension)
+  {
+    parent::__construct($extension);
+    if($this->forgotEmailTemplate == null) {
+      $this->forgotEmailTemplate = new \MABI\EmailSupport\TokenTemplate($this->passwordResetMessage);
+    }
+  }
+
+  /**
+   * @return \MABI\EmailSupport\Provider
+   * @endpoint ignore
+   */
+  public function getEmailProvider() {
+    return $this->emailProvider;
+  }
+
+  /**
+   * @param \MABI\EmailSupport\Provider $emailProvider
+   */
+  public function setEmailProvider($emailProvider) {
+    $this->emailProvider = $emailProvider;
+  }
 
   /**
    * @docs-name Create New User
@@ -123,6 +177,29 @@ class UserController extends RESTModelController {
    * @endpoint ignore
    */
   public function postForgotPassword() {
-    // todo: implement. get an email from post
+    if ($this->getEmailProvider() == null) {
+      $this->getApp()->returnError(array(
+        'message' => 'EmailProvider is not properly implemented.',
+        'hhtpcode' => 404
+      ));
+    }
+
+    /*
+     * todo: generate resetToken or resetLink to send to user
+     * todo: make necessary db modifications and such
+     * $this->replaceArray = array('!resetURL' => $resetURL);
+     *
+     * find user by email
+     * hash(pass salt and accessDate)
+     * return authtoken or whatever we figure out with front end
+     *
+     *
+     * add access date to user model
+     */
+
+    $this->getEmailProvider()->sendEmail(
+      $this->model->email,
+      'Password Reset',
+      $this->forgotEmailTemplate->getMessage($this->replaceArray));
   }
 }

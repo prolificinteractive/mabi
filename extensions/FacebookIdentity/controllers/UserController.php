@@ -68,8 +68,7 @@ class UserController extends \MABI\Identity\UserController {
       $this->getApp()->returnError('Facebook Connect is the only method allowed to create users', 401, 1001);
     }
     else {
-      // todo: implement. get email from post, warn if a facebook user
-      parent::_restPostCollection();
+      parent::postForgotPassword();
     }
   }
 

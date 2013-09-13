@@ -36,8 +36,7 @@ class UserController extends RESTModelController {
    */
   protected $forgotEmailTemplate = null;
 
-  protected $replaceArray = array();
-
+  /*
   protected $passwordResetMessage = "
     <div style='overflow: hidden;'>
       Hey !first_name,
@@ -54,15 +53,17 @@ class UserController extends RESTModelController {
       <br>
       </div>
     </div>";
+  */
 
-
+  /*
   public function __construct($extension)
   {
     parent::__construct($extension);
-    if($this->forgotEmailTemplate == null) {
+        if($this->forgotEmailTemplate == null) {
       $this->forgotEmailTemplate = new \MABI\EmailSupport\TokenTemplate($this->passwordResetMessage);
     }
   }
+  */
 
   /**
    * @return \MABI\EmailSupport\Provider
@@ -173,33 +174,50 @@ class UserController extends RESTModelController {
     echo $updatedUser->outputJSON();
   }
 
-  /**
-   * @endpoint ignore
-   */
+
   public function postForgotPassword() {
     if ($this->getEmailProvider() == null) {
       $this->getApp()->returnError(array(
-        'message' => 'EmailProvider is not properly implemented.',
+        'message' => 'EmailProvider is not properly implemented.  PHPCore and Mandrill can be used as defaults.',
+        'hhtpcode' => 404
+      ));
+    }
+    if ($this->forgotEmailTemplate == null or strpos($this->forgotEmailTemplate->getTemplate(), '!authToken') === false) {
+      $this->getApp()->returnError(array(
+        'message' => 'forgotEmailTemplate must have a string containing the substring "!authToken".',
         'hhtpcode' => 404
       ));
     }
 
-    /*
-     * todo: generate resetToken or resetLink to send to user
-     * todo: make necessary db modifications and such
-     * $this->replaceArray = array('!resetURL' => $resetURL);
-     *
-     * find user by email
-     * hash(pass salt and accessDate)
-     * return authtoken or whatever we figure out with front end
-     *
-     *
-     * add access date to user model
+    /**
+     * @var $user User
      */
+    $email = $this->getApp()->getRequest()->post('email');
+    $user = User::init($this->getApp());
+    if (!$user->findByField('email', $email)) {
+      $this->getApp()->returnError(array(
+        'message' => 'There is no user with this email.',
+        'hhtpcode' => 404
+      ));
+    }
 
-    $this->getEmailProvider()->sendEmail(
-      $this->model->email,
+    $user->lastAccessed = new \DateTime('now');
+    $user->save();
+    $authToken = Identity::passHash($user->passHash, $user->lastAccessed->format('Y-m-d H:i:s'));
+
+    $resp = array(
+      'AT' => $authToken,
+      'passHash' => $user->passHash,
+      'accessed' => $user->lastAccessed->format('Y-m-d H:i:s')
+    );
+
+
+/*
+    $resp = $this->getEmailProvider()->sendEmail(
+      $user->email,
       'Password Reset',
-      $this->forgotEmailTemplate->getMessage($this->replaceArray));
+      $this->forgotEmailTemplate->getMessage(array('!authToken' => $authToken)));
+*/
+    echo json_encode($resp);
   }
 }

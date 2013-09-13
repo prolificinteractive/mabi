@@ -4,6 +4,7 @@ namespace MABI\Identity\Middleware;
 
 use MABI\Middleware;
 use MABI\Identity\Session;
+use MABI\Identity\User;
 
 include_once __DIR__ . '/../../../Middleware.php';
 
@@ -28,7 +29,12 @@ class SessionHeader extends Middleware {
     if($foundSession->findById($sessionId)) {
       $this->session = $foundSession;
       $this->getApp()->getRequest()->session = $this->session;
-      $this->session->lastAccessed = new \DateTime('now');
+      $now = new \DateTime('now');
+      $this->session->lastAccessed = $now;
+
+      $user = User::init($this->getApp());
+      $user->findById($this->session->userId);
+      $user->lastAccessed = $now;
     }
 
     if (!empty($this->next)) {

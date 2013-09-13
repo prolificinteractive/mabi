@@ -4,6 +4,6 @@ namespace MABI\EmailSupport;;
 
 interface Provider {
 
-  function sendEmail($to, $subject, $message);
+  function sendEmail($toEmail, $subject, $message);
 
 }

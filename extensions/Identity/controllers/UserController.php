@@ -36,35 +36,6 @@ class UserController extends RESTModelController {
    */
   protected $forgotEmailTemplate = null;
 
-  /*
-  protected $passwordResetMessage = "
-    <div style='overflow: hidden;'>
-      Hey !first_name,
-      <br>
-      <br>
-      To reset your password, please click the following link:
-      <br>
-      <a href='!resetURL'>!resetURL</a>
-      <br>
-      <br>
-      If you don't want to reset your password, you can ignore this message - someone probably typed in your username or email by mistake.
-      <br>
-      Thanks!
-      <br>
-      </div>
-    </div>";
-  */
-
-  /*
-  public function __construct($extension)
-  {
-    parent::__construct($extension);
-        if($this->forgotEmailTemplate == null) {
-      $this->forgotEmailTemplate = new \MABI\EmailSupport\TokenTemplate($this->passwordResetMessage);
-    }
-  }
-  */
-
   /**
    * @return \MABI\EmailSupport\Provider
    * @endpoint ignore

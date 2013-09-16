@@ -2,28 +2,33 @@
 
 namespace MABI\EmailSupport;
 
-class MandrillTemplate extends BaseTemplate {
+class MandrillTemplate extends DataTemplate {
 
   function __construct($templateName, $subject, $data = array())
   {
-    $this->template = $templateName;
+    $this->templateName = $templateName;
     $this->subject = $subject;
     $this->data = $data;
   }
 
-  /**
-   * @param string $template
-   */
-  public function setTemplate($template)
+  public function getMessage()
   {
-    $this->template = $template;
+    throw new \Exception('MandrillTemplates cannot use this method');
   }
 
   /**
    * @return string
    */
-  public function getTemplate()
+  public function getSubject()
   {
-    return $this->template;
+    $this->subject;
+  }
+
+  /**
+   * @return string
+   */
+  public function getTemplateName()
+  {
+    return $this->templateName;
   }
 }

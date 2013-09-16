@@ -3,7 +3,16 @@
 namespace MABI\EmailSupport;
 
 include_once __DIR__ . '/Provider.php';
+include_once __DIR__ . '/MandrillTemplate.php';
 
+/**
+ * Class Mandrill
+ * @package MABI\EmailSupport
+ *
+ * Can send emails directly through a string or from a template hosted through Mandrill
+ * depending on what type of template you pass to sendEmail.
+ * Requires a Mandrill APIKEY.
+ */
 class Mandrill implements Provider {
 
   /**
@@ -30,24 +39,17 @@ class Mandrill implements Provider {
 
   /**
    * @param $to string
-   * @param $template BaseTemplate
+   * @param $template Template
    */
   public function sendEmail($to, $template) {
     if (get_class($template) == 'MABI\EmailSupport\MandrillTemplate') {
       return $this->sendEmailTemplateRequest(
         $to,
         $template->getSubject(),
-        $template->getTemplate(),
+        $template->getTemplateName(),
         $template->getData());
     }
-    else if (get_class($template) == 'MABI\EmailSupport\TokenTemplate') {
-      return $this->sendEmailRequest($to, $template->getSubject(), $template->getTemplate());
-
-    }
-    else {
-      throw new \Exception("Template must extend BaseTemplate");
-    }
-
+    return $this->sendEmailRequest($to, $template->getSubject(), $template->getMessage());
   }
 
   /**

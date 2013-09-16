@@ -2,14 +2,13 @@
 
 namespace MABI\EmailSupport;
 
-include_once __DIR__ . '/BaseTemplate.php';
+include_once __DIR__ . '/DataTemplate.php';
 
-class TokenTemplate extends BaseTemplate {
+class TokenTemplate extends DataTemplate {
 
-  /**
-   * @var array
-   */
-  protected $replaceTokens = array();
+  public $subject;
+
+  public $templateName;
 
   function __construct($template, $subject, $data = array())
   {
@@ -29,7 +28,16 @@ class TokenTemplate extends BaseTemplate {
   /**
    * @return string
    */
-  public function getTemplate()
+  public function getSubject()
+  {
+    return str_replace(array_keys($this->data), array_values($this->data), $this->subject);
+  }
+
+
+  /**
+   * @return string
+   */
+  public function getMessage()
   {
     return str_replace(array_keys($this->data), array_values($this->data), $this->template);
   }

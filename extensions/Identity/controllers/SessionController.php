@@ -43,7 +43,10 @@ class SessionController extends RESTModelController {
    */
   function _restPostCollection() {
     $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
-    if (!empty($this->model->email)) {
+    if (empty($this->model->email)) {
+      $this->getApp()->returnError('Email is required to create a session', 400, 1002);
+    }
+    else {
       /**
        * @var $user User
        */
@@ -56,12 +59,12 @@ class SessionController extends RESTModelController {
         }
       }
       elseif (!empty($this->model->authToken)) {
-        if ($this->model->authToken != Identity::passHash($user->passHash, $user->lastAccessed->format('Y-m-d H:i:s'))) {
+        if ($this->model->authToken != Identity::passHash($user->passHash, $user->lastAccessed->getTimestamp())) {
           $this->getApp()->returnError('AuthToken is invalid', 400, 1003);
         }
       }
       else {
-        $this->getApp()->returnError('Email and Password are required to create a session', 400, 1002);
+        $this->getApp()->returnError('A Password or an authToken are required to create a session', 400, 1002);
       }
       $user->lastAccessed = new \DateTime('now');
       $user->save();
@@ -69,10 +72,5 @@ class SessionController extends RESTModelController {
       $this->model->insert();
       echo $this->model->outputJSON();
     }
-    else {
-      $this->getApp()->returnError('Email and Password are required to create a session', 400, 1002);
-
-    }
-
   }
 }

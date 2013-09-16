@@ -28,9 +28,37 @@ class Mandrill implements Provider {
     $this->senderName = $senderName;
   }
 
+  /**
+   * @param $to string
+   * @param $template BaseTemplate
+   */
+  public function sendEmail($to, $template) {
+    if (get_class($template) == 'MABI\EmailSupport\MandrillTemplate') {
+      return $this->sendEmailTemplateRequest(
+        $to,
+        $template->getSubject(),
+        $template->getTemplate(),
+        $template->getData());
+    }
+    else if (get_class($template) == 'MABI\EmailSupport\TokenTemplate') {
+      return $this->sendEmailRequest($to, $template->getSubject(), $template->getTemplate());
 
+    }
+    else {
+      throw new \Exception("Template must extend BaseTemplate");
+    }
 
-  public function sendEmailTemplate($email, $subject, $templateName, $vars) {
+  }
+
+  /**
+   * @param $email
+   * @param $subject
+   * @param $templateName
+   * @param $vars
+   * @return mixed
+   * @throws \Exception
+   */
+  private function sendEmailTemplateRequest($email, $subject, $templateName, $vars) {
 
     $url = 'https://mandrillapp.com/api/1.0/messages/send-template.json';
 
@@ -81,8 +109,14 @@ class Mandrill implements Provider {
     }
   }
 
-
-  public function sendEmail($toEmail, $subject, $message) {
+  /**
+   * @param $toEmail
+   * @param $subject
+   * @param $message
+   * @return mixed
+   * @throws \Exception
+   */
+  private function sendEmailRequest($toEmail, $subject, $message) {
 
     $url = "https://mandrillapp.com/api/1.0/messages/send.json";
 

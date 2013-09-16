@@ -150,45 +150,46 @@ class UserController extends RESTModelController {
     if ($this->getEmailProvider() == null) {
       $this->getApp()->returnError(array(
         'message' => 'EmailProvider is not properly implemented.  PHPCore and Mandrill can be used as defaults.',
-        'hhtpcode' => 404
+        'httpcode' => 404
       ));
     }
-    if ($this->forgotEmailTemplate == null or strpos($this->forgotEmailTemplate->getTemplate(), '!authToken') === false) {
+    if ($this->forgotEmailTemplate == null) {
       $this->getApp()->returnError(array(
-        'message' => 'forgotEmailTemplate must have a string containing the substring "!authToken".',
-        'hhtpcode' => 404
+        'message' => 'forgotEmailTemplate must be set.',
+        'httpcode' => 404
       ));
     }
 
     /**
      * @var $user User
      */
-    $email = $this->getApp()->getRequest()->post('email');
+    $data = json_decode($this->getApp()->getRequest()->getBody());
+    try {
+      $email = $data->email;
+    } catch (\Exception $e) {
+      $this->getApp()->returnError(array(
+        'message' => 'Email was not set.',
+        'httpcode' => 404
+      ));
+    }
     $user = User::init($this->getApp());
     if (!$user->findByField('email', $email)) {
       $this->getApp()->returnError(array(
         'message' => 'There is no user with this email.',
-        'hhtpcode' => 404
+        'httpcode' => 404
       ));
     }
 
     $user->lastAccessed = new \DateTime('now');
     $user->save();
-    $authToken = Identity::passHash($user->passHash, $user->lastAccessed->format('Y-m-d H:i:s'));
+    $authToken = Identity::passHash($user->passHash, $user->lastAccessed->getTimestamp());
 
-    $resp = array(
-      'AT' => $authToken,
-      'passHash' => $user->passHash,
-      'accessed' => $user->lastAccessed->format('Y-m-d H:i:s')
-    );
+    $this->forgotEmailTemplate->mergeData(array('!authToken' => $authToken));
 
-
-/*
     $resp = $this->getEmailProvider()->sendEmail(
       $user->email,
-      'Password Reset',
-      $this->forgotEmailTemplate->getMessage(array('!authToken' => $authToken)));
-*/
+      $this->forgotEmailTemplate);
+
     echo json_encode($resp);
   }
 }

@@ -4,6 +4,8 @@ namespace MABI\Identity\Testing;
 
 include_once __DIR__ . '/../Identity.php';
 include_once __DIR__ . '/../../../tests/AppTestCase.php';
+include_once __DIR__ . '/../../EmailSupport/Mandrill.php';
+include_once __DIR__ . '/../../EmailSupport/TokenTemplate.php';
 
 use MABI\App;
 use MABI\Identity\Identity;
@@ -193,6 +195,151 @@ class UserControllerTest extends AppTestCase {
 
     $this->app->call();
     $this->assertEquals(409, $this->app->getResponse()->status());
+  }
+
+  public function testForgotPasswordNoProvider() {
+    $this->setUpApp(array(
+      'REQUEST_METHOD' => 'POST',
+      'slim.input' => '{"email":"ppatriotis@gmail.com"}',
+      'PATH_INFO' => '/users/forgotpassword'
+    ));
+
+    $this->app->call();
+    $this->assertEquals(500, $this->app->getResponse()->status());
+  }
+
+  public function testForgotPasswordNoTemplate() {
+    $this->setUpApp(array(
+      'REQUEST_METHOD' => 'POST',
+      'slim.input' => '{"email":"ppatriotis@gmail.com"}',
+      'PATH_INFO' => '/users/forgotpassword'
+    ));
+
+    $controllers = $this->app->getControllers();
+
+    foreach($controllers as $controller) {
+      if (get_class($controller) == "MABI\\Identity\\UserController") {
+        $controller->setEmailProvider(new \MABI\EmailSupport\Mandrill('12445', 'DEFAULT_SENDER', 'DEFAULT_NAME'));
+      }
+    }
+
+    $this->app->call();
+    $this->assertEquals(500, $this->app->getResponse()->status());
+  }
+
+  public function testForgotPasswordNoEmail() {
+    $this->setUpApp(array(
+      'REQUEST_METHOD' => 'POST',
+      'slim.input' => '{"Noemail":"triotis@gmail.com"}',
+      'PATH_INFO' => '/users/forgotpassword'
+    ));
+
+    $controllers = $this->app->getControllers();
+
+    foreach($controllers as $controller) {
+      if (get_class($controller) == "MABI\\Identity\\UserController") {
+        $controller->setEmailProvider(new \MABI\EmailSupport\Mandrill('12445', 'DEFAULT_SENDER', 'DEFAULT_NAME'));
+        $controller->setForgotEmailTemplate(new \MABI\EmailSupport\TokenTemplate('TestTemplate', 'Password Reset'));
+      }
+    }
+
+    $this->app->call();
+    $this->assertEquals(400, $this->app->getResponse()->status());
+  }
+
+  public function testForgotPasswordBadEmail() {
+    $this->setUpApp(array(
+      'REQUEST_METHOD' => 'POST',
+      'slim.input' => '{"email":"ppatriotis2@gmail.com"}',
+      'PATH_INFO' => '/users/forgotpassword'
+    ));
+
+    $controllers = $this->app->getControllers();
+
+    foreach($controllers as $controller) {
+      if (get_class($controller) == "MABI\\Identity\\UserController") {
+        $controller->setEmailProvider(new \MABI\EmailSupport\Mandrill('12445', 'DEFAULT_SENDER', 'DEFAULT_NAME'));
+        $controller->setForgotEmailTemplate(new \MABI\EmailSupport\TokenTemplate('TestTemplate', 'Password Reset'));
+      }
+    }
+
+    $this->dataConnectionMock->expects($this->exactly(2))
+      ->method('findOneByField')
+      ->will($this->returnCallback(array($this, 'myFindOneByFieldForgotPasswordCallback')));
+
+    $this->app->call();
+    $this->assertEquals(400, $this->app->getResponse()->status());
+  }
+
+  public function testForgotPassword() {
+    $this->setUpApp(array(
+      'REQUEST_METHOD' => 'POST',
+      'slim.input' => '{"email":"ppatriotis@gmail.com"}',
+      'PATH_INFO' => '/users/forgotpassword'
+    ));
+
+    $controllers = $this->app->getControllers();
+
+    $mandrillMock = $this->getMock('\MABI\EmailSupport\Mandrill', array(), array('12445', 'DEFAULT_SENDER', 'DEFAULT_NAME'));
+    $mandrillMock->expects($this->once())
+      ->method('sendEmail')
+      ->will($this->returnValue(json_encode(array(
+        "email" => "conord33@gmail.com",
+        "status" => "sent",
+        "_id" => "4b35185b2ca04ffaacbd1abf2e32dabc",
+        "reject_reason" => null
+      ))));
+
+    foreach($controllers as $controller) {
+      if (get_class($controller) == "MABI\\Identity\\UserController") {
+        $controller->setEmailProvider($mandrillMock);
+        $controller->setForgotEmailTemplate(new \MABI\EmailSupport\TokenTemplate('TestTemplate', 'Password Reset'));
+      }
+    }
+
+    $this->dataConnectionMock->expects($this->exactly(2))
+      ->method('findOneByField')
+      ->will($this->returnCallback(array($this, 'myFindOneByFieldForgotPasswordCallback')));
+
+    $this->app->call();
+    $this->assertEquals(200, $this->app->getResponse()->status());
+  }
+
+  public function myFindOneByFieldForgotPasswordCallback($field, $value, $table) {
+    $this->assertThat($field, $this->logicalOr($this->equalTo('id'), $this->equalTo('email')));
+
+    $userVal = array(
+      'id' => 122,
+      'created' => 1372375580,
+      'firstName' => 'Photis',
+      'lastName' => 'Patriotis',
+      'email' => 'ppatriotis@gmail.com',
+      'passHash' => '433813e38c7f564a06319c74c16d7e30f9cf645c0712a183ed0cbae3d74d24de',
+      // result of: hash_hmac('sha256', '123456', 'salt4456');
+      'salt' => 'salt4456'
+    );
+
+    switch ($field) {
+      case 'id':
+        $this->assertThat($table, $this->logicalOr($this->equalTo('sessions'), $this->equalTo('users')));
+        if ($table == 'sessions') {
+          return False;
+        }
+        $this->assertEquals(122, $value);
+        return $userVal;
+      case 'email':
+      default:
+        $this->assertEquals('users', $table);
+        switch ($value) {
+          case 'ppatriotis2@gmail.com':
+            return FALSE;
+          case 'ppatriotis@gmail.com':
+            return $userVal;
+          default:
+            $this->fail('Invalid value: ' . $value);
+            return FALSE;
+        }
+    }
   }
 
   public function myFindOneByFieldUpdateUserCallback($field, $value, $table) {

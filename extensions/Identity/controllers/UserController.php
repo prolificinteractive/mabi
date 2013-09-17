@@ -4,6 +4,7 @@ namespace MABI\Identity;
 
 include_once __DIR__ . '/../../../RESTModelController.php';
 
+use \MABI\EmailSupport;
 use \MABI\RESTModelController;
 
 /**
@@ -24,6 +25,47 @@ class UserController extends RESTModelController {
   protected $model;
 
   protected $sessionModelClass = '\MABI\Identity\Session';
+
+  /**
+   * @var \MABI\EmailSupport\Provider
+   */
+  protected $emailProvider = null;
+
+  /**
+   * @var \MABI\EmailSupport\Template
+   */
+  protected $forgotEmailTemplate = null;
+
+  /**
+   * @param \MABI\EmailSupport\Template $forgotEmailTemplate
+   */
+  public function setForgotEmailTemplate($forgotEmailTemplate)
+  {
+    $this->forgotEmailTemplate = $forgotEmailTemplate;
+  }
+
+  /**
+   * @return \MABI\EmailSupport\Template
+   */
+  public function getForgotEmailTemplate()
+  {
+    return $this->forgotEmailTemplate;
+  }
+
+  /**
+   * @return \MABI\EmailSupport\Provider
+   * @endpoint ignore
+   */
+  public function getEmailProvider() {
+    return $this->emailProvider;
+  }
+
+  /**
+   * @param \MABI\EmailSupport\Provider $emailProvider
+   */
+  public function setEmailProvider($emailProvider) {
+    $this->emailProvider = $emailProvider;
+  }
 
   /**
    * @docs-name Create New User
@@ -119,10 +161,49 @@ class UserController extends RESTModelController {
     echo $updatedUser->outputJSON();
   }
 
-  /**
-   * @endpoint ignore
-   */
+
   public function postForgotPassword() {
-    // todo: implement. get an email from post
+    if ($this->getEmailProvider() == null) {
+      $this->getApp()->returnError(array(
+        'message' => 'EmailProvider is not properly implemented.  PHPCore and Mandrill can be used as defaults.',
+        'httpcode' => 500
+      ));
+    }
+    if ($this->forgotEmailTemplate == null) {
+      $this->getApp()->returnError(array(
+        'message' => 'forgotEmailTemplate must be set.',
+        'httpcode' => 500
+      ));
+    }
+
+    /**
+     * @var $user User
+     */
+    $data = json_decode($this->getApp()->getRequest()->getBody());
+    try {
+      $email = $data->email;
+    } catch (\Exception $e) {
+      $this->getApp()->returnError(array(
+        'message' => 'Email is required to reset password.',
+        'httpcode' => 400
+      ));
+    }
+    $user = User::init($this->getApp());
+    if (!$user->findByField('email', $email)) {
+      $this->getApp()->returnError(array(
+        'message' => 'There is no user with this email.',
+        'httpcode' => 400
+      ));
+    }
+
+    $user->lastAccessed = new \DateTime('now');
+    $user->save();
+    $authToken = Identity::passHash($user->passHash, $user->lastAccessed->getTimestamp());
+
+    $this->forgotEmailTemplate->mergeData(array('!authToken' => $authToken));
+
+    $resp = $this->getEmailProvider()->sendEmail($user->email, $this->forgotEmailTemplate);
+
+    echo json_encode($resp);
   }
 }

@@ -31,4 +31,5 @@ class Identity extends Extension {
   public static function passHash($password, $salt) {
     return hash_hmac('sha256', $password, $salt);
   }
+
 }

@@ -43,23 +43,34 @@ class SessionController extends RESTModelController {
    */
   function _restPostCollection() {
     $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
-
-    if (empty($this->model->password) || empty($this->model->email)) {
-      $this->getApp()->returnError('Email and Password are required to create a session', 400, 1002);
+    if (empty($this->model->email)) {
+      $this->getApp()->returnError('Email is required to create a session', 400, 1002);
     }
+    else {
+      /**
+       * @var $user User
+       */
+      $user = call_user_func($this->userModelClass . '::init', $this->getApp());
+      $user->findByField('email', $this->model->email);
 
-    /**
-     * @var $user User
-     */
-    $user = call_user_func($this->userModelClass . '::init', $this->getApp());
-    $user->findByField('email', $this->model->email);
-
-    if ($user->passHash != Identity::passHash($this->model->password, $user->salt)) {
-      $this->getApp()->returnError('Password is invalid', 400, 1003);
+      if (!empty($this->model->password)) {
+        if ($user->passHash != Identity::passHash($this->model->password, $user->salt)) {
+          $this->getApp()->returnError('Password is invalid', 400, 1003);
+        }
+      }
+      elseif (!empty($this->model->authToken)) {
+        if ($this->model->authToken != Identity::passHash($user->passHash, $user->lastAccessed->getTimestamp())) {
+          $this->getApp()->returnError('AuthToken is invalid', 400, 1003);
+        }
+      }
+      else {
+        $this->getApp()->returnError('A Password or an authToken are required to create a session', 400, 1002);
+      }
+      $user->lastAccessed = new \DateTime('now');
+      $user->save();
+      $this->model->user = $user;
+      $this->model->insert();
+      echo $this->model->outputJSON();
     }
-
-    $this->model->user = $user;
-    $this->model->insert();
-    echo $this->model->outputJSON();
   }
 }

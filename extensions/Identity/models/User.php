@@ -23,6 +23,13 @@ class User extends Model {
   public $created;
 
   /**
+   * When the user was last accessed
+   *
+   * @var \DateTime
+   */
+  public $lastAccessed;
+
+  /**
    * First name of the user
    *
    * @var string

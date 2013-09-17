@@ -15,8 +15,8 @@ class MandrillTest extends \PHPUnit_Framework_TestCase {
 
   public function testSendEmail() {
     $template = new \MABI\EmailSupport\TokenTemplate('A man is still a child and I have so many questions', 'Acid Raindrops');
-    $mandrill = new \MABI\EmailSupport\Mandrill("-gcII5trJDkpXO1OtzyHdA", "team@dashwith.me", 'Dash');
-    $output = $mandrill->sendEmail("conord33@gmail.com", $template);
+    $mandrill = new \MABI\EmailSupport\Mandrill(APIKEY, EMAIL, NAME);
+    $output = $mandrill->sendEmail(EMAIL, $template);
     $this->assertEquals("sent", $output->status);
   }
 

@@ -37,6 +37,22 @@ class UserController extends RESTModelController {
   protected $forgotEmailTemplate = null;
 
   /**
+   * @param \MABI\EmailSupport\Template $forgotEmailTemplate
+   */
+  public function setForgotEmailTemplate($forgotEmailTemplate)
+  {
+    $this->forgotEmailTemplate = $forgotEmailTemplate;
+  }
+
+  /**
+   * @return \MABI\EmailSupport\Template
+   */
+  public function getForgotEmailTemplate()
+  {
+    return $this->forgotEmailTemplate;
+  }
+
+  /**
    * @return \MABI\EmailSupport\Provider
    * @endpoint ignore
    */
@@ -150,13 +166,13 @@ class UserController extends RESTModelController {
     if ($this->getEmailProvider() == null) {
       $this->getApp()->returnError(array(
         'message' => 'EmailProvider is not properly implemented.  PHPCore and Mandrill can be used as defaults.',
-        'httpcode' => 404
+        'httpcode' => 500
       ));
     }
     if ($this->forgotEmailTemplate == null) {
       $this->getApp()->returnError(array(
         'message' => 'forgotEmailTemplate must be set.',
-        'httpcode' => 404
+        'httpcode' => 500
       ));
     }
 
@@ -168,15 +184,15 @@ class UserController extends RESTModelController {
       $email = $data->email;
     } catch (\Exception $e) {
       $this->getApp()->returnError(array(
-        'message' => 'Email was not set.',
-        'httpcode' => 404
+        'message' => 'Email is required to reset password.',
+        'httpcode' => 400
       ));
     }
     $user = User::init($this->getApp());
     if (!$user->findByField('email', $email)) {
       $this->getApp()->returnError(array(
         'message' => 'There is no user with this email.',
-        'httpcode' => 404
+        'httpcode' => 400
       ));
     }
 
@@ -186,9 +202,7 @@ class UserController extends RESTModelController {
 
     $this->forgotEmailTemplate->mergeData(array('!authToken' => $authToken));
 
-    $resp = $this->getEmailProvider()->sendEmail(
-      $user->email,
-      $this->forgotEmailTemplate);
+    $resp = $this->getEmailProvider()->sendEmail($user->email, $this->forgotEmailTemplate);
 
     echo json_encode($resp);
   }

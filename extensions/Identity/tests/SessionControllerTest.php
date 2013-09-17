@@ -3,6 +3,7 @@
 namespace MABI\Identity\Testing;
 
 include_once __DIR__ . '/../Identity.php';
+include_once __DIR__ . '/../../../tests/AppTestCase.php';
 
 use MABI\Identity\Identity;
 use MABI\RESTAccess\RESTAccess;
@@ -38,12 +39,58 @@ class SessionControllerTest extends AppTestCase {
       'PATH_INFO' => '/sessions'
     ));
 
-    $this->dataConnectionMock->expects($this->once())
+    $this->dataConnectionMock->expects($this->exactly(2))
       ->method('findOneByField')
       ->will($this->returnCallback(array($this, 'myFindOneByFieldCallback')));
 
     $this->app->call();
     $this->assertEquals(400, $this->app->getResponse()->status());
+  }
+
+  public function testInvalidAuthTokenPostCollection() {
+    $this->setUpApp(array(
+      'REQUEST_METHOD' => 'POST',
+      'slim.input' => '{"email":"ppatriotis@gmail.com", "authToken":"12345"}',
+      'PATH_INFO' => '/sessions'
+    ));
+
+    $this->dataConnectionMock->expects($this->exactly(2))
+      ->method('findOneByField')
+      ->will($this->returnCallback(array($this, 'myFindOneByFieldCallback')));
+
+    $this->app->call();
+    $this->assertEquals(400, $this->app->getResponse()->status());
+  }
+
+  public function testValidAuthTokenPostCollection() {
+    $authToken = hash_hmac('sha256', '604cefb585491865043db59f5f200c08af016dc636bcb37c858199e20f082c10', 1379430989);
+    $this->setUpApp(array(
+      'REQUEST_METHOD' => 'POST',
+      'slim.input' => '{"email":"ppatriotis@gmail.com", "authToken":"'. $authToken .'"}',
+      'PATH_INFO' => '/sessions'
+    ));
+
+    $this->dataConnectionMock->expects($this->exactly(2))
+      ->method('findOneByField')
+      ->will($this->returnCallback(array($this, 'myFindOneByFieldCallback')));
+
+    $this->dataConnectionMock->expects($this->once())
+      ->method('insert')
+      ->with('sessions', $this->anything())
+      ->will($this->returnValue(array(
+        'id' => '4',
+        'date_created' => time(),
+        'lastAccessed' => time(),
+        'userId' => '1',
+      )));
+
+    $this->app->call();
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $this->assertNotEmpty($this->app->getResponse()->body());
+    $output = json_decode($this->app->getResponse()->body());
+    $this->assertNotEmpty($output);
+    $this->assertEquals('4', $output->sessionId);
+    $this->assertEquals('1', $output->userId);
   }
 
   public function testSuccessfulPostCollection() {
@@ -96,7 +143,8 @@ class SessionControllerTest extends AppTestCase {
           'email' => 'ppatriotis@gmail.com',
           'passHash' => '604cefb585491865043db59f5f200c08af016dc636bcb37c858199e20f082c10',
           // result of: hash_hmac('sha256', '123', 'salt4456');
-          'salt' => 'salt4456'
+          'salt' => 'salt4456',
+          'lastAccessed' => 1379430989
         );
     }
   }

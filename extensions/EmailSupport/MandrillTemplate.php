@@ -2,6 +2,8 @@
 
 namespace MABI\EmailSupport;
 
+include_once __DIR__ . '/DataTemplate.php';
+
 class MandrillTemplate extends DataTemplate {
 
   function __construct($templateName, $subject, $data = array())

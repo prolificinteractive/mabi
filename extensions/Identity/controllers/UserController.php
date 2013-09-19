@@ -46,6 +46,7 @@ class UserController extends RESTModelController {
 
   /**
    * @return \MABI\EmailSupport\Template
+   * @endpoint ignore
    */
   public function getForgotEmailTemplate()
   {

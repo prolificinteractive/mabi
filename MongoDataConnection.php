@@ -154,7 +154,7 @@ class MongoDataConnection implements DataConnection {
       $return = $return->limit($query['limit']);
     }
     if (!empty($query['sort'])) {
-	    $return = $return->sort($query['sort']);
+      $return = $return->sort($query['sort']);
     }
 
     $mongodata = array();

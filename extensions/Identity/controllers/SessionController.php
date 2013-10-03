@@ -37,7 +37,21 @@ class SessionController extends RESTModelController {
    * Creates a session. A valid email and password of an existing user must be passed in, and the new session
    * (with the session id) will be returned.
    *
-   * @docs-param session string body required A session object (with email & password filled in)
+   * ~~~
+   * Get sessions through email password
+   * {
+   *     "email": string,
+   *     "password": string
+   * }
+   *
+   * or get one time session to reset password
+   *
+   * {
+   *     "email": string,
+   *     "authToken": string
+   * }
+   *
+   * @docs-param session string body required A session object (with email & password or email & authToken filled in)
    *
    * @throws \Slim\Exception\Stop
    */

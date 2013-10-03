@@ -131,7 +131,28 @@ class SessionController extends \MABI\Identity\SessionController {
    * If a Facebook accessToken is used and the user does not exist already in the API, a new user will be automatically
    * created and the returning newUserCreated field will be true.
    *
-   * @docs-param session string body required A session object (with email & password or accessToken filled in)
+   * ~~~
+   * Get sessions through email password
+   * {
+   *     "email": string,
+   *     "password": string
+   * }
+   *
+   * or get one time session to reset password
+   *
+   * {
+   *     "email": string,
+   *     "authToken": string
+   * }
+   *
+   * or get session through facebook access token
+   *
+   * {
+   *     "accessToken": string
+   * }
+   * ~~~
+   *
+   * @docs-param session string body required A session object (with email & password or email & authToken or accessToken filled in)
    *
    * @throws \Slim\Exception\Stop
    */

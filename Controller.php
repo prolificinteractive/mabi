@@ -183,19 +183,24 @@ class Controller {
         $action = strtolower(substr($methodName, 6));
         $httpMethod = \Slim\Http\Request::METHOD_DELETE;
       }
-
+      
       if (!empty($action)) {
-        $slim->map("/{$this->base}/{$action}",
-          array($this, 'preMiddleware'),
-          array($this, '_runControllerMiddlewares'),
-          array($this, 'preCallable'),
-          array($this, $methodName))->via($httpMethod);
-        $slim->map("/{$this->base}/{$action}(/:param+)",
-          array($this, 'preMiddleware'),
-          array($this, '_runControllerMiddlewares'),
-          array($this, 'preCallable'),
-          array($this, $methodName))->via($httpMethod);
+	      $action = "/{$action}";
       }
+      else {
+	      $action = "";
+      }
+
+      $slim->map("/{$this->base}{$action}",
+        array($this, 'preMiddleware'),
+        array($this, '_runControllerMiddlewares'),
+        array($this, 'preCallable'),
+        array($this, $methodName))->via($httpMethod);
+      $slim->map("/{$this->base}{$action}(/:param+)",
+        array($this, 'preMiddleware'),
+        array($this, '_runControllerMiddlewares'),
+        array($this, 'preCallable'),
+        array($this, $methodName))->via($httpMethod);
     }
   }
 

@@ -186,8 +186,17 @@ class Controller {
       }
       
       if (!empty($action)) {
-	      $action = "/{$action}";
-      }
+        $slim->map("/{$this->base}/{$action}(/?)",
+          array($this, 'preMiddleware'),
+          array($this, '_runControllerMiddlewares'),
+          array($this, 'preCallable'),
+          array($this, $methodName))->via($httpMethod);
+        $slim->map("/{$this->base}/{$action}(/:param+)(/?)",
+          array($this, 'preMiddleware'),
+          array($this, '_runControllerMiddlewares'),
+          array($this, 'preCallable'),
+          array($this, $methodName))->via($httpMethod);
+        }
       else {
 	      array_push($httpMethods, array(
           'name' => $methodName,
@@ -196,17 +205,6 @@ class Controller {
 
         continue;
       }
-
-      $slim->map("/{$this->base}{$action}",
-        array($this, 'preMiddleware'),
-        array($this, '_runControllerMiddlewares'),
-        array($this, 'preCallable'),
-        array($this, $methodName))->via($httpMethod);
-      $slim->map("/{$this->base}{$action}(/:param+)",
-        array($this, 'preMiddleware'),
-        array($this, '_runControllerMiddlewares'),
-        array($this, 'preCallable'),
-        array($this, $methodName))->via($httpMethod);
     }
 
     foreach ($httpMethods as $httpMethod) {

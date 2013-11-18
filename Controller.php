@@ -158,6 +158,7 @@ class Controller {
 
     $rClass = new \ReflectionClass($this);
     $rMethods = $rClass->getMethods(\ReflectionMethod::IS_PUBLIC);
+    $httpMethods = array();
     foreach ($rMethods as $rMethod) {
       // If there is a '@endpoint ignore' property, the function is not served as an endpoint
       if (in_array('ignore', ReflectionHelper::getDocDirective($rMethod->getDocComment(), 'endpoint'))) {
@@ -188,7 +189,12 @@ class Controller {
 	      $action = "/{$action}";
       }
       else {
-	      $action = "";
+	      array_push($httpMethods, array(
+          'name' => $methodName,
+          'method' => $httpMethod
+        ));
+
+        continue;
       }
 
       $slim->map("/{$this->base}{$action}",
@@ -201,6 +207,14 @@ class Controller {
         array($this, '_runControllerMiddlewares'),
         array($this, 'preCallable'),
         array($this, $methodName))->via($httpMethod);
+    }
+
+    foreach ($httpMethods as $httpMethod) {
+      $slim->map("/{$this->base}(/?)",
+        array($this, 'preMiddleware'),
+        array($this, '_runControllerMiddlewares'),
+        array($this, 'preCallable'),
+        array($this, $httpMethod['name']))->via($httpMethod['method']);
     }
   }
 

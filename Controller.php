@@ -299,6 +299,10 @@ class Controller {
         $middleware->documentMethod($rClass, $rMethod, $methodDoc);
       }
 
+      if (empty($methodDoc['MethodName'])) {
+        $methodDoc['MethodName'] = ucwords($this->base);
+      }
+
       if (!empty($methodDoc)) {
         $doc['methods'][] = $methodDoc;
       }

@@ -8,6 +8,7 @@ use MABI\Identity\Middleware\RESTOwnerOnlyAccess;
 use MABI\Identity\Middleware\SessionHeader;
 use MABI\RESTAccess\RESTAccess;
 use MABI\Testing\MiddlewareTestCase;
+use MABI\Testing\TableDefinition;
 
 include_once 'PHPUnit/Autoload.php';
 include_once __DIR__ . '/../../../tests/middleware/MiddlewareTestCase.php';
@@ -18,6 +19,42 @@ include_once __DIR__ . '/../middleware/SessionHeader.php';
 
 class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
 
+  protected static $SESSION_111444 = array(
+    'created' => '1370663864',
+    'userId' => 11
+  );
+
+  protected static $SESSION_111445 = array(
+    'created' => '1370663864',
+    'userId' => 12
+  );
+
+  protected static $USER_11 = array(
+    'id' => 11,
+    'created' => 1372375580,
+    'firstName' => 'Photis',
+    'lastName' => 'Patriotis',
+    'email' => 'ppatriotis@gmail.com',
+    'passHash' => '604cefb585491865043db59f5f200c08af016dc636bcb37c858199e20f082c10',
+    // result of: hash_hmac('sha256', '123', 'salt4456');
+    'salt' => 'salt4456',
+    'lastAccessed' => 1379430989
+  );
+
+  protected static $USER_12 = array(
+    'id' => 12,
+    'created' => 1372375580,
+    'firstName' => 'Photis',
+    'lastName' => 'Patriotis',
+    'email' => 'ppatriotis@gmail.com',
+    'passHash' => '604cefb585491865043db59f5f200c08af016dc636bcb37c858199e20f082c10',
+    // result of: hash_hmac('sha256', '123', 'salt4456');
+    'salt' => 'salt4456',
+    'lastAccessed' => 1379430989
+  );
+
+  protected static $MODELB_1 = array('modelBId' => 1, 'name' => 'test', 'testOwner' => 11);
+
   public function testSuccessfulCall() {
     $middleware = new RESTOwnerOnlyAccess();
 
@@ -26,9 +63,18 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
 
-    $this->dataConnectionMock->expects($this->any())
+    $this->dataConnectionMock->expects($this->exactly(3))
       ->method('findOneByField')
-      ->will($this->returnCallback(array($this, 'myFindOneByFieldCallback')));
+      ->will($this->returnCallback(
+        function ($field, $value, $table) {
+          return $this->findOneByFieldCallback(
+            array(
+              'sessions' => new TableDefinition('id', 111444, self::$SESSION_111444),
+              'users' => new TableDefinition('id', 11, self::$USER_11),
+              'modelbs' => new TableDefinition('id', 4, self::$MODELB_1)
+            ), $field, $value, $table);
+        }
+      ));
 
     $this->app->call();
 
@@ -47,10 +93,6 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
 
-    $this->dataConnectionMock->expects($this->any())
-      ->method('findOneByField')
-      ->will($this->returnCallback(array($this, 'myFindOneByFieldCallback')));
-
     $this->app->call();
 
     $this->assertEquals(401, $this->app->getResponse()->status());
@@ -66,9 +108,18 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
 
-    $this->dataConnectionMock->expects($this->any())
+    $this->dataConnectionMock->expects($this->exactly(3))
       ->method('findOneByField')
-      ->will($this->returnCallback(array($this, 'myFindOneByFieldCallback')));
+      ->will($this->returnCallback(
+        function ($field, $value, $table) {
+          return $this->findOneByFieldCallback(
+            array(
+              'sessions' => new TableDefinition('id', 111445, self::$SESSION_111445),
+              'users' => new TableDefinition('id', 12, self::$USER_12),
+              'modelbs' => new TableDefinition('id', 4, self::$MODELB_1)
+            ), $field, $value, $table);
+        }
+      ));
 
     $this->app->call();
 
@@ -85,42 +136,23 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
 
-    $this->dataConnectionMock->expects($this->any())
+    $this->dataConnectionMock->expects($this->exactly(2))
       ->method('findOneByField')
-      ->will($this->returnCallback(array($this, 'myFindOneByFieldCallback')));
+      ->will($this->returnCallback(
+        function ($field, $value, $table) {
+          return $this->findOneByFieldCallback(
+            array(
+              'sessions' => new TableDefinition('id', 111445, self::$SESSION_111445),
+              'users' => new TableDefinition('id', 12, self::$USER_12)
+            ), $field, $value, $table);
+        }
+      ));
 
     $this->app->call();
 
     $this->assertEquals(200, $this->app->getResponse()->status());
     $this->assertNotEmpty($this->app->getResponse()->body());
   }
-
-  public function myFindOneByFieldCallback($field, $value, $table) {
-    $this->assertThat($table, $this->logicalOr($this->equalTo('sessions'), $this->equalTo('modelbs')));
-    $this->assertEquals('id', $field);
-
-    switch ($table) {
-      case 'sessions':
-        $this->assertThat($value, $this->logicalOr($this->equalTo(111444),
-          $this->equalTo(111445)));
-
-        if ($value == 111444) {
-          return array(
-            'created' => '1370663864',
-            'userId' => 11
-          );
-        }
-        return array(
-          'created' => '1370663865',
-          'userId' => 12
-        );
-      case 'modelbs':
-      default:
-        $this->assertEquals('4', $value);
-        return array('modelBId' => 1, 'name' => 'test', 'testOwner' => 11);
-    }
-  }
-
 
   public function testDocs() {
     $middleware = new RESTOwnerOnlyAccess();

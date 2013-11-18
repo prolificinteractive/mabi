@@ -116,6 +116,9 @@ class UserController extends RESTModelController {
    * @param $id string The id of the user you are trying to update
    */
   public function _restPutResource($id) {
+    /**
+     * @var $updatedUser \MABI\Identity\User
+     */
     $updatedUser = call_user_func($this->modelClass . '::init', $this->getApp());
     $updatedUser->loadFromExternalSource($this->getApp()->getRequest()->getBody());
     $updatedUser->setId($id);
@@ -157,7 +160,7 @@ class UserController extends RESTModelController {
 
     $updatedUser->created = $this->model->created;
     $updatedUser->salt = $this->model->salt;
-
+    $updatedUser->lastAccessed = $this->model->lastAccessed;
     $updatedUser->save();
     echo $updatedUser->outputJSON();
   }

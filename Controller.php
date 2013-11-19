@@ -158,6 +158,7 @@ class Controller {
 
     $rClass = new \ReflectionClass($this);
     $rMethods = $rClass->getMethods(\ReflectionMethod::IS_PUBLIC);
+    $httpMethods = array();
     foreach ($rMethods as $rMethod) {
       // If there is a '@endpoint ignore' property, the function is not served as an endpoint
       if (in_array('ignore', ReflectionHelper::getDocDirective($rMethod->getDocComment(), 'endpoint'))) {
@@ -185,22 +186,33 @@ class Controller {
       }
       
       if (!empty($action)) {
-	      $action = "/{$action}";
-      }
+        $slim->map("/{$this->base}/{$action}(/?)",
+          array($this, 'preMiddleware'),
+          array($this, '_runControllerMiddlewares'),
+          array($this, 'preCallable'),
+          array($this, $methodName))->via($httpMethod);
+        $slim->map("/{$this->base}/{$action}(/:param+)(/?)",
+          array($this, 'preMiddleware'),
+          array($this, '_runControllerMiddlewares'),
+          array($this, 'preCallable'),
+          array($this, $methodName))->via($httpMethod);
+        }
       else {
-	      $action = "";
-      }
+	      array_push($httpMethods, array(
+          'name' => $methodName,
+          'method' => $httpMethod
+        ));
 
-      $slim->map("/{$this->base}{$action}",
+        continue;
+      }
+    }
+
+    foreach ($httpMethods as $httpMethod) {
+      $slim->map("/{$this->base}(/?)",
         array($this, 'preMiddleware'),
         array($this, '_runControllerMiddlewares'),
         array($this, 'preCallable'),
-        array($this, $methodName))->via($httpMethod);
-      $slim->map("/{$this->base}{$action}(/:param+)",
-        array($this, 'preMiddleware'),
-        array($this, '_runControllerMiddlewares'),
-        array($this, 'preCallable'),
-        array($this, $methodName))->via($httpMethod);
+        array($this, $httpMethod['name']))->via($httpMethod['method']);
     }
   }
 
@@ -285,6 +297,10 @@ class Controller {
       if (!empty($this->middlewares)) {
         $middleware = reset($this->middlewares);
         $middleware->documentMethod($rClass, $rMethod, $methodDoc);
+      }
+
+      if (empty($methodDoc['MethodName'])) {
+        $methodDoc['MethodName'] = ucwords($this->base);
       }
 
       if (!empty($methodDoc)) {

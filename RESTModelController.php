@@ -89,14 +89,14 @@ class RESTModelController extends ModelController {
       return;
     }
     if (!$isObjectLevel) {
-      $slim->map("/{$this->base}",
+      $slim->map("/{$this->base}(/?)",
         array($this, 'preMiddleware'),
         array($this, '_runControllerMiddlewares'),
         array($this, 'preCallable'),
         array($this, $methodName))->via($httpMethod);
     }
     else {
-      $slim->map("/{$this->base}/:id",
+      $slim->map("/{$this->base}/:id(/?)",
         array($this, 'preMiddleware'),
         array($this, '_readModel'),
         array($this, '_runControllerMiddlewares'),
@@ -166,13 +166,13 @@ class RESTModelController extends ModelController {
       }
 
       if (!empty($action)) {
-        $slim->map("/{$this->base}/:id/{$action}",
+        $slim->map("/{$this->base}/:id/{$action}(/?)",
           array($this, 'preMiddleware'),
           array($this, '_readModel'),
           array($this, '_runControllerMiddlewares'),
           array($this, 'preCallable'),
           array($this, $methodName))->via($httpMethod);
-        $slim->map("/{$this->base}/:id/{$action}(/:param)",
+        $slim->map("/{$this->base}/:id/{$action}(/:param)(/?)",
           array($this, 'preMiddleware'),
           array($this, '_readModel'),
           array($this, '_runControllerMiddlewares'),

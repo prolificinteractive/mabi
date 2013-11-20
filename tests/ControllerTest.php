@@ -28,6 +28,7 @@ class ControllerTest extends SampleAppTestCase {
 
     $dirControllerLoader = new \MABI\DirectoryControllerLoader('TestApp/TestControllerDir', $this->app, 'mabiTesting');
     $this->controllerMock = $this->getMock('\mabiTesting\JustAController', array(
+        'post',
         'getTestFunc',
         'postTestFunc',
         'putTestFunc',
@@ -47,6 +48,15 @@ class ControllerTest extends SampleAppTestCase {
    * test that custom routes were generated properly
    */
   public function testRoutes() {
+    // Test base post
+    $this->setUpControllerApp(array('REQUEST_METHOD' => 'POST', 'PATH_INFO' => '/justa'));
+    $this->controllerMock->expects($this->once())
+      ->method('post')
+      ->will($this->returnValue('test'));
+    $this->app->call();
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $this->assertEquals('', $this->app->getResponse()->body());
+
     // Test custom get
     $this->setUpControllerApp(array('PATH_INFO' => '/justa/testfunc'));
     $this->controllerMock->expects($this->once())

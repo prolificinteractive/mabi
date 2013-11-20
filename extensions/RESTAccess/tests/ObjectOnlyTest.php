@@ -48,8 +48,7 @@ class ObjectOnlyTest extends MiddlewareTestCase {
       'parameters' => array()
     );
     $rClassMock = $this->getMock('\ReflectionClass', array(), array(), '', FALSE);
-    $reflectionMethod = new \ReflectionMethod(get_class($this->restController),
-      '_restPostCollection');
+    $reflectionMethod = new \ReflectionMethod(get_class($this->restController), 'post');
 
     $middleware->documentMethod($rClassMock, $reflectionMethod, $docArray);
     $this->assertNull($docArray);

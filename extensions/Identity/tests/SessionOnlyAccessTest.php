@@ -128,7 +128,7 @@ class SessionOnlyAccessTest extends MiddlewareTestCase {
 
     $docArray = array();
     $rClassMock = $this->getMock('\ReflectionClass', array(), array(), '', FALSE);
-    $rRefMock = new \ReflectionMethod('\mabiTesting\ModelBController', '_restPostCollection');
+    $rRefMock = new \ReflectionMethod('\mabiTesting\ModelBController', 'post');
 
     $sessHeaderMiddleware->documentMethod($rClassMock, $rRefMock, $docArray);
     $middleware->documentMethod($rClassMock, $rRefMock, $docArray);

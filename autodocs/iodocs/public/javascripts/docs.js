@@ -180,6 +180,14 @@
             apiSecret = { name: 'apiSecret', value: $('input[name=secret]').val() },
             apiName = { name: 'apiName', value: $('input[name=apiName]').val() };
 
+        var inputFiles = false;
+        if ($(this).find('.file2upload').length > 0) {
+            inputFiles = new FormData();
+            $(this).find('.file2upload').each(function(i, el) {
+                inputFiles.append($(el)[0].name, $(el)[0].files[0]);
+            });
+        }
+
         params.push(apiKey, apiSecret, apiName);
 
         // Setup results container
@@ -238,8 +246,84 @@
                 .addClass('response prettyprint'));
         }
 
-        console.log(params);
+        var ajaxOptions = {
+            url: basePath + 'processReq',
+            type: 'POST'
+        };
 
+        if (inputFiles) {
+            params.forEach(function(param) {
+                inputFiles.append(param['name'], param['value'])
+            });
+            ajaxOptions['processData'] = false;
+            ajaxOptions['contentType'] = false;
+            ajaxOptions['data'] = inputFiles;
+        } else {
+            ajaxOptions['data'] = params;
+        }
+
+
+        $.ajax(ajaxOptions)
+        .success(function(result, text) {
+            // If we get passed a signin property, open a window to allow the user to signin/link their account
+            if (result.signin) {
+                window.open(result.signin,"_blank","height=900,width=800,menubar=0,resizable=1,scrollbars=1,status=0,titlebar=0,toolbar=0");
+            } else {
+                var response,
+                    responseContentType = result.headers['content-type'];
+                // Format output according to content-type
+                response = livedocs.formatData(result.response, result.headers['content-type'])
+
+                $('pre.response', resultContainer)
+                    .toggleClass('error', false)
+                    .text(formatJSON(JSON.parse(response)));
+            }
+        })
+        // Complete, runs on error and success
+        .complete(function(result, text) {
+            var response = JSON.parse(result.responseText);
+
+            if (response.call) {
+                $('pre.call', resultContainer)
+                    .text(response.call);
+            }
+
+            if (response.code) {
+                $('pre.code', resultContainer)
+                    .text(response.code);
+            }
+
+            if (response.headers) {
+                $('pre.headers', resultContainer)
+                    .text(formatJSON(response.headers));
+            }
+
+            // Syntax highlighting
+            prettyPrint();
+        })
+        .error(function(err, text) {
+            var response;
+
+            if (err.responseText !== '') {
+                var result = JSON.parse(err.responseText),
+                    headers = formatJSON(result.headers);
+
+                if (result.headers && result.headers['content-type']) {
+                    // Format the result.response and assign it to response
+                    response = livedocs.formatData(result.response, result.headers['content-type']);
+                } else {
+                    response = result.response;
+                }
+
+            } else {
+                response = 'Error';
+            }
+
+            $('pre.response', resultContainer)
+                .toggleClass('error', true)
+                .text(response);
+        })
+/*
         $.post(basePath + 'processReq', params, function(result, text) {
             // If we get passed a signin property, open a window to allow the user to signin/link their account
             if (result.signin) {
@@ -299,7 +383,7 @@
             $('pre.response', resultContainer)
                 .toggleClass('error', true)
                 .text(response);
-        })
+        })*/
     })
 
 })();

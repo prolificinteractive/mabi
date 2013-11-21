@@ -55,7 +55,7 @@ class SessionController extends RESTModelController {
    *
    * @throws \Slim\Exception\Stop
    */
-  function _restPostCollection() {
+  function post() {
     $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
     if (empty($this->model->email)) {
       $this->getApp()->returnError('Email is required to create a session', 400, 1002);

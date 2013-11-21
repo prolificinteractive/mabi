@@ -158,7 +158,7 @@ class Controller {
 
     $rClass = new \ReflectionClass($this);
     $rMethods = $rClass->getMethods(\ReflectionMethod::IS_PUBLIC);
-    $httpMethods = array();
+    $baseMethods = array();
     foreach ($rMethods as $rMethod) {
       // If there is a '@endpoint ignore' property, the function is not served as an endpoint
       if (in_array('ignore', ReflectionHelper::getDocDirective($rMethod->getDocComment(), 'endpoint'))) {
@@ -197,17 +197,15 @@ class Controller {
           array($this, 'preCallable'),
           array($this, $methodName))->via($httpMethod);
         }
-      else {
-	      array_push($httpMethods, array(
+      elseif(!empty($httpMethod)) {
+	      array_push($baseMethods, array(
           'name' => $methodName,
           'method' => $httpMethod
         ));
-
-        continue;
       }
     }
 
-    foreach ($httpMethods as $httpMethod) {
+    foreach ($baseMethods as $httpMethod) {
       $slim->map("/{$this->base}(/?)",
         array($this, 'preMiddleware'),
         array($this, '_runControllerMiddlewares'),
@@ -289,18 +287,18 @@ class Controller {
         continue;
       }
       $action = strtolower($methodDoc['MethodName']);
-      $methodDoc['URI'] = "/{$this->base}/{$action}";
+      $methodDoc['URI'] = "/{$this->base}" . (empty($action) ? '' : "/{$action}");
       $methodDoc['Synopsis'] = $parser->parse(ReflectionHelper::getDocText($rMethod->getDocComment()));
       $methodDoc['parameters'] = $this->getDocParameters($rMethod);
+
+      if (empty($methodDoc['MethodName'])) {
+        $methodDoc['MethodName'] = ucwords($this->base);
+      }
 
       // Allow controller middlewares to modify the documentation for this method
       if (!empty($this->middlewares)) {
         $middleware = reset($this->middlewares);
         $middleware->documentMethod($rClass, $rMethod, $methodDoc);
-      }
-
-      if (empty($methodDoc['MethodName'])) {
-        $methodDoc['MethodName'] = ucwords($this->base);
       }
 
       if (!empty($methodDoc)) {

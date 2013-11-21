@@ -11,6 +11,10 @@ include_once __DIR__ . '/../../../Controller.php';
  * @package mabiTesting
  */
 class JustAController extends \MABI\Controller {
+  public function post() {
+    echo 'post called';
+  }
+
   public function getTestFunc() {
     echo 'restGetTestFunc called';
   }

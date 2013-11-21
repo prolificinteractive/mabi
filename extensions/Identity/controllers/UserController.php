@@ -78,7 +78,7 @@ class UserController extends RESTModelController {
    *
    * @throws \Slim\Exception\Stop
    */
-  public function _restPostCollection() {
+  public function post() {
     $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
 
     if (empty($this->model->password) || strlen($this->model->password) < 6) {

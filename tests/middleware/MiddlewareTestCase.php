@@ -4,6 +4,7 @@ namespace MABI\Testing;
 
 include_once __DIR__ . '/../../middleware/AnonymousIdentifier.php';
 include_once __DIR__ . '/../../DirectoryControllerLoader.php';
+include_once __DIR__ . '/../../DirectoryModelLoader.php';
 include_once __DIR__ . '/../AppTestCase.php';
 
 class MiddlewareTestCase extends AppTestCase {

@@ -156,7 +156,7 @@ class SessionController extends \MABI\Identity\SessionController {
    *
    * @throws \Slim\Exception\Stop
    */
-  function _restPostCollection() {
+  function post() {
     $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
 
     if (empty($this->model->accessToken)) {
@@ -164,7 +164,7 @@ class SessionController extends \MABI\Identity\SessionController {
         $this->getApp()->returnError('An authorization token is required to create a session', 400, 1000);
       }
 
-      parent::_restPostCollection();
+      parent::post();
     }
     else {
       // get facebook info and login or create a user

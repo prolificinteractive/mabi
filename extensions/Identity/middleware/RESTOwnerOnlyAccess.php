@@ -11,22 +11,14 @@ include_once __DIR__ . '/../../../Middleware.php';
 class RESTOwnerOnlyAccess extends Middleware {
 
   protected function isCollectionCallable($methodName) {
-    switch ($methodName) {
-      case '_restGetCollection':
-      case '_restPostCollection':
-      case '_restPutCollection':
-      case '_restDeleteCollection':
-        return TRUE;
-      default:
-        if (strpos($methodName, 'get', 0) === 0 ||
-          strpos($methodName, 'put', 0) === 0 ||
-          strpos($methodName, 'post', 0) === 0 ||
-          strpos($methodName, 'delete', 0) === 0
-        ) {
-          return TRUE;
-        }
-        return FALSE;
+    if (strpos($methodName, 'get', 0) === 0 ||
+      strpos($methodName, 'put', 0) === 0 ||
+      strpos($methodName, 'post', 0) === 0 ||
+      strpos($methodName, 'delete', 0) === 0
+    ) {
+      return TRUE;
     }
+    return FALSE;
   }
 
   /**

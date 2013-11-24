@@ -16,7 +16,7 @@ class DirectoryModelLoader extends ModelLoader {
   /**
    * @var string[]
    */
-  protected $modelClasses;
+  protected $modelClasses = array();
 
   /**
    * todo: docs

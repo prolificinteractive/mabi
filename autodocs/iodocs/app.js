@@ -32,9 +32,7 @@ var express     = require('express'),
     url         = require('url'),
     http        = require('http'),
     https       = require('https'),
-    crypto      = require('crypto'),
-    redis       = require('redis'),
-    RedisStore  = require('connect-redis')(express);
+    crypto      = require('crypto');
 
 // Configuration
 try {
@@ -45,25 +43,10 @@ try {
 }
 
 //
-// Redis connection
+// DB connection - NOT USED
 //
 var defaultDB = '0';
 var db;
-
-if (process.env.REDISTOGO_URL) {
-    var rtg   = require("url").parse(process.env.REDISTOGO_URL);
-    db = require("redis").createClient(rtg.port, rtg.hostname);
-    db.auth(rtg.auth.split(":")[1]);
-} else {
-    db = redis.createClient(config.redis.port, config.redis.host);
-    db.auth(config.redis.password);
-}
-
-db.on("error", function(err) {
-    if (config.debug) {
-         console.log("Error " + err);
-    }
-});
 
 //
 // Load API Configs
@@ -81,13 +64,6 @@ try {
 
 var app = module.exports = express.createServer();
 
-if (process.env.REDISTOGO_URL) {
-    var rtg   = require("url").parse(process.env.REDISTOGO_URL);
-    config.redis.host = rtg.hostname;
-    config.redis.port = rtg.port;
-    config.redis.password = rtg.auth.split(":")[1];
-}
-
 app.configure(function() {
     app.set('views', __dirname + '/views');
     app.set('view engine', 'jade');
@@ -96,13 +72,9 @@ app.configure(function() {
     app.use(express.methodOverride());
     app.use(express.cookieParser());
     app.use(express.session({
+        store: new express.session.MemoryStore(),
         secret: config.sessionSecret,
-        store:  new RedisStore({
-            'host':   config.redis.host,
-            'port':   config.redis.port,
-            'pass':   config.redis.password,
-            'maxAge': 1209600000
-        })
+        key: 'iodocs'
     }));
 
     app.use(app.router);
@@ -165,12 +137,6 @@ function oauth(req, res, next) {
                 } else {
                     // Unique key using the sessionID and API name to store tokens and secrets
                     var key = req.sessionID + ':' + apiName;
-
-                    db.set(key + ':apiKey', apiKey, redis.print);
-                    db.set(key + ':apiSecret', apiSecret, redis.print);
-
-                    db.set(key + ':requestToken', oauthToken, redis.print);
-                    db.set(key + ':requestTokenSecret', oauthTokenSecret, redis.print);
 
                     // Set expiration to same as session
                     db.expire(key + ':apiKey', 1209600000);
@@ -340,7 +306,23 @@ function processRequest(req, res, next) {
         };
 
     if (['POST','DELETE','PUT'].indexOf(httpMethod) !== -1) {
-        var requestBody = query.stringify(params);
+        if(config.jsonRequests) {
+            // Extract body param if it's a json request, and just use it as the post body
+            for( var param in params )
+            {
+                if (params.hasOwnProperty(param))
+                {
+                    if (params[param] !== '' && locations[param] == 'body' )
+                    {
+                        var requestBody = params[param];
+                        break;
+                    }
+                }
+            }
+        }
+        else {
+            var requestBody = query.stringify(params);
+        }
     }
 
     if (apiConfig.oauth) {
@@ -672,6 +654,9 @@ app.dynamicHelpers({
         if (req.params.api) {
             return require(__dirname + '/public/data/' + req.params.api + '.json');
         }
+    },
+    config: function(req, res) {
+        return config;
     }
 })
 

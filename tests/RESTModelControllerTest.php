@@ -2,38 +2,22 @@
 
 namespace MABI\Testing;
 
-include_once 'PHPUnit/Autoload.php';
-include_once __DIR__ . '/../App.php';
 include_once __DIR__ . '/../Utilities.php';
-include_once __DIR__ . '/../DataConnection.php';
-include_once __DIR__ . '/../DirectoryModelLoader.php';
 include_once __DIR__ . '/../DirectoryControllerLoader.php';
 include_once __DIR__ . '/../GeneratedRESTModelControllerLoader.php';
-include_once __DIR__ . '/../DirectoryModelLoader.php';
 include_once __DIR__ . '/../autodocs/MarkdownParser.php';
-include_once __DIR__ . '/MockDataConnection.php';
+include_once __DIR__ . '/SampleAppTestCase.php';
 
-class RESTModelControllerTest extends \PHPUnit_Framework_TestCase {
-  /**
-   * @var \PHPUnit_Framework_MockObject_MockObject
-   */
-  protected $dataConnectionMock;
-
+class RESTModelControllerTest extends SampleAppTestCase {
   /**
    * @var \PHPUnit_Framework_MockObject_MockObject
    */
   protected $controllerMock;
 
-  /**
-   * @var \MABI\App
-   */
-  protected $app;
-
   // note: All controller loaders tested together is tested in the AppTest
   public function testGeneratedRESTModelControllerLoader() {
-    \Slim\Environment::mock();
-    $this->app = new \MABI\App();
-    $this->app->setModelLoaders(array(new \MABI\DirectoryModelLoader(__DIR__ . '/TestApp/TestModelDir', 'mabiTesting')));
+    $this->setUpApp();
+
     $this->app->getExtensionModelClasses();
 
     $controllerLoader = new \MABI\GeneratedRESTModelControllerLoader(array(0 => 'mabiTesting\ModelA'), $this->app);
@@ -45,16 +29,7 @@ class RESTModelControllerTest extends \PHPUnit_Framework_TestCase {
   }
 
   private function setUpRESTApp($env = array()) {
-    \Slim\Environment::mock($env);
-    $this->app = new \MABI\App();
-
-    $this->dataConnectionMock = $this->getMock('\MABI\Testing\MockDataConnection',
-      array('findOneByField', 'query', 'insert', 'save', 'deleteByField', 'clearAll', 'getNewId', 'findAll')
-    );
-
-    $this->app->addDataConnection('default', $this->dataConnectionMock);
-
-    $this->app->setModelLoaders(array(new \MABI\DirectoryModelLoader(__DIR__ . '/TestApp/TestModelDir', 'mabiTesting')));
+    $this->setUpApp($env);
 
     $dirControllerLoader = new \MABI\DirectoryControllerLoader('TestApp/TestControllerDir', $this->app, 'mabiTesting');
 
@@ -72,6 +47,10 @@ class RESTModelControllerTest extends \PHPUnit_Framework_TestCase {
     $refModelClassProperty = $refObject->getProperty('modelClass');
     $refModelClassProperty->setAccessible(TRUE);
     $refModelClassProperty->setValue($this->controllerMock, $modelClass);
+    $refModelProperty = $refObject->getProperty('model');
+    $refModelProperty->setAccessible(TRUE);
+    $refModelProperty->setValue($this->controllerMock,
+      call_user_func($modelClass . '::init', $this->app));
     $refBaseProperty = $refObject->getProperty('base');
     $refBaseProperty->setAccessible(TRUE);
     $refBaseProperty->setValue($this->controllerMock, strtolower(\MABI\ReflectionHelper::stripClassName($modelClass)));
@@ -108,7 +87,7 @@ class RESTModelControllerTest extends \PHPUnit_Framework_TestCase {
     // Test POST /{collection}
     $this->setUpRESTApp(array(
       'REQUEST_METHOD' => 'POST',
-      'slim.input' => 'name=modelb',
+      'slim.input' => '{"name":"modelb"}',
       'PATH_INFO' => '/modelb'
     ));
     $this->dataConnectionMock->expects($this->once())

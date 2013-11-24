@@ -2,33 +2,21 @@
 
 namespace MABI\Testing;
 
-include_once 'PHPUnit/Autoload.php';
-include_once __DIR__ . '/../App.php';
-include_once __DIR__ . '/../DirectoryModelLoader.php';
 include_once __DIR__ . '/../DirectoryControllerLoader.php';
 include_once __DIR__ . '/../GeneratedRESTModelControllerLoader.php';
-include_once __DIR__ . '/../DirectoryModelLoader.php';
 include_once __DIR__ . '/../autodocs/MarkdownParser.php';
+include_once __DIR__ . '/SampleAppTestCase.php';
 
-class ControllerTest extends \PHPUnit_Framework_TestCase {
-  /**
-   * @var \PHPUnit_Framework_MockObject_MockObject
-   */
-  protected $dataConnectionMock;
+class ControllerTest extends SampleAppTestCase {
 
   /**
    * @var \PHPUnit_Framework_MockObject_MockObject
    */
   protected $controllerMock;
 
-  /**
-   * @var \MABI\App
-   */
-  protected $app;
-
   public function testDirectoryControllerLoader() {
-    \Slim\Environment::mock();
-    $this->app = new \MABI\App();
+    $this->setUpApp();
+
     $controllerLoader = new \MABI\DirectoryControllerLoader('TestApp/TestControllerDir', $this->app, 'mabiTesting');
     $controllers = $controllerLoader->getControllers();
     $this->assertNotEmpty($controllers);
@@ -36,11 +24,11 @@ class ControllerTest extends \PHPUnit_Framework_TestCase {
   }
 
   private function setUpControllerApp($env = array()) {
-    \Slim\Environment::mock($env);
-    $this->app = new \MABI\App();
+    $this->setUpApp($env);
 
     $dirControllerLoader = new \MABI\DirectoryControllerLoader('TestApp/TestControllerDir', $this->app, 'mabiTesting');
     $this->controllerMock = $this->getMock('\mabiTesting\JustAController', array(
+        'post',
         'getTestFunc',
         'postTestFunc',
         'putTestFunc',
@@ -60,6 +48,15 @@ class ControllerTest extends \PHPUnit_Framework_TestCase {
    * test that custom routes were generated properly
    */
   public function testRoutes() {
+    // Test base post
+    $this->setUpControllerApp(array('REQUEST_METHOD' => 'POST', 'PATH_INFO' => '/justa'));
+    $this->controllerMock->expects($this->once())
+      ->method('post')
+      ->will($this->returnValue('test'));
+    $this->app->call();
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $this->assertEquals('', $this->app->getResponse()->body());
+
     // Test custom get
     $this->setUpControllerApp(array('PATH_INFO' => '/justa/testfunc'));
     $this->controllerMock->expects($this->once())
@@ -101,19 +98,18 @@ class ControllerTest extends \PHPUnit_Framework_TestCase {
    * test that middleware was added appropriately
    */
   function testMiddleware() {
-    \Slim\Environment::mock();
-    $this->app = new \MABI\App();
+    $this->setUpApp();
 
     $dirControllerLoader = new \MABI\DirectoryControllerLoader('TestApp/TestControllerDir', $this->app, 'mabiTesting');
     $this->app->setControllerLoaders(array($dirControllerLoader));
     $controllers = $dirControllerLoader->getControllers();
-    foreach($controllers as $controller) {
-      if(get_class($controller) == 'mabiTesting\JustAController') {
+    foreach ($controllers as $controller) {
+      if (get_class($controller) == 'mabiTesting\JustAController') {
         /**
          * @var $middlewares \MABI\Middleware[]
          */
         $middlewares = $controller->getMiddlewares();
-        $this->assertInternalType('array',$middlewares);
+        $this->assertInternalType('array', $middlewares);
         $this->assertNotEmpty($middlewares);
         $this->assertInstanceOf('MABI\Middleware\AnonymousIdentifier', $middlewares[0]);
       }

@@ -9,5 +9,6 @@
                 "port" : 6379,
                 "password" : "",
                 "database" : "0"
-             }
+             },
+    "jsonRequests" : true
 }

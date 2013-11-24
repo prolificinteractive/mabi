@@ -13,7 +13,7 @@ class PostAndObjectOnlyTest extends MiddlewareTestCase {
 
   public function testStoppedCall() {
     $middleware = new PostAndObjectOnly();
-    $this->setUpRESTApp(array('PATH_INFO' => '/modelbs'), array($middleware));
+    $this->setUpApp(array('PATH_INFO' => '/modelbs'), array($middleware));
 
     $this->app->call();
 
@@ -22,7 +22,7 @@ class PostAndObjectOnlyTest extends MiddlewareTestCase {
 
   public function testPassedCall() {
     $middleware = new PostAndObjectOnly();
-    $this->setUpRESTApp(array('PATH_INFO' => '/modelbs/1'), array($middleware));
+    $this->setUpApp(array('PATH_INFO' => '/modelbs/1'), array($middleware));
 
     $this->dataConnectionMock->expects($this->once())
       ->method('findOneByField')
@@ -39,7 +39,7 @@ class PostAndObjectOnlyTest extends MiddlewareTestCase {
 
   public function testSkipDocs() {
     $middleware = new PostAndObjectOnly();
-    $this->setUpRESTApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware));
+    $this->setUpApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware));
 
     $docArray = array(
       'HTTPMethod' => 'test',
@@ -48,8 +48,7 @@ class PostAndObjectOnlyTest extends MiddlewareTestCase {
       'parameters' => array()
     );
     $rClassMock = $this->getMock('\ReflectionClass', array(), array(), '', FALSE);
-    $reflectionMethod = new \ReflectionMethod(get_class($this->restController),
-      '_restPutCollection');
+    $reflectionMethod = new \ReflectionMethod(get_class($this->restController), 'put');
 
     $middleware->documentMethod($rClassMock, $reflectionMethod, $docArray);
     $this->assertNull($docArray);
@@ -57,7 +56,7 @@ class PostAndObjectOnlyTest extends MiddlewareTestCase {
 
   public function testFullDocs() {
     $middleware = new PostAndObjectOnly();
-    $this->setUpRESTApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware));
+    $this->setUpApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware));
 
     $docArray = array(
       'HTTPMethod' => 'test',
@@ -66,8 +65,7 @@ class PostAndObjectOnlyTest extends MiddlewareTestCase {
       'parameters' => array()
     );
     $rClassMock = $this->getMock('\ReflectionClass', array(), array(), '', FALSE);
-    $reflectionMethod = new \ReflectionMethod(get_class($this->restController),
-      '_restPostCollection');
+    $reflectionMethod = new \ReflectionMethod(get_class($this->restController), 'post');
 
     $middleware->documentMethod($rClassMock, $reflectionMethod, $docArray);
     $this->assertNotEmpty($docArray);

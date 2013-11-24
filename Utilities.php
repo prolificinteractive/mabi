@@ -23,11 +23,16 @@ class ReflectionHelper {
   }
 
   public static function getDocText($docComments) {
-    $docComments = preg_replace('/^\s*\/\*\*.*\\n/m','',$docComments);
-    $docComments = preg_replace('/^\s*\*\/\s*/m','',$docComments);
-    $docComments = preg_replace('/^\s*\*\s*\n/m',"\n",$docComments);
-    $docComments = preg_replace('/^\h*\*\h*/m','',$docComments);
-    $docComments = preg_replace('/^\@.*\\n/m','',$docComments);
+    // Doc comments include things like '   /** ' and '    * ' before the actual text. This function
+    // cleans all of that up.
+
+    $docComments = preg_replace('/^\s*\/\*\*.*\\n/m', '', $docComments); // Gets rid of '  /** '
+    $docComments = preg_replace('/^\s*\*\/\s*/m', '', $docComments); // gets rid of '   */'
+    $docComments = preg_replace('/^\s*\*\s*\n/m', "\n", $docComments); // gets rid of blank '  * '
+    $docComments = preg_replace('/^\s*\*\s/m', '', $docComments); // gets rid of the pre '   * '
+    // Gets rid of doc directives
+    $docComments = preg_replace('/^\@.*\\n/m', '', $docComments);
+    $docComments = preg_replace('/\@docs-jsondesc-start(.|\n|\r)*\@docs-jsondesc-end\n/m', '', $docComments);
     return $docComments;
   }
 
@@ -42,7 +47,7 @@ class DirectoryHelper {
     if ($handle = opendir($directory)) {
       while (FALSE !== ($file = readdir($handle))) {
         if ($file != "." && $file != ".." && (empty($extension) ||
-          (!empty($extension) && substr($file, -strlen($extension)) === $extension))
+            (!empty($extension) && substr($file, -strlen($extension)) === $extension))
         ) {
 
           if (is_dir($directory . "/" . $file)) {

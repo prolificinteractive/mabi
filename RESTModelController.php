@@ -10,10 +10,6 @@ include_once __DIR__ . '/ModelController.php';
  * todo: docs
  */
 class RESTModelController extends ModelController {
-  /**
-   * @var \Mabi\Model
-   */
-  protected $model = NULL;
 
   public function __construct($extension) {
     parent::__construct($extension);
@@ -25,88 +21,80 @@ class RESTModelController extends ModelController {
     }
   }
 
-  /**
-   * @endpoint ignore
-   * @return \Mabi\Model
-   */
-  public function getModel() {
-    return $this->model;
-  }
-
-  public function _restGetCollection() {
-    /**
-     * @var $model Model
-     */
-    $model = call_user_func($this->modelClass . '::init', $this->getApp());
+  public function get() {
     $outputArr = array();
-    foreach ($model->findAll() as $foundModel) {
+    foreach ($this->model->findAll() as $foundModel) {
       $outputArr[] = $foundModel->getPropertyArray(TRUE);
     }
     echo json_encode($outputArr);
   }
 
-  public function _restPostCollection() {
-    $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
-    $this->model->loadParameters($this->getApp()->getRequest()->post());
+  public function post() {
+    $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
+
+    if ($this->model->findById($this->model->getId())) {
+      $this->getApp()->returnError('An entry with the id ' . $this->model->getId() . ' already exists.', 409, 1008);
+    }
+
     $this->model->insert();
     echo $this->model->outputJSON();
   }
 
-  public function _restPutCollection() {
+  public function put() {
     // todo: implement
   }
 
-  public function _restDeleteCollection() {
+  public function delete() {
     // todo: implement
   }
 
-  public function _restGetObject($id) {
+  public function _restGetResource($id) {
     /**
      * @var $model Model
      */
     echo $this->model->outputJSON();
   }
 
-  public function _restPutObject($id) {
-    $this->model->loadParameters($this->getApp()->getRequest()->post(), $id);
+  /**
+   * @param $id
+   *
+   * @docs-param body string body required The object to update in the database
+   */
+  public function _restPutResource($id) {
+    $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
+    $this->model->setId($id);
+
     $this->model->save();
+    echo $this->model->outputJSON();
   }
 
-  public function _restDeleteObject($id) {
+  public function _restDeleteResource($id) {
     $this->model->delete();
+    echo $this->model->outputJSON();
   }
 
   /**
    * @param $route \Slim\Route
    */
   public function _readModel($route) {
-    $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
     $this->model->findById($route->getParam('id'));
   }
 
-  protected function addStandardRestRoute(\Slim\Slim $slim, $httpMethod, $isObjectLevel = FALSE) {
-    $methodName = '_rest' . ucwords(strtolower($httpMethod)) . ($isObjectLevel ? 'Object' : 'Collection');
+  protected function addStandardRestRoute(\Slim\Slim $slim, $httpMethod) {
+    $methodName = '_rest' . ucwords(strtolower($httpMethod)) . 'Resource';
 
     $rMethod = new \ReflectionMethod(get_called_class(), $methodName);
     // If there is a '@endpoint ignore' property, the function is not served as an endpoint
     if (in_array('ignore', ReflectionHelper::getDocDirective($rMethod->getDocComment(), 'endpoint'))) {
       return;
     }
-    if (!$isObjectLevel) {
-      $slim->map("/{$this->base}",
-        array($this, 'preMiddleware'),
-        array($this, '_runControllerMiddlewares'),
-        array($this, 'preCallable'),
-        array($this, $methodName))->via($httpMethod);
-    }
-    else {
-      $slim->map("/{$this->base}/:id",
-        array($this, 'preMiddleware'),
-        array($this, '_readModel'),
-        array($this, '_runControllerMiddlewares'),
-        array($this, 'preCallable'),
-        array($this, $methodName))->via($httpMethod);
-    }
+
+    $slim->map("/{$this->base}/:id(/?)",
+      array($this, 'preMiddleware'),
+      array($this, '_readModel'),
+      array($this, '_runControllerMiddlewares'),
+      array($this, 'preCallable'),
+      array($this, $methodName))->via($httpMethod);
   }
 
   /**
@@ -129,12 +117,8 @@ class RESTModelController extends ModelController {
 
     // todo: add API versioning
     $this->addStandardRestRoute($slim, \Slim\Http\Request::METHOD_GET);
-    $this->addStandardRestRoute($slim, \Slim\Http\Request::METHOD_POST);
     $this->addStandardRestRoute($slim, \Slim\Http\Request::METHOD_PUT);
     $this->addStandardRestRoute($slim, \Slim\Http\Request::METHOD_DELETE);
-    $this->addStandardRestRoute($slim, \Slim\Http\Request::METHOD_GET, TRUE);
-    $this->addStandardRestRoute($slim, \Slim\Http\Request::METHOD_PUT, TRUE);
-    $this->addStandardRestRoute($slim, \Slim\Http\Request::METHOD_DELETE, TRUE);
 
     /**
      * Gets other automatically generated routes following the pattern:
@@ -170,13 +154,13 @@ class RESTModelController extends ModelController {
       }
 
       if (!empty($action)) {
-        $slim->map("/{$this->base}/:id/{$action}",
+        $slim->map("/{$this->base}/:id/{$action}(/?)",
           array($this, 'preMiddleware'),
           array($this, '_readModel'),
           array($this, '_runControllerMiddlewares'),
           array($this, 'preCallable'),
           array($this, $methodName))->via($httpMethod);
-        $slim->map("/{$this->base}/:id/{$action}(/:param)",
+        $slim->map("/{$this->base}/:id/{$action}(/:param)(/?)",
           array($this, 'preMiddleware'),
           array($this, '_readModel'),
           array($this, '_runControllerMiddlewares'),
@@ -186,8 +170,7 @@ class RESTModelController extends ModelController {
     }
   }
 
-  private function getRestMethodDocJSON(Parser $parser, $methodName, $httpMethod, $url, $rClass,
-                                        $method, $includesId = FALSE) {
+  private function getRestMethodDocJSON(Parser $parser, $methodName, $httpMethod, $url, $rClass, $method) {
     $methodDoc = array();
 
     $rMethod = new \ReflectionMethod(get_called_class(), $method);
@@ -203,15 +186,13 @@ class RESTModelController extends ModelController {
     $methodDoc['URI'] = $url;
     $methodDoc['Synopsis'] = $parser->parse(ReflectionHelper::getDocText($docComment));
     $methodDoc['parameters'] = $this->getDocParameters($rMethod);
-    if ($includesId) {
-      $methodDoc['parameters'][] = array(
-        'Name' => 'id',
-        'Required' => 'Y',
-        'Type' => 'string',
-        'Location' => 'url',
-        'Description' => 'The id of the resource'
-      );
-    }
+    $methodDoc['parameters'][] = array(
+      'Name' => 'id',
+      'Required' => 'Y',
+      'Type' => 'string',
+      'Location' => 'url',
+      'Description' => 'The id of the resource'
+    );
 
     // Allow controller middlewares to modify the documentation for this method
     if (!empty($this->middlewares)) {
@@ -235,38 +216,33 @@ class RESTModelController extends ModelController {
 
     $rClass = new \ReflectionClass(get_called_class());
 
-    $methodDoc = $this->getRestMethodDocJSON($parser, 'Get Full Collection',
-      'GET', "/{$this->base}", $rClass, '_restGetCollection');
-    if (!empty($methodDoc)) {
-      $doc['methods'][] = $methodDoc;
+    foreach($doc['methods'] as $k => $methodDoc) {
+      if($methodDoc['InternalMethodName'] == 'get') {
+        $doc['methods'][$k]['MethodName'] = 'Get Full Collection';
+      }
+      elseif($methodDoc['InternalMethodName'] == 'post') {
+        $doc['methods'][$k]['MethodName'] = 'Add to Collection';
+      }
+      elseif($methodDoc['InternalMethodName'] == 'put') {
+        $doc['methods'][$k]['MethodName'] = 'Replace Full Collection';
+      }
+      elseif($methodDoc['InternalMethodName'] == 'delete') {
+        $doc['methods'][$k]['MethodName'] = 'Delete Full Collection';
+      }
     }
-    $methodDoc = $this->getRestMethodDocJSON($parser, 'Add to Collection',
-      'POST', "/{$this->base}", $rClass, '_restPostCollection');
-    if (!empty($methodDoc)) {
-      $doc['methods'][] = $methodDoc;
-    }
-    $methodDoc = $this->getRestMethodDocJSON($parser, 'Replace Full Collection',
-      'PUT', "/{$this->base}", $rClass, '_restPutCollection');
-    if (!empty($methodDoc)) {
-      $doc['methods'][] = $methodDoc;
-    }
-    $methodDoc = $this->getRestMethodDocJSON($parser, 'Delete Full Collection',
-      'DELETE', "/{$this->base}", $rClass, '_restDeleteCollection');
-    if (!empty($methodDoc)) {
-      $doc['methods'][] = $methodDoc;
-    }
+
     $methodDoc = $this->getRestMethodDocJSON($parser, 'Get Resource',
-      'GET', "/{$this->base}/:id", $rClass, '_restGetObject', TRUE);
+      'GET', "/{$this->base}/:id", $rClass, '_restGetResource');
     if (!empty($methodDoc)) {
       $doc['methods'][] = $methodDoc;
     }
     $methodDoc = $this->getRestMethodDocJSON($parser, 'Update Resource',
-      'PUT', "/{$this->base}/:id", $rClass, '_restPutObject', TRUE);
+      'PUT', "/{$this->base}/:id", $rClass, '_restPutResource');
     if (!empty($methodDoc)) {
       $doc['methods'][] = $methodDoc;
     }
     $methodDoc = $this->getRestMethodDocJSON($parser, 'Delete Resource',
-      'DELETE', "/{$this->base}/:id", $rClass, '_restDeleteObject', TRUE);
+      'DELETE', "/{$this->base}/:id", $rClass, '_restDeleteResource');
     if (!empty($methodDoc)) {
       $doc['methods'][] = $methodDoc;
     }

@@ -140,8 +140,11 @@ ul
                                                                    - else
                                                                            option(value=choice) #{choice}
                                                       - else
+                                                        - if (parameter.Location == 'body' && config.jsonRequests)
+                                                          textarea(name='params[' + parameter.Name + ']', value=parameter.Default, placeholder=className, rows=8, columns=6)
+                                                        - else
                                                           input(name='params[' + parameter.Name + ']', value=parameter.Default, placeholder=className)
-                                                          input(type='hidden', name='locations['+parameter.Name+']', value=parameter.Location || 'query')
+                                                        input(type='hidden', name='locations['+parameter.Name+']', value=parameter.Location || 'query')
                                                   td.type=parameter.Type
                                                   td.location
                                                       p=parameter.Location || 'query'

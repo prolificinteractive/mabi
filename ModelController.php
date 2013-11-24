@@ -10,6 +10,10 @@ include_once __DIR__ . '/Controller.php';
  */
 class ModelController extends Controller {
   protected $modelClass = NULL;
+  /**
+   * @var \MABI\Model
+   */
+  protected $model = NULL;
 
   /**
    * @endpoint ignore
@@ -20,9 +24,17 @@ class ModelController extends Controller {
   }
 
   /**
+   * @endpoint ignore
+   * @return \MABI\Model
+   */
+  public function getModel() {
+    return $this->model;
+  }
+
+  /**
    * @param $extension Extension
    */
-  public function __construct($extension) {
+  public function __construct(Extension $extension) {
     if (empty($this->modelClass)) {
       $this->modelClass = ReflectionHelper::getPrefixFromControllerClass(get_called_class());
     }
@@ -32,13 +44,21 @@ class ModelController extends Controller {
     }
 
     parent::__construct($extension);
+
+    if (class_exists($this->modelClass)) {
+      $this->model = call_user_func($this->modelClass . '::init', $this->getApp());
+    }
   }
 
-  public static function generate($modelClass, $extension) {
+  public static function generate($modelClass, Extension $extension) {
+    /**
+     * @var $newController \MABI\ModelController
+     */
     $calledClass = get_called_class();
     $newController = new $calledClass($extension);
     $newController->modelClass = $modelClass;
     $newController->base = Inflector::pluralize(strtolower(ReflectionHelper::stripClassName($modelClass)));
+    $newController->model = call_user_func($newController->modelClass . '::init', $newController->getApp());
     return $newController;
   }
 

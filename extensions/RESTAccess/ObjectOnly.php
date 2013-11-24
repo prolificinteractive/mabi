@@ -11,10 +11,10 @@ include_once __DIR__ . '/RESTAccessMiddleware.php';
 class ObjectOnly extends RESTAccessMiddleware {
   protected function doesHaveAccessToMethod($methodName) {
     switch ($methodName) {
-      case '_restGetCollection':
-      case '_restPostCollection':
-      case '_restPutCollection':
-      case '_restDeleteCollection':
+      case 'get':
+      case 'post':
+      case 'put':
+      case 'delete':
         return FALSE;
       default:
         return TRUE;

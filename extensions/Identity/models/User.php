@@ -23,6 +23,13 @@ class User extends Model {
   public $created;
 
   /**
+   * When the user was last accessed
+   *
+   * @var \DateTime
+   */
+  public $lastAccessed;
+
+  /**
    * First name of the user
    *
    * @var string
@@ -79,4 +86,12 @@ class User extends Model {
    * @field external
    */
   public $newSessionId;
+
+  public function insert() {
+    $this->salt = uniqid(mt_rand(), TRUE);
+    $this->passHash = Identity::passHash($this->password, $this->salt);
+    $this->password = NULL;
+    $this->created = new \DateTime('now');
+    parent::insert();
+  }
 }

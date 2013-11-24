@@ -89,11 +89,6 @@ class MongoDataConnection implements DataConnection {
     while ($return->hasNext()) {
       $return->getNext();
       $mongodata[] = $return->current();
-      /* todo: review if needed
-      if ($this->config['set_string_id'] && !empty($mongodata['_id']) && is_object($mongodata['_id'])) {
-        $mongodata['_id'] = $mongodata['_id']->__toString();
-      }
-      */
     }
 
     return $mongodata;
@@ -121,30 +116,51 @@ class MongoDataConnection implements DataConnection {
     return $result;
   }
 
+  function findAllByField($field, $value, $table, array $fields = array()) {
+    $return = $this->db->selectCollection($table)->find(array($field => $value), $fields);
+
+    $mongodata = array();
+    while ($return->hasNext()) {
+      $return->getNext();
+      $mongodata[] = $return->current();
+    }
+
+    return $mongodata;
+  }
+
   function query($table, $query) {
     if (isset($query['group'])) {
-      $return = $this->db->selectCollection($table)->group(
-        $query['group']['_id'],
-        $query['group']['initial'],
-        $query['group']['reduce']);
+      if (empty($query['group']['condition'])) {
+        $return = $this->db->selectCollection($table)->group(
+          $query['group']['_id'],
+          $query['group']['initial'],
+          $query['group']['reduce']);
+      } else {
+        $return = $this->db->selectCollection($table)->group(
+          $query['group']['_id'],
+          $query['group']['initial'],
+          $query['group']['reduce'],
+          $query['group']['condition']);
+      }
       return $return;
     }
 
     $mquery = $query['query'];
     $return = $this->db->selectCollection($table)->find($mquery);
+    if (!empty($query['skip'])) {
+      $return = $return->skip($query['skip']);
+    }
     if (!empty($query['limit'])) {
       $return = $return->limit($query['limit']);
+    }
+    if (!empty($query['sort'])) {
+      $return = $return->sort($query['sort']);
     }
 
     $mongodata = array();
     while ($return->hasNext()) {
       $return->getNext();
       $mongodata[] = $return->current();
-      /* todo: review if needed
-      if ($this->config['set_string_id'] && !empty($mongodata['_id']) && is_object($mongodata['_id'])) {
-        $mongodata['_id'] = $mongodata['_id']->__toString();
-      }
-      */
     }
 
     return $mongodata;

@@ -72,6 +72,10 @@ class Model {
     return $this->{$this->idProperty};
   }
 
+  public function setId($id) {
+    $this->{$this->idProperty} = $id;
+  }
+
   /**
    * @return string
    */
@@ -154,7 +158,7 @@ class Model {
          * @var $model \MABI\Model
          */
         $model = call_user_func($this->modelClass . '::init', $this->app);
-        $model->loadParameters($foundObject);
+        $model->load($foundObject);
         $foundModels[] = $model;
       }
     }
@@ -175,7 +179,7 @@ class Model {
        * @var $model \MABI\Model
        */
       $model = call_user_func($this->modelClass . '::init', $this->app);
-      $model->loadParameters($foundObject);
+      $model->load($foundObject);
       $foundModels[] = $model;
     }
     return $foundModels;
@@ -190,7 +194,7 @@ class Model {
    *
    * @throws \Exception
    */
-  protected function loadParameter($type, &$parameter, $result) {
+  protected function loadField($type, &$parameter, $result) {
     switch ($type) {
       case 'string':
         $parameter = $result;
@@ -221,12 +225,17 @@ class Model {
         try {
           $rClass = new \ReflectionClass($type);
           if ($rClass->isSubclassOf('\MABI\Model')) {
-            /**
-             * @var $model \MABI\Model
-             */
-            $model = call_user_func($type . '::init', $this->app);
-            $model->loadParameters($result);
-            $parameter = $model;
+            if (empty($result)) {
+              $parameter = NULL;
+            }
+            else {
+              /**
+               * @var $model \MABI\Model
+               */
+              $model = call_user_func($type . '::init', $this->app);
+              $model->load($result);
+              $parameter = $model;
+            }
           }
           else {
             throw New \Exception('Class ' . $type . ' does not derive from \MABI\Model');
@@ -237,21 +246,39 @@ class Model {
     }
   }
 
+  public function loadFromExternalSource($source) {
+    try {
+      $this->load($source, TRUE);
+    } catch (InvalidJSONException $ex) {
+      $this->app->returnError($ex->getMessage(), 400, 1009);
+    }
+  }
+
   /**
-   * Loads parameters from a PHP database into the model object using reflection
+   * Loads the data for the model from a PHP array or a json string into the current model object using reflection
+   * and MABI annotations.
    *
-   * @param $resultArray array
-   * @param $forceId string
+   * @param $resultArray array|string Either an associative array that maps to the model or a JSON string which can be turned into one
+   * @param $sanitizeArray bool Whether to clean up $resultArray
    *
-   * @throws \Exception
+   * @throws InvalidJSONException
    */
-  public function loadParameters($resultArray, $forceId = NULL) {
+  protected function load($resultArray, $sanitizeArray = FALSE) {
+    if (!is_array($resultArray)) {
+      $resultArray = json_decode($resultArray, TRUE);
+      if (!is_array($resultArray)) {
+        throw new InvalidJSONException("Invalid JSON used to load a model");
+      }
+    }
+
     $rClass = new \ReflectionClass($this);
     $rProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
 
     if (!empty($resultArray[$this->idColumn])) {
-      $dataConnection = $this->app->getDataConnection($this->connection);
-      $this->{$this->idProperty} = $dataConnection->convertFromNativeId($resultArray[$this->idColumn]);
+      if (!$sanitizeArray) {
+        $dataConnection = $this->app->getDataConnection($this->connection);
+        $this->{$this->idProperty} = $dataConnection->convertFromNativeId($resultArray[$this->idColumn]);
+      }
       unset($resultArray[$this->idColumn]);
       unset($resultArray[$this->idProperty]);
     }
@@ -260,6 +287,14 @@ class Model {
       if (!array_key_exists($rProperty->name, $resultArray)) {
         continue;
       }
+
+      // Ignores setting any model property with 'internal' or 'system' options if sanitizing the input
+      $fieldOptions = ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field');
+      if ($sanitizeArray && (in_array('internal', $fieldOptions) || in_array('system', $fieldOptions))) {
+        unset($resultArray[$rProperty->getName()]);
+        continue;
+      }
+
       // Pulls out the type following the pattern @var <TYPE> from the doc comments of the property
       $varDocs = ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'var');
       if (empty($varDocs)) {
@@ -276,21 +311,17 @@ class Model {
           $outArr = array();
           if (!empty($resultArray[$rProperty->getName()])) {
             foreach ($resultArray[$rProperty->getName()] as $listResult) {
-              $this->loadParameter($type, $parameter, $listResult);
+              $this->loadField($type, $parameter, $listResult);
               $outArr[] = $parameter;
             }
           }
           $this->{$rProperty->getName()} = $outArr;
         }
         else {
-          $this->loadParameter($type, $this->{$rProperty->getName()}, $resultArray[$rProperty->getName()]);
+          $this->loadField($type, $this->{$rProperty->getName()}, $resultArray[$rProperty->getName()]);
         }
       }
       unset($resultArray[$rProperty->getName()]);
-    }
-
-    if (isset($forceId)) {
-      $this->{$this->idProperty} = $forceId;
     }
 
     $this->_remainingReadResults = $resultArray;
@@ -310,7 +341,7 @@ class Model {
     if ($result == NULL) {
       return FALSE;
     }
-    $this->loadParameters($result);
+    $this->load($result);
     return TRUE;
   }
 
@@ -324,15 +355,43 @@ class Model {
    */
   public function findByField($fieldName, $value) {
     $dataConnection = $this->app->getDataConnection($this->connection);
-    if($fieldName == $this->idColumn) {
+    if ($fieldName == $this->idColumn) {
       $value = $dataConnection->convertToNativeId($value);
     }
     $result = $dataConnection->findOneByField($fieldName, $value, $this->table, $this->readFields);
     if ($result == NULL) {
       return FALSE;
     }
-    $this->loadParameters($result);
+    $this->load($result);
     return TRUE;
+  }
+
+  /**
+   * todo: docs
+   *
+   * @param $fieldName string
+   * @param $value string
+   *
+   * @return \MABI\Model[]
+   */
+  public function findAllByField($fieldName, $value) {
+    $dataConnection = $this->app->getDataConnection($this->connection);
+    if ($fieldName == $this->idColumn) {
+      $value = $dataConnection->convertToNativeId($value);
+    }
+    $foundObjects = $dataConnection->findAllByField($fieldName, $value, $this->table, $this->readFields);
+    $foundModels = array();
+    if (is_array($foundObjects)) {
+      foreach ($foundObjects as $foundObject) {
+        /**
+         * @var $model \MABI\Model
+         */
+        $model = call_user_func($this->modelClass . '::init', $this->app);
+        $model->load($foundObject);
+        $foundModels[] = $model;
+      }
+    }
+    return $foundModels;
   }
 
   protected function getPropertyArrayValue($value, $forOutput = FALSE) {
@@ -411,7 +470,7 @@ class Model {
   public function insert() {
     $dataConnection = $this->app->getDataConnection($this->connection);
     $propArray = $dataConnection->insert($this->table, $this->getPropertyArray());
-    $this->loadParameters($propArray);
+    $this->load($propArray);
   }
 
   /**
@@ -420,9 +479,12 @@ class Model {
   public function save() {
     $dataConnection = $this->app->getDataConnection($this->connection);
     $propArray = $this->getPropertyArray();
+    if ($this->idColumn != $this->idProperty && isset($propArray[$this->idProperty])) {
+      unset($propArray[$this->idProperty]);
+    }
     $dataConnection->save($this->table, $propArray, $this->idColumn,
       $dataConnection->convertToNativeId($this->{$this->idProperty}));
-    $this->loadParameters($propArray);
+    $this->load($propArray);
   }
 
   /**
@@ -482,4 +544,7 @@ class Model {
 // todo: Add 'SampleJSON' so that it can be copied into requests
     );
   }
+}
+
+class InvalidJSONException extends \Exception {
 }

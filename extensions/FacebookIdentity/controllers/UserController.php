@@ -56,7 +56,7 @@ class UserController extends \MABI\Identity\UserController {
    */
   public function post() {
     if ($this->getFacebookOnly()) {
-      $this->getApp()->returnError('Facebook Connect is the only method allowed to create users', 401, 1001);
+      $this->getApp()->returnError(Errors::$FB_ONLY);
     }
     else {
       parent::post();
@@ -65,7 +65,7 @@ class UserController extends \MABI\Identity\UserController {
 
   public function postForgotPassword() {
     if ($this->getFacebookOnly()) {
-      $this->getApp()->returnError('Facebook Connect is the only method allowed to create users', 401, 1001);
+      $this->getApp()->returnError(Errors::$FB_ONLY);
     }
     else {
       parent::postForgotPassword();

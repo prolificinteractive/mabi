@@ -6,6 +6,7 @@ include_once __DIR__ . '/../RESTAccess/RESTAccess.php';
 include_once __DIR__ . '/../../Extension.php';
 include_once __DIR__ . '/../../DirectoryModelLoader.php';
 include_once __DIR__ . '/../../DirectoryControllerLoader.php';
+include_once __DIR__ . '/Errors.php';
 
 use MABI\App;
 use MABI\DirectoryControllerLoader;
@@ -26,6 +27,8 @@ class Identity extends Extension {
       new DirectoryControllerLoader(__DIR__ . '/controllers', $this, 'MABI\Identity')
     ));
     $this->getExtensionModelClasses();
+
+    $this->getApp()->getErrorResponseDictionary()->overrideErrorResponses(new Errors());
   }
 
   public static function passHash($password, $salt) {

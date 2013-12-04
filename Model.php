@@ -250,7 +250,7 @@ class Model {
     try {
       $this->load($source, TRUE);
     } catch (InvalidJSONException $ex) {
-      $this->app->returnError($ex->getMessage(), 400, 1009);
+      $this->app->returnError(DefaultAppErrors::$INVALID_JSON, array('!message' => $ex->getMessage()));
     }
   }
 

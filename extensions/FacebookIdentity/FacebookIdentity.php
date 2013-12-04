@@ -5,6 +5,7 @@ include_once __DIR__ . '/../../Extension.php';
 include_once __DIR__ . '/../../DirectoryModelLoader.php';
 include_once __DIR__ . '/../../DirectoryControllerLoader.php';
 include_once __DIR__ . '/../Identity/Identity.php';
+include_once __DIR__ . '/Errors.php';
 
 use MABI\DirectoryControllerLoader;
 use MABI\DirectoryModelLoader;
@@ -31,5 +32,7 @@ class FacebookIdentity extends Extension {
     foreach($this->getControllers() as $controller) {
       $controller->setFacebookOnly($facebookOnly);
     }
+
+    $this->getApp()->getErrorResponseDictionary()->overrideErrorResponses(new Errors());
   }
 }

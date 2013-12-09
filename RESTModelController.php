@@ -33,7 +33,7 @@ class RESTModelController extends ModelController {
     $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
 
     if ($this->model->findById($this->model->getId())) {
-      $this->getApp()->returnError('An entry with the id ' . $this->model->getId() . ' already exists.', 409, 1008);
+      $this->getApp()->returnError(DefaultAppErrors::$ENTRY_EXISTS, array('!modelid' => $this->model->getId()));
     }
 
     $this->model->insert();

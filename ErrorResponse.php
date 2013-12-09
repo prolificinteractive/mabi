@@ -32,10 +32,10 @@ class ErrorResponse
 
   /**
    * @param string $message
-   * @param int|null $httpcode
+   * @param int $httpcode
    * @param int|null $code
    */
-  function __construct($message, $httpcode = null, $code = null)
+  function __construct($message, $httpcode, $code = null)
   {
     $this->message = $message;
     $this->httpcode = $httpcode;
@@ -46,16 +46,8 @@ class ErrorResponse
   {
     if (!isset($array['message'])) throw new \Exception('Invalid ErrorResponse Array. Must contain a message');
     return $newErrorResponse = new ErrorResponse($array['message'],
-      isset($array['httpcode']) ? $array['httpcode'] : null,
+      $array['httpcode'],
       isset($array['code']) ? $array['code'] : null);
-  }
-
-  /**
-   * @param int $code
-   */
-  public function setCode($code)
-  {
-    $this->code = $code;
   }
 
   /**
@@ -67,27 +59,11 @@ class ErrorResponse
   }
 
   /**
-   * @param int $httpcode
-   */
-  public function setHttpcode($httpcode)
-  {
-    $this->httpcode = $httpcode;
-  }
-
-  /**
    * @return int
    */
   public function getHttpcode()
   {
     return $this->httpcode;
-  }
-
-  /**
-   * @param string $message
-   */
-  public function setMessage($message)
-  {
-    $this->message = $message;
   }
 
   /**
@@ -98,11 +74,11 @@ class ErrorResponse
     return $this->message;
   }
 
-  public function getFormattedMessage($replacementArray = null)
+  public function getFormattedMessage($replacementArray = array())
   {
     if (!empty($replacementArray)) {
-      return str_replace(array_keys($replacementArray), array_values($replacementArray), $this->message);
+      return str_replace(array_keys($replacementArray), array_values($replacementArray), $this->getMessage());
     }
-    return str_replace($this->replacementTokens, $this->replacementValues, $this->message);
+    return str_replace($this->replacementTokens, $this->replacementValues, $this->getMessage());
   }
 }

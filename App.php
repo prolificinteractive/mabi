@@ -5,6 +5,7 @@ namespace MABI;
 include_once __DIR__ . '/Slim/Slim.php';
 include_once __DIR__ . '/Extension.php';
 include_once __DIR__ . '/ErrorResponse.php';
+include_once __DIR__ . '/DefaultAppErrors.php';
 
 use \Slim\Slim;
 use Slim\Exception\Stop;
@@ -48,6 +49,18 @@ class App extends Extension {
   protected static $singletonApp = NULL;
 
   /**
+   * @var ErrorResponseDictionary
+   */
+  protected $errorResponseDictionary = NULL;
+
+  /**
+   * @return \MABI\ErrorResponseDictionary
+   */
+  public function getErrorResponseDictionary() {
+    return $this->errorResponseDictionary;
+  }
+
+  /**
    * todo: docs
    */
   static function getSingletonApp() {
@@ -70,6 +83,7 @@ class App extends Extension {
       array_push($this->middlewareDirectories, __DIR__ . '/middleware');
     }
     $this->slim = new Slim();
+    $this->errorResponseDictionary = new DefaultAppErrors();
     parent::__construct($this);
   }
 
@@ -77,35 +91,33 @@ class App extends Extension {
    * Returns a JSON array displaying the error to the client and stops execution
    *
    * Example Error Message Definition:
-   * define('ERRORDEF_NO_ACCESS', array('message' => 'No Access', 'code' => 1007, 'httpcode' => 402));
+   * array('ERRORDEF_NO_ACCESS' => array('message' => 'No Access', 'code' => 1007, 'httpcode' => 402));
    *
-   * @param $message string|array|ErrorResponse
-   * @param $httpStatusCodeOrReplacementArray int|null|array
-   * @param $applicationErrorCode int|null
+   * @param $errorKeyOrDefinition string|array
+   * @param $replacementArray array
    *
    * @throws \Slim\Exception\Stop
-   * @throws \Exception
    */
-  public function returnError($message, $httpStatusCodeOrReplacementArray = NULL, $applicationErrorCode = NULL) {
-    $replacementArray = $httpStatusCodeOrReplacementArray;
-    if (is_array($message)) {
-      $message = ErrorResponse::FromArray($message);
+  public function returnError($errorKeyOrDefinition, $replacementArray = array()) {
+    if (is_string($errorKeyOrDefinition)) {
+      $errorKey = $errorKeyOrDefinition;
     }
-    elseif(is_string($message)) {
-      $message = new ErrorResponse($message, $httpStatusCodeOrReplacementArray, $applicationErrorCode);
-      $replacementArray = null;
-    }
-    elseif (!is_subclass_of($message, 'MABI\\ErrorResponse')) {
-      throw new \Exception('Invalid type ' . get_class($message) . ' instead of a MABI\ErrorResponse');
+    else {
+      $errorKey = array_keys($errorKeyOrDefinition)[0];
     }
 
-    $appCode = $message->getCode();
+    $errorResponse = $this->errorResponseDictionary->getErrorResponse($errorKey);
+    if (empty($errorResponse)) {
+      $errorResponse = ErrorResponse::FromArray($errorKeyOrDefinition[$errorKey]);
+    }
+
+    $appCode = $errorResponse->getCode();
     echo json_encode(array(
-      'error' => empty($appCode) ? array('message' => $message->getFormattedMessage($replacementArray)) :
-        array('code' => $appCode, 'message' => $message->getFormattedMessage($replacementArray))
+      'error' => empty($appCode) ? array('message' => $errorResponse->getFormattedMessage($replacementArray)) :
+          array('code' => $appCode, 'message' => $errorResponse->getFormattedMessage($replacementArray))
     ));
-    $this->getResponse()->status($message->getHttpcode());
-    throw new Stop($message->getFormattedMessage($replacementArray));
+    $this->getResponse()->status($errorResponse->getHttpcode());
+    throw new Stop($errorResponse->getFormattedMessage($replacementArray));
   }
 
   public function errorHandler($e) {

@@ -27,7 +27,8 @@ class ErrorResponseDictionary {
         continue;
       }
 
-      $key = array_keys($defaultProps[$rProperty->getName()])[0];
+      $propertyKeys = array_keys($defaultProps[$rProperty->getName()]);
+      $key = $propertyKeys[0];
       $errorResponseArray = $defaultProps[$rProperty->getName()][$key];
       if (empty($errorResponseArray['message']) || empty($errorResponseArray['httpcode'])) {
         continue;

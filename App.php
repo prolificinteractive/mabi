@@ -103,7 +103,8 @@ class App extends Extension {
       $errorKey = $errorKeyOrDefinition;
     }
     else {
-      $errorKey = array_keys($errorKeyOrDefinition)[0];
+      $errorKeys = array_keys($errorKeyOrDefinition);
+      $errorKey = $errorKeys[0];
     }
 
     $errorResponse = $this->errorResponseDictionary->getErrorResponse($errorKey);

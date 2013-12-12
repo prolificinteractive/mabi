@@ -139,6 +139,8 @@ ul
                                                                            option(value=choice, selected=true) #{choice}
                                                                    - else
                                                                            option(value=choice) #{choice}
+                                                      - else if (parameter.Type =='file')
+                                                           input(class='file2upload', type='file', name='params[' + parameter.Name + ']', multiple='multiple')
                                                       - else
                                                         - if (parameter.Location == 'body' && config.jsonRequests)
                                                           textarea(name='params[' + parameter.Name + ']', value=parameter.Default, placeholder=className, rows=8, columns=6)

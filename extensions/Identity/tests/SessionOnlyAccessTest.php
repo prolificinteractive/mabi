@@ -8,6 +8,7 @@ use MABI\Identity\Middleware\SessionHeader;
 use MABI\Identity\Middleware\SessionOnlyAccess;
 use MABI\RESTAccess\RESTAccess;
 use MABI\Testing\MiddlewareTestCase;
+use MABI\Testing\TableDefinition;
 
 include_once 'PHPUnit/Autoload.php';
 include_once __DIR__ . '/../../../tests/middleware/MiddlewareTestCase.php';
@@ -18,6 +19,25 @@ include_once __DIR__ . '/../middleware/SessionOnlyAccess.php';
 
 class SessionOnlyAccessTest extends MiddlewareTestCase {
 
+  protected static $SESSION_111444 = array(
+    'created' => '1370663864',
+    'userId' => 11
+  );
+
+  protected static $USER_11 = array(
+    'id' => 11,
+    'created' => 1372375580,
+    'firstName' => 'Photis',
+    'lastName' => 'Patriotis',
+    'email' => 'ppatriotis@gmail.com',
+    'passHash' => '604cefb585491865043db59f5f200c08af016dc636bcb37c858199e20f082c10',
+    // result of: hash_hmac('sha256', '123', 'salt4456');
+    'salt' => 'salt4456',
+    'lastAccessed' => 1379430989
+  );
+
+  protected static $MODELB_1 = array('modelBId' => 1, 'name' => 'test', 'testOwner' => 11);
+
   public function testSuccessfulCall() {
     $middleware = new SessionOnlyAccess();
 
@@ -26,9 +46,20 @@ class SessionOnlyAccessTest extends MiddlewareTestCase {
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
 
-    $this->dataConnectionMock->expects($this->any())
+    $this->dataConnectionMock->expects($this->exactly(3))
       ->method('findOneByField')
-      ->will($this->returnCallback(array($this, 'myFindOneByFieldCallback')));
+      ->will($this->returnCallback(
+        function ($field, $value, $table) {
+          return $this->findOneByFieldCallback(
+            array(
+              'sessions' => new TableDefinition('id', 111444, self::$SESSION_111444),
+              'users' => new TableDefinition('id', 11, self::$USER_11),
+              'modelbs' => new TableDefinition('id', 4, self::$MODELB_1)
+            ), $field, $value, $table);
+        }
+      ));
+
+    // ->will($this->returnCallback(array($this, 'myFindOneByFieldCallback')));
 
     $this->app->call();
 
@@ -97,7 +128,7 @@ class SessionOnlyAccessTest extends MiddlewareTestCase {
 
     $docArray = array();
     $rClassMock = $this->getMock('\ReflectionClass', array(), array(), '', FALSE);
-    $rRefMock = new \ReflectionMethod('\mabiTesting\ModelBController', '_restPostCollection');
+    $rRefMock = new \ReflectionMethod('\mabiTesting\ModelBController', 'post');
 
     $sessHeaderMiddleware->documentMethod($rClassMock, $rRefMock, $docArray);
     $middleware->documentMethod($rClassMock, $rRefMock, $docArray);

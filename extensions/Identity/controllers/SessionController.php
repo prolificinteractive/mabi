@@ -37,14 +37,28 @@ class SessionController extends RESTModelController {
    * Creates a session. A valid email and password of an existing user must be passed in, and the new session
    * (with the session id) will be returned.
    *
-   * @docs-param session string body required A session object (with email & password filled in)
+   * ~~~
+   * Get sessions through email password
+   * {
+   *     "email": string,
+   *     "password": string
+   * }
+   *
+   * or get one time session to reset password
+   *
+   * {
+   *     "email": string,
+   *     "authToken": string
+   * }
+   *
+   * @docs-param session string body required A session object (with email & password or email & authToken filled in)
    *
    * @throws \Slim\Exception\Stop
    */
-  function _restPostCollection() {
+  function post() {
     $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
     if (empty($this->model->email)) {
-      $this->getApp()->returnError('Email is required to create a session', 400, 1002);
+      $this->getApp()->returnError(Errors::$SESSION_EMAIL_REQUIRED);
     }
     else {
       /**
@@ -55,16 +69,16 @@ class SessionController extends RESTModelController {
 
       if (!empty($this->model->password)) {
         if ($user->passHash != Identity::passHash($this->model->password, $user->salt)) {
-          $this->getApp()->returnError('Password is invalid', 400, 1003);
+          $this->getApp()->returnError(Errors::$PASSWORD_INVALID);
         }
       }
       elseif (!empty($this->model->authToken)) {
         if ($this->model->authToken != Identity::passHash($user->passHash, $user->lastAccessed->getTimestamp())) {
-          $this->getApp()->returnError('AuthToken is invalid', 400, 1003);
+          $this->getApp()->returnError(Errors::$TOKEN_INVALID);
         }
       }
       else {
-        $this->getApp()->returnError('A Password or an authToken are required to create a session', 400, 1002);
+        $this->getApp()->returnError(Errors::$SESSION_PASSWORD_TOKEN_REQUIRED);
       }
       $user->lastAccessed = new \DateTime('now');
       $user->save();

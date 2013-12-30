@@ -6,6 +6,7 @@ use MABI\Identity\Identity;
 use MABI\Identity\Middleware\SessionHeader;
 use MABI\RESTAccess\RESTAccess;
 use MABI\Testing\MiddlewareTestCase;
+use MABI\Testing\TableDefinition;
 
 include_once 'PHPUnit/Autoload.php';
 include_once __DIR__ . '/../../../tests/middleware/MiddlewareTestCase.php';
@@ -15,6 +16,23 @@ include_once __DIR__ . '/../middleware/SessionHeader.php';
 
 class SessionHeaderTest extends MiddlewareTestCase {
 
+  protected static $SESSION_111444 = array(
+    'created' => '1370663864',
+    'userId' => 11
+  );
+
+  protected static $USER_11 = array(
+    'id' => 11,
+    'created' => 1372375580,
+    'firstName' => 'Photis',
+    'lastName' => 'Patriotis',
+    'email' => 'ppatriotis@gmail.com',
+    'passHash' => '604cefb585491865043db59f5f200c08af016dc636bcb37c858199e20f082c10',
+    // result of: hash_hmac('sha256', '123', 'salt4456');
+    'salt' => 'salt4456',
+    'lastAccessed' => 1379430989
+  );
+
   public function testCall() {
     $middleware = new SessionHeader();
 
@@ -22,20 +40,31 @@ class SessionHeaderTest extends MiddlewareTestCase {
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
 
-    $this->dataConnectionMock->expects($this->once())
+    $this->dataConnectionMock->expects($this->exactly(2))
       ->method('findOneByField')
-      ->with('id', 111444, 'sessions', array())
-      ->will($this->returnValue(array(
-        'created' => '1370663864',
-        'user' => 'TEST-USER-ID-1'
-      )));
+      ->will($this->returnCallback(
+        function ($field, $value, $table) {
+          return $this->findOneByFieldCallback(
+            array(
+              'sessions' => new TableDefinition('id', 111444, self::$SESSION_111444),
+              'users' => new TableDefinition('id', 11, self::$USER_11)
+            ), $field, $value, $table);
+        }
+      ));
 
+    // Makes sure that lastAccessed was updated on the user
+    $user_11_mod = self::$USER_11;
+    $user_11_mod['lastAccessed'] = (new \DateTime('now'))->getTimestamp();
+    $this->dataConnectionMock->expects($this->once())
+      ->method('save')
+      ->with('users', $user_11_mod, 'id', 11);
+    
     $this->app->call();
 
     $this->assertEquals(200, $this->app->getResponse()->status());
     $this->assertNotEmpty($this->app->getRequest()->session);
     $this->assertInstanceOf('\MABI\Identity\Session', $this->app->getRequest()->session);
-    $this->assertEquals('TEST-USER-ID-1', $this->app->getRequest()->session->user);
+    $this->assertEquals(11, $this->app->getRequest()->session->userId);
   }
 
   public function testDocs() {

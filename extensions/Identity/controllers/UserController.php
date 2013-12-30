@@ -46,6 +46,7 @@ class UserController extends RESTModelController {
 
   /**
    * @return \MABI\EmailSupport\Template
+   * @endpoint ignore
    */
   public function getForgotEmailTemplate()
   {
@@ -77,19 +78,19 @@ class UserController extends RESTModelController {
    *
    * @throws \Slim\Exception\Stop
    */
-  public function _restPostCollection() {
+  public function post() {
     $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
 
     if (empty($this->model->password) || strlen($this->model->password) < 6) {
-      $this->getApp()->returnError('Password must be at least 6 characters', 400, 1004);
+      $this->getApp()->returnError(Errors::$SHORT_PASSWORD);
     }
 
     if (empty($this->model->email)) {
-      $this->getApp()->returnError('Email is required', 400, 1005);
+      $this->getApp()->returnError(Errors::$EMAIL_REQUIRED);
     }
 
     if ($this->model->findByField('email', $this->model->email)) {
-      $this->getApp()->returnError('An account with this email already exists', 409, 1006);
+      $this->getApp()->returnError(Errors::$EMAIL_EXISTS);
     }
 
     $this->model->insert();
@@ -115,13 +116,16 @@ class UserController extends RESTModelController {
    * @param $id string The id of the user you are trying to update
    */
   public function _restPutResource($id) {
+    /**
+     * @var $updatedUser \MABI\Identity\User
+     */
     $updatedUser = call_user_func($this->modelClass . '::init', $this->getApp());
     $updatedUser->loadFromExternalSource($this->getApp()->getRequest()->getBody());
     $updatedUser->setId($id);
 
     if (!empty($updatedUser->password)) {
       if (strlen($updatedUser->password) < 6) {
-        $this->getApp()->returnError('Password must be at least 6 characters', 400, 1004);
+        $this->getApp()->returnError(Errors::$SHORT_PASSWORD);
       }
 
       $updatedUser->passHash = Identity::passHash($updatedUser->password, $this->model->salt);
@@ -147,16 +151,16 @@ class UserController extends RESTModelController {
     }
 
     if (empty($updatedUser->email)) {
-      $this->getApp()->returnError('Email is required', 400, 1005);
+      $this->getApp()->returnError(Errors::$EMAIL_REQUIRED);
     }
 
     if ($updatedUser->email != $this->model->email && $updatedUser->findByField('email', $updatedUser->email)) {
-      $this->getApp()->returnError('An account with this email already exists', 409, 1006);
+      $this->getApp()->returnError(Errors::$EMAIL_EXISTS);
     }
 
     $updatedUser->created = $this->model->created;
     $updatedUser->salt = $this->model->salt;
-
+    $updatedUser->lastAccessed = $this->model->lastAccessed;
     $updatedUser->save();
     echo $updatedUser->outputJSON();
   }
@@ -164,16 +168,10 @@ class UserController extends RESTModelController {
 
   public function postForgotPassword() {
     if ($this->getEmailProvider() == null) {
-      $this->getApp()->returnError(array(
-        'message' => 'EmailProvider is not properly implemented.  PHPCore and Mandrill can be used as defaults.',
-        'httpcode' => 500
-      ));
+      $this->getApp()->returnError(Errors::$PASSWORD_EMAIL_PROVIDER);
     }
     if ($this->forgotEmailTemplate == null) {
-      $this->getApp()->returnError(array(
-        'message' => 'forgotEmailTemplate must be set.',
-        'httpcode' => 500
-      ));
+      $this->getApp()->returnError(Errors::$PASSWORD_EMAIL_TEMPLATE);
     }
 
     /**
@@ -183,17 +181,11 @@ class UserController extends RESTModelController {
     try {
       $email = $data->email;
     } catch (\Exception $e) {
-      $this->getApp()->returnError(array(
-        'message' => 'Email is required to reset password.',
-        'httpcode' => 400
-      ));
+      $this->getApp()->returnError(Errors::$PASSWORD_EMAIL_REQUIRED);
     }
     $user = User::init($this->getApp());
     if (!$user->findByField('email', $email)) {
-      $this->getApp()->returnError(array(
-        'message' => 'There is no user with this email.',
-        'httpcode' => 400
-      ));
+      $this->getApp()->returnError(Errors::$PASSWORD_NO_USER_EMAIL);
     }
 
     $user->lastAccessed = new \DateTime('now');

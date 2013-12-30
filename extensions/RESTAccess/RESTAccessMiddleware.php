@@ -2,6 +2,7 @@
 
 namespace MABI\RESTAccess;
 
+use MABI\DefaultAppErrors;
 use MABI\Middleware;
 
 include_once __DIR__ . '/../../Middleware.php';
@@ -19,7 +20,7 @@ abstract class RESTAccessMiddleware extends Middleware {
   public function call() {
     $callable = $this->getRouteCallable();
     if (empty($callable) || !$this->doesHaveAccessToMethod($callable[1])) {
-      $this->getApp()->returnError('Not properly authenticated for this route', 401, 1007);
+      $this->getApp()->returnError(DefaultAppErrors::$NOT_AUTHORIZED);
     }
 
     if (!empty($this->next)) {

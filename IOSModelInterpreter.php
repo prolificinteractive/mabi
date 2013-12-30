@@ -107,6 +107,10 @@ class IOSModelInterpreter {
         continue;
       }
 
+      if($rProperty->getName() == $mabiModel->getIdProperty()) {
+        continue;
+      }
+
       // Pulls out the type following the pattern @var <TYPE> from the doc comments of the property
       $varDocs = ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'var');
 

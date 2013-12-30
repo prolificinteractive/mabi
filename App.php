@@ -5,6 +5,7 @@ namespace MABI;
 include_once __DIR__ . '/Slim/Slim.php';
 include_once __DIR__ . '/Extension.php';
 include_once __DIR__ . '/ErrorResponse.php';
+include_once __DIR__ . '/IOSModelInterpreter.php';
 
 use \Slim\Slim;
 use Slim\Exception\Stop;

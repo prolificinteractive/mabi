@@ -47,7 +47,7 @@ class Session extends Model {
    * so that an extra request does not need to be made to the User controller. This is most likely wasteful for other
    * requests so only the userId field is filled.
    *
-   * @var User
+   * @var \MABI\Identity\User
    * @field external
    */
   public $user;

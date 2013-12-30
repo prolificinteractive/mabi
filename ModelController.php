@@ -36,7 +36,7 @@ class ModelController extends Controller {
    */
   public function __construct(Extension $extension) {
     if (empty($this->modelClass)) {
-      $this->modelClass = ReflectionHelper::getPrefixFromControllerClass(get_called_class());
+      $this->modelClass = '\\' . ReflectionHelper::getPrefixFromControllerClass(get_called_class());
     }
 
     if (empty($this->base)) {

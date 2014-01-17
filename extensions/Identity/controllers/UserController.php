@@ -116,20 +116,17 @@ class UserController extends RESTModelController {
    * @param $id string The id of the user you are trying to update
    */
   public function _restPutResource($id) {
-    /**
-     * @var $updatedUser \MABI\Identity\User
-     */
-    $updatedUser = call_user_func($this->modelClass . '::init', $this->getApp());
-    $updatedUser->loadFromExternalSource($this->getApp()->getRequest()->getBody());
-    $updatedUser->setId($id);
 
-    if (!empty($updatedUser->password)) {
-      if (strlen($updatedUser->password) < 6) {
+    $oldUser = $this->model;
+    $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
+
+    if (!empty($this->model->password)) {
+      if (strlen($this->model->password) < 6) {
         $this->getApp()->returnError(Errors::$SHORT_PASSWORD);
       }
 
-      $updatedUser->passHash = Identity::passHash($updatedUser->password, $this->model->salt);
-      $updatedUser->password = NULL;
+      $this->model->passHash = Identity::passHash($this->model->password, $oldUser->salt);
+      $this->model->password = NULL;
 
       /**
        * Deletes all sessions except for the current one for the user whose password changed
@@ -146,23 +143,20 @@ class UserController extends RESTModelController {
         $session->delete();
       }
     }
-    else {
-      $updatedUser->passHash = $this->model->passHash;
-    }
 
-    if (empty($updatedUser->email)) {
+    if (empty($this->model->email)) {
       $this->getApp()->returnError(Errors::$EMAIL_REQUIRED);
     }
 
-    if ($updatedUser->email != $this->model->email && $updatedUser->findByField('email', $updatedUser->email)) {
+    if ($this->model->email != $oldUser->email && $this->model->findByField('email', $this->model->email)) {
       $this->getApp()->returnError(Errors::$EMAIL_EXISTS);
     }
 
-    $updatedUser->created = $this->model->created;
-    $updatedUser->salt = $this->model->salt;
-    $updatedUser->lastAccessed = $this->model->lastAccessed;
-    $updatedUser->save();
-    echo $updatedUser->outputJSON();
+    $this->model->created = $oldUser->created;
+    $this->model->salt = $oldUser->salt;
+    $this->model->lastAccessed = $oldUser->lastAccessed;
+    $this->model->save();
+    echo $this->model->outputJSON();
   }
 
 

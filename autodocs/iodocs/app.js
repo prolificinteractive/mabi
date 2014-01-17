@@ -243,6 +243,7 @@ function processRequest(req, res, next) {
     };
 
     var reqQuery = req.body,
+        reqFiles = req.files,
         customHeaders = {},
         params = reqQuery.params || {},
         locations = reqQuery.locations || {},
@@ -306,7 +307,17 @@ function processRequest(req, res, next) {
         };
 
     if (['POST','DELETE','PUT'].indexOf(httpMethod) !== -1) {
-        if(config.jsonRequests) {
+        if(reqFiles) {
+            var files2Post = {};
+            for (var file in reqFiles.params) {
+                if (reqFiles.params.hasOwnProperty(file))
+                    files2Post[file] = reqFiles.params[file];
+            }
+            var headersAndParams = getFormDataForPost(params, files2Post);
+            for (var key in headersAndParams.headers) options.headers[key] = headersAndParams.headers[key];
+            requestBody = headersAndParams.postdata;
+        }
+        else if(config.jsonRequests) {
             // Extract body param if it's a json request, and just use it as the post body
             for( var param in params )
             {
@@ -607,7 +618,11 @@ function processRequest(req, res, next) {
             };
         });
 
-        if (requestBody) {
+        if (requestBody instanceof Array) {
+            for (var i = 0; i < requestBody.length; i++)apiCall.write(requestBody[i]);
+            apiCall.end();
+        }
+        else if (requestBody) {
             apiCall.end(requestBody, 'utf-8');
         }
         else {
@@ -711,4 +726,58 @@ if (!module.parent) {
     l.on('listening', function(err) {
         console.log("Express server listening on port %d", app.address().port);
     });
+}
+
+/**
+ Converts a list of parameters to forum data
+ - `fields` - a property map of key value pairs
+ - `files` - a list of property maps of content
+ - `type` - the type of file data
+ - `keyname` - the name of the key corresponding to the file
+ - `valuename` - the name of the value corresponding to the file
+ - `data` - the data of the file
+ */
+function getFormDataForPost(fields, files) {
+    function encodeFieldPart(boundary,name,value) {
+        var return_part = "--" + boundary + "\r\n";
+        return_part += "Content-Disposition: form-data; name=\"" + name + "\"\r\n\r\n";
+        return_part += value + "\r\n";
+        return return_part;
+    }
+    function encodeFilePart(boundary,type,name,filename) {
+        var return_part = "--" + boundary + "\r\n";
+        return_part += "Content-Disposition: form-data; name=\"" + name + "\"; filename=\"" + filename + "\"\r\n";
+        return_part += "Content-Type: " + type + "\r\n\r\n";
+        return return_part;
+    }
+    var boundary = '----------------------------' + (Math.ceil(Math.random() * 17592186044416 + 263882790666239).toString(16));
+    var post_data = [];
+
+    if (fields) {
+        for (var key in fields) {
+            var value = fields[key];
+            post_data.push(new Buffer(encodeFieldPart(boundary, key, value), 'ascii'));
+        }
+    }
+    if (files) {
+        for (var key in files) {
+            var value = files[key];
+            post_data.push(new Buffer(encodeFilePart(boundary, value.type, key, value.name), 'ascii'));
+            post_data.push(fs.readFileSync(value.path));
+        }
+    }
+    post_data.push(new Buffer("\r\n--" + boundary + "--"), 'ascii');
+    var length = 0;
+
+    for(var i = 0; i < post_data.length; i++) {
+        length += post_data[i].length;
+    }
+    var params = {
+        postdata : post_data,
+        headers : {
+            'Content-Type': 'multipart/form-data; boundary=' + boundary,
+            'Content-Length': length
+        }
+    };
+    return params;
 }

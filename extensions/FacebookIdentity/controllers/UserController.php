@@ -54,18 +54,18 @@ class UserController extends \MABI\Identity\UserController {
    *
    * @throws \Slim\Exception\Stop
    */
-  public function _restPostCollection() {
+  public function post() {
     if ($this->getFacebookOnly()) {
-      $this->getApp()->returnError('Facebook Connect is the only method allowed to create users', 401, 1001);
+      $this->getApp()->returnError(Errors::$FB_ONLY);
     }
     else {
-      parent::_restPostCollection();
+      parent::post();
     }
   }
 
   public function postForgotPassword() {
     if ($this->getFacebookOnly()) {
-      $this->getApp()->returnError('Facebook Connect is the only method allowed to create users', 401, 1001);
+      $this->getApp()->returnError(Errors::$FB_ONLY);
     }
     else {
       parent::postForgotPassword();
@@ -82,10 +82,10 @@ class UserController extends \MABI\Identity\UserController {
   public function getDocJSON(Parser $parser) {
     $doc = parent::getDocJSON($parser);
 
-    // Removes documentation for _restPostCollection and postForgotPassword if facebookOnly is set
+    // Removes documentation for post and postForgotPassword if facebookOnly is set
     if ($this->getFacebookOnly()) {
       foreach ($doc['methods'] as $k => $method) {
-        if ($method['InternalMethodName'] == '_restPostCollection' ||
+        if ($method['InternalMethodName'] == 'post' ||
           $method['InternalMethodName'] == 'postForgotPassword'
         ) {
           unset($doc['methods'][$k]);

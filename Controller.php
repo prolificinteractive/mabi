@@ -158,6 +158,7 @@ class Controller {
 
     $rClass = new \ReflectionClass($this);
     $rMethods = $rClass->getMethods(\ReflectionMethod::IS_PUBLIC);
+    $baseMethods = array();
     foreach ($rMethods as $rMethod) {
       // If there is a '@endpoint ignore' property, the function is not served as an endpoint
       if (in_array('ignore', ReflectionHelper::getDocDirective($rMethod->getDocComment(), 'endpoint'))) {
@@ -183,19 +184,33 @@ class Controller {
         $action = strtolower(substr($methodName, 6));
         $httpMethod = \Slim\Http\Request::METHOD_DELETE;
       }
-
+      
       if (!empty($action)) {
-        $slim->map("/{$this->base}/{$action}",
+        $slim->map("/{$this->base}/{$action}(/?)",
           array($this, 'preMiddleware'),
           array($this, '_runControllerMiddlewares'),
           array($this, 'preCallable'),
           array($this, $methodName))->via($httpMethod);
-        $slim->map("/{$this->base}/{$action}(/:param+)",
+        $slim->map("/{$this->base}/{$action}(/:param+)(/?)",
           array($this, 'preMiddleware'),
           array($this, '_runControllerMiddlewares'),
           array($this, 'preCallable'),
           array($this, $methodName))->via($httpMethod);
+        }
+      elseif(!empty($httpMethod)) {
+	      array_push($baseMethods, array(
+          'name' => $methodName,
+          'method' => $httpMethod
+        ));
       }
+    }
+
+    foreach ($baseMethods as $httpMethod) {
+      $slim->map("/{$this->base}(/?)",
+        array($this, 'preMiddleware'),
+        array($this, '_runControllerMiddlewares'),
+        array($this, 'preCallable'),
+        array($this, $httpMethod['name']))->via($httpMethod['method']);
     }
   }
 
@@ -272,9 +287,13 @@ class Controller {
         continue;
       }
       $action = strtolower($methodDoc['MethodName']);
-      $methodDoc['URI'] = "/{$this->base}/{$action}";
+      $methodDoc['URI'] = "/{$this->base}" . (empty($action) ? '' : "/{$action}");
       $methodDoc['Synopsis'] = $parser->parse(ReflectionHelper::getDocText($rMethod->getDocComment()));
       $methodDoc['parameters'] = $this->getDocParameters($rMethod);
+
+      if (empty($methodDoc['MethodName'])) {
+        $methodDoc['MethodName'] = ucwords($this->base);
+      }
 
       // Allow controller middlewares to modify the documentation for this method
       if (!empty($this->middlewares)) {

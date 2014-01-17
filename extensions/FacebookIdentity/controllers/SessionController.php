@@ -104,7 +104,7 @@ class SessionController extends \MABI\Identity\SessionController {
     $userModel = call_user_func($this->userModelClass . '::init', $this->getApp());
 
     if ($userModel->findByField('email', $fbData->email)) {
-      $this->getApp()->returnError('An account with this email already exists', 409, 1006);
+      $this->getApp()->returnError(\MABI\Identity\Errors::$EMAIL_EXISTS);
     }
 
     $userModel->firstName = $fbData->first_name;
@@ -156,15 +156,15 @@ class SessionController extends \MABI\Identity\SessionController {
    *
    * @throws \Slim\Exception\Stop
    */
-  function _restPostCollection() {
+  function post() {
     $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
 
     if (empty($this->model->accessToken)) {
       if ($this->getFacebookOnly()) {
-        $this->getApp()->returnError('An authorization token is required to create a session', 400, 1000);
+        $this->getApp()->returnError(Errors::$TOKEN_REQUIRED);
       }
 
-      parent::_restPostCollection();
+      parent::post();
     }
     else {
       // get facebook info and login or create a user

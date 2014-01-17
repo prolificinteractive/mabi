@@ -13,6 +13,8 @@ class SessionHeader extends Middleware {
    * @var \MABI\Identity\Session
    */
   public $session = NULL;
+  
+  protected $sessionModelClass = '\MABI\Identity\Session';
 
   /**
    * Call
@@ -24,8 +26,8 @@ class SessionHeader extends Middleware {
    */
   public function call() {
     $sessionId = $this->getApp()->getRequest()->headers('SESSION');
-
-    $foundSession = Session::init($this->getApp());
+    
+    $foundSession = call_user_func($this->sessionModelClass . '::init', $this->getApp());
     if($foundSession->findById($sessionId)) {
       $this->session = $foundSession;
       $this->getApp()->getRequest()->session = $this->session;
@@ -36,6 +38,8 @@ class SessionHeader extends Middleware {
       $user->findById($this->session->userId);
       $user->lastAccessed = $now;
       $user->save();
+
+      $this->session->user = $user;
     }
 
     if (!empty($this->next)) {

@@ -4,6 +4,7 @@ namespace MABI\Testing;
 
 include_once __DIR__ . '/../../middleware/AnonymousIdentifier.php';
 include_once __DIR__ . '/../../DirectoryControllerLoader.php';
+include_once __DIR__ . '/../../DirectoryModelLoader.php';
 include_once __DIR__ . '/../AppTestCase.php';
 
 class MiddlewareTestCase extends AppTestCase {
@@ -37,6 +38,8 @@ class MiddlewareTestCase extends AppTestCase {
    */
   public function setUpApp($env = array(), $middlewares = array()) {
     parent::setUpApp($env);
+
+    $this->app->setModelLoaders(array(new \MABI\DirectoryModelLoader(__DIR__ . '/../TestApp/TestModelDir', 'mabiTesting')));
 
     $dirControllerLoader = new \MABI\DirectoryControllerLoader(__DIR__ . '/../TestApp/TestControllerDir', $this->app,
       'mabiTesting');

@@ -11,9 +11,9 @@ include_once __DIR__ . '/RESTAccessMiddleware.php';
 class PostOnly extends RESTAccessMiddleware {
   protected function doesHaveAccessToMethod($methodName) {
     switch ($methodName) {
-      case '_restGetCollection':
-      case '_restPutCollection':
-      case '_restDeleteCollection':
+      case 'get':
+      case 'put':
+      case 'delete':
       case '_restGetResource':
       case '_restPutResource':
       case '_restDeleteResource':

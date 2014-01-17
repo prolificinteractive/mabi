@@ -2,6 +2,7 @@
 
 namespace MABI\Identity\Middleware;
 
+use MABI\DefaultAppErrors;
 use MABI\Middleware;
 
 include_once __DIR__ . '/../../../Middleware.php';
@@ -19,7 +20,7 @@ class SessionOnlyAccess extends Middleware {
   public function call() {
     // A session is required to access this call
     if (empty($this->getApp()->getRequest()->session)) {
-      $this->getApp()->returnError('Not properly authenticated for this route', 401, 1007);
+      $this->getApp()->returnError(DefaultAppErrors::$NOT_AUTHORIZED);
     }
 
     if (!empty($this->next)) {

@@ -3,12 +3,13 @@
 namespace MABI\Middleware;
 
 use MABI\Middleware;
+use MABI\DefaultAppErrors;
 
 include_once __DIR__ . '/../Middleware.php';
 
 class NoAccess extends Middleware {
   public function call() {
-    $this->getApp()->returnError('Not properly authenticated for this route', 401, 1007);
+    $this->getApp()->returnError(DefaultAppErrors::$NOT_AUTHORIZED);
   }
 
   public function documentMethod(\ReflectionClass $rClass, \ReflectionMethod $rMethod, array &$methodDoc) {

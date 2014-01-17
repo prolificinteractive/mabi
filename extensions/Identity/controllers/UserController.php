@@ -117,7 +117,8 @@ class UserController extends RESTModelController {
    */
   public function _restPutResource($id) {
 
-    $oldUser = $this->model;
+    $oldUser = call_user_func($this->modelClass . '::init', $this->getApp());
+    $oldUser->findById($id);
     $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
 
     if (!empty($this->model->password)) {

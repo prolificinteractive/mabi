@@ -2,9 +2,12 @@
 
 namespace MABI\Middleware;
 
+use MABI\DefaultAppErrors;
+use MABI\Middleware;
+
 include_once __DIR__ . '/../Middleware.php';
 
-class APIApplicationOnlyAccess extends \MABI\Middleware {
+class APIApplicationOnlyAccess extends Middleware {
   /**
    * Call
    *
@@ -15,7 +18,7 @@ class APIApplicationOnlyAccess extends \MABI\Middleware {
    */
   public function call() {
     if (empty($this->getApp()->getRequest()->apiApplication)) {
-      $this->getApp()->returnError('Not properly authenticated for this route', 401, 1007);
+      $this->getApp()->returnError(DefaultAppErrors::$NOT_AUTHORIZED);
     }
 
     if (!empty($this->next)) {

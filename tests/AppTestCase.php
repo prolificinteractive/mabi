@@ -3,10 +3,12 @@
 namespace MABI\Testing;
 
 use MABI\App;
+use mabiTesting\Errors;
 
 include_once 'PHPUnit/Autoload.php';
 include_once __DIR__ . '/../App.php';
 include_once __DIR__ . '/MockDataConnection.php';
+include_once __DIR__ . '/TestApp/Errors.php';
 
 class TableDefinition {
   /**
@@ -83,6 +85,7 @@ class AppTestCase extends \PHPUnit_Framework_TestCase {
     );
 
     $this->app->addDataConnection('default', $this->dataConnectionMock);
+    $this->app->getErrorResponseDictionary()->overrideErrorResponses(new Errors());
   }
 
   protected function returnTableValue($field, $value, TableDefinition $tableDefinition) {

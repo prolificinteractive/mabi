@@ -2,6 +2,7 @@
 
 namespace MABI\Identity\Middleware;
 
+use MABI\DefaultAppErrors;
 use MABI\Middleware;
 use MABI\Identity\Session;
 use MABI\ReflectionHelper;
@@ -41,7 +42,7 @@ class RESTOwnerOnlyAccess extends Middleware {
 
     // A session is required to access these objects
     if (!isset($this->getApp()->getRequest()->session)) {
-      $this->getApp()->returnError('Not properly authenticated for this route', 401, 1007);
+      $this->getApp()->returnError(DefaultAppErrors::$NOT_AUTHORIZED);
     }
 
     /**
@@ -66,7 +67,7 @@ class RESTOwnerOnlyAccess extends Middleware {
       $session->userId != $restController->getModel()->{$ownerProperty}
     ) {
       // Don't give access to endpoint if the sessions don't match
-      $this->getApp()->returnError('Not properly authenticated for this route', 401, 1007);
+      $this->getApp()->returnError(DefaultAppErrors::$NOT_AUTHORIZED);
     }
 
     if (!empty($this->next)) {

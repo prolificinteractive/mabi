@@ -203,6 +203,7 @@ class UserControllerTest extends AppTestCase {
       }));
 
     $userDateUpdate = self::$USER_122;
+    $now = new \DateTime('now');
     $userDateUpdate['lastAccessed'] = $now->getTimestamp();
     $userOtherUpdate = self::$USER_122;
     $userOtherUpdate['firstName'] = 'photis';

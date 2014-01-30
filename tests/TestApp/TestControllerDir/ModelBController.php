@@ -24,4 +24,8 @@ class ModelBController extends \MABI\RESTModelController {
   public function restDeleteTestFunc() {
     return 'restDeleteTestFunc called';
   }
+
+  public function restGetTestParam($id, $param) {
+    echo $id . $param[0];
+  }
 }

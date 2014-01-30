@@ -160,7 +160,7 @@ class RESTModelController extends ModelController {
           array($this, '_runControllerMiddlewares'),
           array($this, 'preCallable'),
           array($this, $methodName))->via($httpMethod);
-        $slim->map("/{$this->base}/:id/{$action}(/:param)(/?)",
+        $slim->map("/{$this->base}/:id/{$action}(/:param+)(/?)",
           array($this, 'preMiddleware'),
           array($this, '_readModel'),
           array($this, '_runControllerMiddlewares'),

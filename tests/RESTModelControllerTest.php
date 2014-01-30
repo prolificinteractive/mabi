@@ -144,6 +144,20 @@ class RESTModelControllerTest extends SampleAppTestCase {
     $this->assertEquals(200, $this->app->getResponse()->status());
     $this->assertEquals('', $this->app->getResponse()->body());
 
+    $randNum = rand(0, 100);
+    // Test custom get with params
+    $this->setUpRESTApp(array('PATH_INFO' => '/modelb/1/testparam/abcd' . $randNum));
+    $this->dataConnectionMock->expects($this->once())
+      ->method('findOneByField')
+      ->with('id', 1, 'modelbs')
+      ->will($this->returnValue(array(
+        'modelBId' => 1,
+        'name'     => 'test'
+      )));
+    $this->app->call();
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $this->assertEquals('1abcd' . $randNum, $this->app->getResponse()->body());
+
     // Test custom post
     $this->setUpRESTApp(array('REQUEST_METHOD' => 'POST', 'PATH_INFO' => '/modelb/1/testfunc'));
     $this->dataConnectionMock->expects($this->once())

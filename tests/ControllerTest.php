@@ -66,6 +66,13 @@ class ControllerTest extends SampleAppTestCase {
     $this->assertEquals(200, $this->app->getResponse()->status());
     $this->assertEquals('', $this->app->getResponse()->body());
 
+    $randNum = rand(0, 100);
+    // Test custom parameter with get
+    $this->setUpControllerApp(array('PATH_INFO' => '/justa/testparam/abcd' . $randNum));
+    $this->app->call();
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $this->assertEquals('abcd' . $randNum, $this->app->getResponse()->body());
+
     // Test custom post
     $this->setUpControllerApp(array('REQUEST_METHOD' => 'POST', 'PATH_INFO' => '/justa/testfunc'));
     $this->controllerMock->expects($this->once())

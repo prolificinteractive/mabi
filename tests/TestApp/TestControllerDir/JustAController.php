@@ -21,6 +21,10 @@ class JustAController extends Controller {
     echo 'restGetTestFunc called';
   }
 
+  public function getTestParam($param) {
+    echo $param[0];
+  }
+
   public function postTestFunc() {
     return 'restPostTestFunc called';
   }

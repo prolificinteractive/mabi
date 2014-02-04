@@ -54,7 +54,8 @@ class SessionHeaderTest extends MiddlewareTestCase {
 
     // Makes sure that lastAccessed was updated on the user
     $user_11_mod = self::$USER_11;
-    $user_11_mod['lastAccessed'] = (new \DateTime('now'))->getTimestamp();
+    $today = new \DateTime('now');
+    $user_11_mod['lastAccessed'] = $today->getTimestamp();
     $this->dataConnectionMock->expects($this->once())
       ->method('save')
       ->with('users', $user_11_mod, 'id', 11);

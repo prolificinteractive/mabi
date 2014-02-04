@@ -17,7 +17,7 @@ class SessionControllerTest extends AppTestCase {
    */
   protected $fbIdentityExtension;
 
-  public function setUpApp($env = array(), $fbId, $fbEmail, $facebookOnly = FALSE) {
+  public function setUpSessionApp($env = array(), $fbId, $fbEmail, $facebookOnly = FALSE) {
     parent::setUpApp($env);
 
     $fbData = new \stdClass();
@@ -33,7 +33,7 @@ class SessionControllerTest extends AppTestCase {
   }
 
   public function testSuccessfulSessionPostCollection() {
-    $this->setUpApp(array(
+    $this->setUpSessionApp(array(
       'REQUEST_METHOD' => 'POST',
       'slim.input' => '{"accessToken":"abcdfacebooktesttokenefgh"}',
       'PATH_INFO' => '/sessions'
@@ -65,7 +65,7 @@ class SessionControllerTest extends AppTestCase {
   }
 
   public function testSuccessfulSessionPostCreateUserCollection() {
-    $this->setUpApp(array(
+    $this->setUpSessionApp(array(
       'REQUEST_METHOD' => 'POST',
       'slim.input' => '{"accessToken":"abcdfacebooktesttokenefgh"}',
       'PATH_INFO' => '/sessions'
@@ -92,7 +92,7 @@ class SessionControllerTest extends AppTestCase {
   }
 
   public function testSessionDocumentation() {
-    $this->setUpApp(array(
+    $this->setUpSessionApp(array(
       'REQUEST_METHOD' => 'POST',
       'slim.input' => '{"accessToken":"abcdfacebooktesttokenefgh"}',
       'PATH_INFO' => '/sessions'

@@ -41,7 +41,7 @@ class UserController extends \MABI\Identity\UserController {
   /**
    * @docs-name Create New User
    *
-   * Creates a new user.  Sending an `email` and `password` is required. Any other fields modifiable fields may be
+   * Creates a new user.  Sending an `email` and `password` is required. Any other modifiable fields may be
    * included and the user will be initiated with them.
    *
    * Facebook Connect users cannot be created through this endpoint, so if the facebookOnly flag is set, this method

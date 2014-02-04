@@ -71,7 +71,7 @@ class UserController extends RESTModelController {
   /**
    * @docs-name Create New User
    *
-   * Creates a new user.  Sending an `email` and `password` is required. Any other fields modifiable fields may be
+   * Creates a new user.  Sending an `email` and `password` is required. Any other modifiable fields may be
    * included and the user will be initiated with them.
    *
    * Sample Request:

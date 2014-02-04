@@ -41,16 +41,39 @@ class UserController extends \MABI\Identity\UserController {
   /**
    * @docs-name Create New User
    *
-   * Creates a new user. Will pass back the created user model, and will also create a new session (in newSessionId)
-   * so that the user may authenticate immediately.
+   * Creates a new user.  Sending an `email` and `password` is required. Any other fields modifiable fields may be
+   * included and the user will be initiated with them.
    *
    * Facebook Connect users cannot be created through this endpoint, so if the facebookOnly flag is set, this method
    * will be disabled.
    *
-   * @docs-param firstName string body optional The first name of the new user
-   * @docs-param lastName string body optional The last name of the new user
-   * @docs-param email string body required The email address of the new user. This must be unique in the database.
-   * @docs-param password string body required The password for the new user. Please see requirements in the Model.
+   * Sample Request:
+   * ~~~
+   * {
+   *     "firstName": "optional",
+   *     "lastName": "optional",
+   *     "email": "this@isrequir.ed",
+   *     "password": "required"
+   * }
+   * ~~~
+   *
+   * The response returns the created user model. It creates a session automatically and returns `newSessionId` which
+   * allows you to immediately begin making authenticated calls. The `userId` of the authenticated user is also
+   * returned.
+   *
+   * Sample Response:
+   * ~~~
+   * {
+   *     "userId": "5159bfde68dca0c173f0939f",
+   *     "created": 1391479853,
+   *     "firstName": "optional",
+   *     "lastName": "optional",
+   *     "email": "this@isrequir.ed",
+   *     "newSessionId": "52f04c2d5a8b496a3f000001"
+   * }
+   * ~~~
+   *
+   * @docs-param user string body required A user object to create in the database
    *
    * @throws \Slim\Exception\Stop
    */
@@ -63,6 +86,18 @@ class UserController extends \MABI\Identity\UserController {
     }
   }
 
+  /**
+   * @docs-name  Email forgot password token
+   *
+   * json should be passed in in the following form. Does not work with Facebook Connect
+   * ~~~
+   * {
+   *     "email": string
+   * }
+   * ~~~
+   *
+   * @docs-param email string body required json object containing a user's email
+   */
   public function postForgotPassword() {
     if ($this->getFacebookOnly()) {
       $this->getApp()->returnError(Errors::$FB_ONLY);

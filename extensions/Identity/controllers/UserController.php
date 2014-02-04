@@ -71,8 +71,34 @@ class UserController extends RESTModelController {
   /**
    * @docs-name Create New User
    *
-   * Creates a new user. Will pass back the created user model, and will also create a new session (in newSessionId)
-   * so that the user may authenticate immediately.
+   * Creates a new user.  Sending an `email` and `password` is required. Any other modifiable fields may be
+   * included and the user will be initiated with them.
+   *
+   * Sample Request:
+   * ~~~
+   * {
+   *     "firstName": "optional",
+   *     "lastName": "optional",
+   *     "email": "this@isrequir.ed",
+   *     "password": "required"
+   * }
+   * ~~~
+   *
+   * The response returns the created user model. It creates a session automatically and returns `newSessionId` which
+   * allows you to immediately begin making authenticated calls. The `userId` of the authenticated user is also
+   * returned.
+   *
+   * Sample Response:
+   * ~~~
+   * {
+   *     "userId": "5159bfde68dca0c173f0939f",
+   *     "created": 1391479853,
+   *     "firstName": "optional",
+   *     "lastName": "optional",
+   *     "email": "this@isrequir.ed",
+   *     "newSessionId": "52f04c2d5a8b496a3f000001"
+   * }
+   * ~~~
    *
    * @docs-param user string body required A user object to create in the database
    *
@@ -109,7 +135,19 @@ class UserController extends RESTModelController {
   }
 
   /**
-   * todo: docs
+   * Updates a user's info.  All fields will be replaced with the values given.  Empty fields will be set to null.
+   *
+   * ~~~
+   * {
+   *     "userId": userId,
+   *     "created": timeDate,
+   *     "firstName": string,
+   *     "lastName": string,
+   *     "email": string,
+   *     "password": null,
+   *     "newSessionId": null,
+   * }
+   * ~~~
    *
    * @docs-param user string body required A user object to create in the database
    *
@@ -159,7 +197,18 @@ class UserController extends RESTModelController {
     echo $this->model->outputJSON();
   }
 
-
+  /**
+   * @docs-name  Email forgot password token
+   *
+   * json should be passed in in the following form
+   * ~~~
+   * {
+   *     "email": string
+   * }
+   * ~~~
+   *
+   * @docs-param email string body required json object containing a user's email
+   */
   public function postForgotPassword() {
     if ($this->getEmailProvider() == null) {
       $this->getApp()->returnError(Errors::$PASSWORD_EMAIL_PROVIDER);

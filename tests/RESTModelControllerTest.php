@@ -28,8 +28,8 @@ class RESTModelControllerTest extends SampleAppTestCase {
     // todo: assert that generated rest model controller carried over middlewares
   }
 
-  private function setUpRESTApp($env = array()) {
-    $this->setUpApp($env);
+  private function setUpRESTApp($env = array(), $withCache = false) {
+    $this->setUpApp($env, $withCache);
 
     $dirControllerLoader = new \MABI\DirectoryControllerLoader('TestApp/TestControllerDir', $this->app, 'mabiTesting');
 
@@ -201,6 +201,47 @@ class RESTModelControllerTest extends SampleAppTestCase {
       )));
     $this->controllerMock->expects($this->once())
       ->method('restPutTestFunc')
+      ->will($this->returnValue('test'));
+    $this->app->call();
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $this->assertEquals('', $this->app->getResponse()->body());
+  }
+
+  function testCache() {
+    // Make first call to load all of the caches
+    $this->setUpRESTApp(array('PATH_INFO' => '/modelb/1/testfunc'), true);
+    $this->app->getCacheRepository('system')->flush();
+    $this->dataConnectionMock->expects($this->once())
+      ->method('findOneByField')
+      ->with('id', 1, 'modelbs')
+      ->will($this->returnValue(array(
+        'modelBId' => 1,
+        'name' => 'test'
+      )));
+    $this->controllerMock->expects($this->once())
+      ->method('restGetTestFunc')
+      ->will($this->returnValue('test'));
+    $this->app->call();
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $this->assertEquals('', $this->app->getResponse()->body());
+
+    /**
+     * @var $cachedRoutes \MABI\CachedRoute[]
+     */
+    $cacheKey = 'ModelBController.MABI\RESTModelController::loadRoutes';
+    $this->assertNotEmpty($this->app->getCacheRepository('system')->get($cacheKey));
+
+    // Call app again to make sure cache calls were run
+    $this->setUpRESTApp(array('PATH_INFO' => '/modelb/1/testfunc'), true);
+    $this->dataConnectionMock->expects($this->once())
+      ->method('findOneByField')
+      ->with('id', 1, 'modelbs')
+      ->will($this->returnValue(array(
+        'modelBId' => 1,
+        'name' => 'test'
+      )));
+    $this->controllerMock->expects($this->once())
+      ->method('restGetTestFunc')
       ->will($this->returnValue('test'));
     $this->app->call();
     $this->assertEquals(200, $this->app->getResponse()->status());

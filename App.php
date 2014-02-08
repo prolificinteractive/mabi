@@ -6,9 +6,13 @@ include_once __DIR__ . '/Slim/Slim.php';
 include_once __DIR__ . '/Extension.php';
 include_once __DIR__ . '/ErrorResponse.php';
 include_once __DIR__ . '/DefaultAppErrors.php';
+include_once __DIR__ . '/vendor/autoload.php';
 
 use \Slim\Slim;
 use Slim\Exception\Stop;
+use Illuminate\Cache\FileStore;
+use Illuminate\Cache\Repository;
+use Illuminate\Filesystem\Filesystem;
 
 Slim::registerAutoloader();
 
@@ -54,6 +58,11 @@ class App extends Extension {
   protected $errorResponseDictionary = NULL;
 
   /**
+   * @var \Illuminate\Cache\Repository[]
+   */
+  protected $cacheRepositories = array();
+
+  /**
    * @return \MABI\ErrorResponseDictionary
    */
   public function getErrorResponseDictionary() {
@@ -85,6 +94,34 @@ class App extends Extension {
     $this->slim = new Slim();
     $this->errorResponseDictionary = new DefaultAppErrors();
     parent::__construct($this);
+  }
+
+  /**
+   * todo: docs
+   *
+   * @param $name    string
+   * @param $driver  string
+   * @param $config  mixed
+   */
+  function addCacheRepository($name, $driver, $config) {
+    switch (strtolower($driver)) {
+      case "file":
+        $cacheStore = new FileStore(new Filesystem(), $config['path']);
+        break;
+      // todo: add apc, etc.
+      default:
+        return;
+    }
+    $this->cacheRepositories[$name] = new Repository($cacheStore);
+  }
+
+  /**
+   * @param $name
+   *
+   * @return \Illuminate\Cache\Repository
+   */
+  public function getCacheRepository($name) {
+    return array_key_exists($name, $this->cacheRepositories) ? $this->cacheRepositories[$name] : null;
   }
 
   /**

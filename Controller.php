@@ -6,6 +6,18 @@ include_once __DIR__ . '/App.php';
 include_once __DIR__ . '/Inflector.php';
 include_once __DIR__ . '/Middleware.php';
 
+class CachedRoute {
+  public $path;
+  public $method;
+  public $httpMethod;
+
+  function __construct($path, $method, $httpMethod) {
+    $this->httpMethod = $httpMethod;
+    $this->method     = $method;
+    $this->path       = $path;
+  }
+}
+
 /**
  * Defines a controller that serves endpoints routed based on its contained function names.
  *
@@ -150,11 +162,39 @@ class Controller {
   public function preCallable() {
   }
 
+  protected function mapRoute(\Slim\Slim $slim, $path, $methodName, $httpMethod, &$cachedRoutes = NULL) {
+    $slim->map($path,
+      array($this, 'preMiddleware'),
+      array($this, '_runControllerMiddlewares'),
+      array($this, 'preCallable'),
+      array($this, $methodName))->via($httpMethod);
+
+    if (is_array($cachedRoutes)) {
+      $cachedRoutes[] = new CachedRoute($path, $methodName, $httpMethod);
+    }
+  }
+
   /**
    * @param $slim \Slim\Slim
    */
   public function loadRoutes($slim) {
     $this->configureMiddlewares($this->middlewares);
+
+    /**
+     * @var $cachedRoutes CachedRoute[]
+     */
+    $cacheKey = get_called_class() . '.' . get_class() . '::loadRoutes';
+    if (($systemCache = $this->getApp()->getCacheRepository('system')) != NULL &&
+      ($cachedRoutes = $systemCache->get($cacheKey)) != NULL
+    ) {
+      // Get routes from cache
+      foreach($cachedRoutes as $cachedRoute) {
+        $this->mapRoute($slim, $cachedRoute->path, $cachedRoute->method, $cachedRoute->httpMethod);
+      }
+      return;
+    } else {
+      $cachedRoutes = array();
+    }
 
     $rClass = new \ReflectionClass($this);
     $rMethods = $rClass->getMethods(\ReflectionMethod::IS_PUBLIC);
@@ -184,33 +224,25 @@ class Controller {
         $action = strtolower(substr($methodName, 6));
         $httpMethod = \Slim\Http\Request::METHOD_DELETE;
       }
-      
+
       if (!empty($action)) {
-        $slim->map("/{$this->base}/{$action}(/?)",
-          array($this, 'preMiddleware'),
-          array($this, '_runControllerMiddlewares'),
-          array($this, 'preCallable'),
-          array($this, $methodName))->via($httpMethod);
-        $slim->map("/{$this->base}/{$action}(/:param+)(/?)",
-          array($this, 'preMiddleware'),
-          array($this, '_runControllerMiddlewares'),
-          array($this, 'preCallable'),
-          array($this, $methodName))->via($httpMethod);
-        }
-      elseif(!empty($httpMethod)) {
-	      array_push($baseMethods, array(
-          'name' => $methodName,
+        $this->mapRoute($slim, "/{$this->base}/{$action}(/?)", $methodName, $httpMethod, $cachedRoutes);
+        $this->mapRoute($slim, "/{$this->base}/{$action}(/:param+)(/?)", $methodName, $httpMethod, $cachedRoutes);
+      }
+      elseif (!empty($httpMethod)) {
+        array_push($baseMethods, array(
+          'name'   => $methodName,
           'method' => $httpMethod
         ));
       }
     }
 
     foreach ($baseMethods as $httpMethod) {
-      $slim->map("/{$this->base}(/?)",
-        array($this, 'preMiddleware'),
-        array($this, '_runControllerMiddlewares'),
-        array($this, 'preCallable'),
-        array($this, $httpMethod['name']))->via($httpMethod['method']);
+      $this->mapRoute($slim, "/{$this->base}(/?)", $httpMethod['name'], $httpMethod['method'], $cachedRoutes);
+    }
+
+    if ($systemCache != NULL) {
+      $systemCache->forever($cacheKey, $cachedRoutes);
     }
   }
 

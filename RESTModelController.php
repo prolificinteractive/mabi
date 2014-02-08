@@ -80,6 +80,19 @@ class RESTModelController extends ModelController {
     $this->model->findById($route->getParam('id'));
   }
 
+  private function mapRestRoute(\Slim\Slim $slim, $path, $methodName, $httpMethod, &$cachedRoutes = NULL) {
+    $slim->map($path,
+      array($this, 'preMiddleware'),
+      array($this, '_readModel'),
+      array($this, '_runControllerMiddlewares'),
+      array($this, 'preCallable'),
+      array($this, $methodName))->via($httpMethod);
+
+    if (is_array($cachedRoutes)) {
+      $cachedRoutes[] = new CachedRoute($path, $methodName, $httpMethod);
+    }
+  }
+
   protected function addStandardRestRoute(\Slim\Slim $slim, $httpMethod) {
     $methodName = '_rest' . ucwords(strtolower($httpMethod)) . 'Resource';
 
@@ -89,12 +102,7 @@ class RESTModelController extends ModelController {
       return;
     }
 
-    $slim->map("/{$this->base}/:id(/?)",
-      array($this, 'preMiddleware'),
-      array($this, '_readModel'),
-      array($this, '_runControllerMiddlewares'),
-      array($this, 'preCallable'),
-      array($this, $methodName))->via($httpMethod);
+    $this->mapRestRoute($slim, "/{$this->base}/:id(/?)", $methodName, $httpMethod);
   }
 
   /**
@@ -102,6 +110,22 @@ class RESTModelController extends ModelController {
    */
   public function loadRoutes($slim) {
     parent::loadRoutes($slim);
+
+    /**
+     * @var $cachedRoutes CachedRoute[]
+     */
+    $cacheKey = get_called_class() . '.' . get_class() . '::loadRoutes';
+    if (($systemCache = $this->getApp()->getCacheRepository('system')) != NULL &&
+      ($cachedRoutes = $systemCache->get($cacheKey)) != NULL
+    ) {
+      // Get routes from cache
+      foreach($cachedRoutes as $cachedRoute) {
+        $this->mapRestRoute($slim, $cachedRoute->path, $cachedRoute->method, $cachedRoute->httpMethod);
+      }
+      return;
+    } else {
+      $cachedRoutes = array();
+    }
 
     /**
      * Automatically generates routes for the following
@@ -116,9 +140,9 @@ class RESTModelController extends ModelController {
      */
 
     // todo: add API versioning
-    $this->addStandardRestRoute($slim, \Slim\Http\Request::METHOD_GET);
-    $this->addStandardRestRoute($slim, \Slim\Http\Request::METHOD_PUT);
-    $this->addStandardRestRoute($slim, \Slim\Http\Request::METHOD_DELETE);
+    $this->addStandardRestRoute($slim, \Slim\Http\Request::METHOD_GET, $cachedRoutes);
+    $this->addStandardRestRoute($slim, \Slim\Http\Request::METHOD_PUT, $cachedRoutes);
+    $this->addStandardRestRoute($slim, \Slim\Http\Request::METHOD_DELETE, $cachedRoutes);
 
     /**
      * Gets other automatically generated routes following the pattern:
@@ -154,19 +178,13 @@ class RESTModelController extends ModelController {
       }
 
       if (!empty($action)) {
-        $slim->map("/{$this->base}/:id/{$action}(/?)",
-          array($this, 'preMiddleware'),
-          array($this, '_readModel'),
-          array($this, '_runControllerMiddlewares'),
-          array($this, 'preCallable'),
-          array($this, $methodName))->via($httpMethod);
-        $slim->map("/{$this->base}/:id/{$action}(/:param+)(/?)",
-          array($this, 'preMiddleware'),
-          array($this, '_readModel'),
-          array($this, '_runControllerMiddlewares'),
-          array($this, 'preCallable'),
-          array($this, $methodName))->via($httpMethod);
+        $this->mapRestRoute($slim, "/{$this->base}/:id/{$action}(/?)", $methodName, $httpMethod, $cachedRoutes);
+        $this->mapRestRoute($slim, "/{$this->base}/:id/{$action}(/:param+)(/?)", $methodName, $httpMethod, $cachedRoutes);
       }
+    }
+
+    if ($systemCache != NULL) {
+      $systemCache->forever($cacheKey, $cachedRoutes);
     }
   }
 

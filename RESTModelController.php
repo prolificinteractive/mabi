@@ -116,8 +116,7 @@ class RESTModelController extends ModelController {
      */
     $cacheKey = get_called_class() . '.' . get_class() . '::loadRoutes';
     if (($systemCache = $this->getApp()->getCacheRepository('system')) != NULL &&
-      ($cachedRoutes = $systemCache->get($cacheKey)) != NULL
-    ) {
+      is_array($cachedRoutes = $systemCache->get($cacheKey))) {
       // Get routes from cache
       foreach($cachedRoutes as $cachedRoute) {
         $this->mapRestRoute($slim, $cachedRoute->path, $cachedRoute->method, $cachedRoute->httpMethod);

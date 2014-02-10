@@ -96,6 +96,10 @@ class App extends Extension {
     parent::__construct($this);
   }
 
+  public function setMiddlewareDirectories($middlewareDirectories) {
+    parent::setMiddlewareDirectories(array_merge($this->middlewareDirectories, $middlewareDirectories));
+  }
+
   /**
    * todo: docs
    *

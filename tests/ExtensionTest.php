@@ -22,21 +22,10 @@ class ExtensionTest extends AppTestCase {
 
   function testSetMiddlewareDirectories() {
     $app = new App();
-    $middlewareDirs = array('/testdir/1', '/testdir/2');
+    $middlewareDirs = array('TestApp/Middleware');
     $app->setMiddlewareDirectories($middlewareDirs);
-    $this->assertEquals($middlewareDirs, $app->getMiddlewareDirectories());
-  }
 
-  function testGetMiddlewareDirectories() {
-    $app = new App();
-    $newExt = new Extension($app);
-    $app->setMiddlewareDirectories(array('/testdir/1', '/testdir/2'));
-    $newExt->setMiddlewareDirectories(array('/testdir/3'));
-    $app->addExtension($newExt);
-    $this->assertCount(3, $app->getMiddlewareDirectories());
-    $this->assertContains('/testdir/1', $app->getMiddlewareDirectories());
-    $this->assertContains('/testdir/2', $app->getMiddlewareDirectories());
-    $this->assertContains('/testdir/3', $app->getMiddlewareDirectories());
+    // todo: test missing middleware
   }
 
   function testGetConfig() {

@@ -15,8 +15,8 @@ class SessionControllerTest extends AppTestCase {
    */
   protected $identityExtension;
 
-  public function setUpApp($env = array()) {
-    parent::setUpApp($env);
+  public function setUpApp($env = array(), $withCache = false) {
+    parent::setUpApp($env, $withCache);
     $identityExtension = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identityExtension);
   }

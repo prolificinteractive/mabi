@@ -65,16 +65,38 @@ class Extension {
     $this->middlewareDirectories = $middlewareDirectories;
   }
 
+  protected $combinedMiddlewareDirectories = array();
+  protected $loadedMiddleware = array();
+
   /**
    * @return string[]
    */
-  public function getMiddlewareDirectories() {
+  protected function getCombinedMiddlewareDirectories() {
     $extensionDirs = array();
     foreach ($this->extensions as $extension) {
-      $extensionDirs = array_merge($extensionDirs, $extension->getMiddlewareDirectories());
+      $extensionDirs = array_merge($extensionDirs, $extension->getCombinedMiddlewareDirectories());
     }
 
     return array_merge($extensionDirs, $this->middlewareDirectories);
+  }
+
+  public function loadMiddleware($middlewareFile) {
+    if(empty($this->combinedMiddlewareDirectories)) {
+      $this->combinedMiddlewareDirectories = $this->getCombinedMiddlewareDirectories();
+    }
+    if(!empty($this->loadedMiddleware[$middlewareFile])) {
+      return;
+    }
+
+    // Finds the file to include for this middleware using the app's middleware directory listing
+    foreach ($this->combinedMiddlewareDirectories as $middlewareDirectory) {
+      if (file_exists($middlewareDirectory . '/' . $middlewareFile)) {
+        include_once $middlewareDirectory . '/' . $middlewareFile;
+        $this->loadedMiddleware[$middlewareFile] = $middlewareDirectory . '/' . $middlewareFile;
+        return;
+      }
+    }
+    throw new \Exception('Could not find middleware file for: ' . $middlewareFile);
   }
 
   /**

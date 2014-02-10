@@ -18,6 +18,18 @@ class CachedRoute {
   }
 }
 
+class CachedControllerConstructor {
+  public $base;
+  public $middlewareFiles;
+  public $documentationName;
+
+  function __construct($base, $middlewareFiles, $documentationName) {
+    $this->base              = $base;
+    $this->documentationName = $documentationName;
+    $this->middlewareFiles   = $middlewareFiles;
+  }
+}
+
 /**
  * Defines a controller that serves endpoints routed based on its contained function names.
  *
@@ -77,38 +89,52 @@ class Controller {
     return $this->middlewares;
   }
 
-  public function __construct($extension) {
+  public function   __construct($extension) {
     $this->extension = $extension;
 
-    $myClass = get_called_class();
+    $systemCache = $this->getApp()->getCacheRepository('system');
+    $cacheKey = get_called_class() . get_class() . '::__construct';
+    /**
+     * @var $cache \MABI\CachedControllerConstructor
+     */
+    if($systemCache != null && is_object($cache = $systemCache->get($cacheKey))) {
+      $this->base = $cache->base;
+
+      foreach($cache->middlewareFiles as $middlewareClass => $middlewareFile) {
+        $this->addMiddlewareByClass($middlewareClass, $middlewareFile);
+      }
+
+      $this->documentationName = $cache->documentationName;
+      return;
+    }
 
     if (empty($this->base)) {
       $this->base = strtolower(ReflectionHelper::stripClassName(
-        ReflectionHelper::getPrefixFromControllerClass($myClass)));
+        ReflectionHelper::getPrefixFromControllerClass(get_called_class())));
     }
 
-    $rClass = new \ReflectionClass($myClass);
+    $rClass = new \ReflectionClass(get_called_class());
 
     // Load middlewares from @middleware directive
+    $middlewareFiles = array();
     $middlewares = ReflectionHelper::getDocDirective($rClass->getDocComment(), 'middleware');
     foreach ($middlewares as $middlewareClass) {
-      $this->addMiddlewareByClass($middlewareClass);
+      $middlewareFile = ReflectionHelper::stripClassName($middlewareClass) . '.php';
+      $this->addMiddlewareByClass($middlewareClass, $middlewareFile);
+      $middlewareFiles[$middlewareClass] = $middlewareFile;
     }
 
     if (empty($this->documentationName)) {
-      $this->documentationName = ucwords(ReflectionHelper::stripClassName(ReflectionHelper::getPrefixFromControllerClass($myClass)));
+      $this->documentationName = ucwords(ReflectionHelper::stripClassName(ReflectionHelper::getPrefixFromControllerClass(get_called_class())));
+    }
+
+    if($systemCache != null) {
+      $systemCache->forever($cacheKey, new CachedControllerConstructor($this->base, $middlewareFiles, $this->documentationName));
     }
   }
 
-  public function addMiddlewareByClass($middlewareClass) {
-    $middlewareFile = ReflectionHelper::stripClassName($middlewareClass) . '.php';
-    // Finds the file to include for this middleware using the app's middleware directory listing
-    foreach ($this->extension->getMiddlewareDirectories() as $middlewareDirectory) {
-      if (file_exists($middlewareDirectory . '/' . $middlewareFile)) {
-        include_once $middlewareDirectory . '/' . $middlewareFile;
-        break;
-      }
-    }
+  public function addMiddlewareByClass($middlewareClass, $middlewareFile) {
+    $this->extension->loadMiddleware($middlewareFile);
 
     /**
      * @var $middleware \MABI\Middleware

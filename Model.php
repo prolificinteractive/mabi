@@ -5,6 +5,19 @@ namespace MABI;
 include_once __DIR__ . '/Inflector.php';
 include_once __DIR__ . '/Utilities.php';
 
+
+class CachedModelConstructor {
+  public $table;
+  public $idColumn;
+  public $idProperty;
+
+  function __construct($table, $idColumn, $idProperty) {
+    $this->idColumn   = $idColumn;
+    $this->idProperty = $idProperty;
+    $this->table      = $table;
+  }
+}
+
 /**
  * todo: docs
  */
@@ -103,8 +116,25 @@ class Model {
      * @var $newModelObj Model
      */
     $newModelObj = new $modelClass();
-    $newModelObj->modelClass = get_called_class();
+    $newModelObj->modelClass = $modelClass;
     $newModelObj->app = $app;
+
+    $systemCache = $app->getCacheRepository('system');
+    $cacheKey = get_called_class() . get_class() . '::init';
+
+    /**
+     * @var $cache \MABI\CachedModelConstructor
+     */
+    if($systemCache != null && is_object($cache = $systemCache->get($cacheKey))) {
+      $newModelObj->table = $cache->table;
+      $newModelObj->idColumn = $cache->idColumn;
+      $newModelObj->idProperty = $cache->idProperty;
+      $newModelObj->{$newModelObj->idProperty} = NULL;
+      return $newModelObj;
+    }
+    var_dump('Still regenerating: ' . $cacheKey);
+    die();
+
     if (empty($newModelObj->table)) {
       $newModelObj->table = strtolower(Inflector::pluralize(ReflectionHelper::stripClassName($modelClass)));
     }
@@ -133,8 +163,12 @@ class Model {
       }
     }
 
-    $newModelObj->{$newModelObj->idProperty} = NULL;
+    if($systemCache != null) {
+      $systemCache->forever($cacheKey, new CachedModelConstructor($newModelObj->table, $newModelObj->idColumn,
+        $newModelObj->idProperty));
+    }
 
+    $newModelObj->{$newModelObj->idProperty} = NULL;
     return $newModelObj;
   }
 

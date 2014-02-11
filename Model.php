@@ -132,8 +132,6 @@ class Model {
       $newModelObj->{$newModelObj->idProperty} = NULL;
       return $newModelObj;
     }
-    var_dump('Still regenerating: ' . $cacheKey);
-    die();
 
     if (empty($newModelObj->table)) {
       $newModelObj->table = strtolower(Inflector::pluralize(ReflectionHelper::stripClassName($modelClass)));

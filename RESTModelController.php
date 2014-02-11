@@ -104,7 +104,7 @@ class RESTModelController extends ModelController {
     }
   }
 
-  protected function addStandardRestRoute(\Slim\Slim $slim, $httpMethod) {
+  protected function addStandardRestRoute(\Slim\Slim $slim, $httpMethod, &$cachedRoutes) {
     $methodName = '_rest' . ucwords(strtolower($httpMethod)) . 'Resource';
 
     $rMethod = new \ReflectionMethod(get_called_class(), $methodName);
@@ -113,7 +113,7 @@ class RESTModelController extends ModelController {
       return;
     }
 
-    $this->mapRestRoute($slim, "/{$this->base}/:id(/?)", $methodName, $httpMethod);
+    $this->mapRestRoute($slim, "/{$this->base}/:id(/?)", $methodName, $httpMethod, $cachedRoutes);
   }
 
   /**

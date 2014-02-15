@@ -39,7 +39,7 @@ class MiddlewareTestCase extends AppTestCase {
   public function setUpApp($env = array(), $middlewares = array()) {
     parent::setUpApp($env);
 
-    $this->app->setModelLoaders(array(new \MABI\DirectoryModelLoader(__DIR__ . '/../TestApp/TestModelDir', 'mabiTesting')));
+    $this->app->setModelLoaders(array(new \MABI\DirectoryModelLoader(__DIR__ . '/../TestApp/TestModelDir', $this->app, 'mabiTesting')));
 
     $dirControllerLoader = new \MABI\DirectoryControllerLoader(__DIR__ . '/../TestApp/TestControllerDir', $this->app,
       'mabiTesting');

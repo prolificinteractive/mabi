@@ -10,7 +10,7 @@ class SampleAppTestCase extends AppTestCase {
   public function setUpApp($env = array(), $withCache = false) {
     parent::setUpApp($env, $withCache);
 
-    $this->app->setModelLoaders(array(new \MABI\DirectoryModelLoader('TestApp/TestModelDir', 'mabiTesting')));
+    $this->app->setModelLoaders(array(new \MABI\DirectoryModelLoader('TestApp/TestModelDir', $this->app, 'mabiTesting')));
   }
 
 }

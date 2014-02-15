@@ -10,12 +10,27 @@ class CachedModelConstructor {
   public $table;
   public $idColumn;
   public $idProperty;
+  public $modelFieldsInfo;
 
-  function __construct($table, $idColumn, $idProperty) {
+  function __construct($table, $idColumn, $idProperty, $modelFieldsInfo) {
     $this->idColumn   = $idColumn;
     $this->idProperty = $idProperty;
     $this->table      = $table;
+    $this->modelFieldsInfo = $modelFieldsInfo;
   }
+
+
+}
+
+class ModelFieldInfo {
+  public $name;
+  public $isInternal = false;
+  public $isExternal = false;
+  public $isSystem = true;
+  public $hasType = false;
+  public $isArrayType = false;
+  public $isMABIModel = false;
+  public $type;
 }
 
 /**
@@ -66,6 +81,11 @@ class Model {
    * @var array
    */
   protected $readFields = array();
+
+  /**
+   * @var ModelFieldInfo[]
+   */
+  protected $modelFieldsInfo = array();
 
   /**
    * @param string $table
@@ -129,6 +149,7 @@ class Model {
       $newModelObj->table = $cache->table;
       $newModelObj->idColumn = $cache->idColumn;
       $newModelObj->idProperty = $cache->idProperty;
+      $newModelObj->modelFieldsInfo = $cache->modelFieldsInfo;
       $newModelObj->{$newModelObj->idProperty} = NULL;
       return $newModelObj;
     }
@@ -161,9 +182,11 @@ class Model {
       }
     }
 
+    $newModelObj->setupFieldInfo();
+
     if($systemCache != null) {
       $systemCache->forever($cacheKey, new CachedModelConstructor($newModelObj->table, $newModelObj->idColumn,
-        $newModelObj->idProperty));
+        $newModelObj->idProperty, $newModelObj->modelFieldsInfo));
     }
 
     $newModelObj->{$newModelObj->idProperty} = NULL;
@@ -220,62 +243,54 @@ class Model {
   /**
    * Sets a parameter based on its type
    *
-   * @param $type
+   * @param $modelFieldInfo ModelFieldInfo
    * @param $parameter
    * @param $result
    *
    * @throws \Exception
    */
-  protected function loadField($type, &$parameter, $result) {
-    switch ($type) {
-      case 'string':
-        $parameter = $result;
-        break;
-      case 'int':
-        $parameter = intval($result);
-        break;
-      case 'bool':
-        $parameter = $result == TRUE;
-        break;
-      case 'float':
-        $parameter = floatval($result);
-        break;
-      case 'DateTime':
-      case '\DateTime':
-        if (empty($result)) {
-          $parameter = NULL;
-        }
-        else {
-          $parameter = new \DateTime('@' . $result);
-        }
-        break;
-      case '':
-      case 'array':
-        $parameter = $result;
-        break;
-      default:
-        try {
-          $rClass = new \ReflectionClass($type);
-          if ($rClass->isSubclassOf('\MABI\Model')) {
-            if (empty($result)) {
-              $parameter = NULL;
-            }
-            else {
-              /**
-               * @var $model \MABI\Model
-               */
-              $model = call_user_func($type . '::init', $this->app);
-              $model->load($result);
-              $parameter = $model;
-            }
+  protected function loadField($modelFieldInfo, &$parameter, $result) {
+    if ($modelFieldInfo->isMABIModel) {
+      if (empty($result)) {
+        $parameter = NULL;
+      }
+      else {
+        /**
+         * @var $model \MABI\Model
+         */
+        $model = call_user_func($modelFieldInfo->type . '::init', $this->app);
+        $model->load($result);
+        $parameter = $model;
+      }
+    }
+    else {
+      switch ($modelFieldInfo->type) {
+        case 'string':
+          $parameter = $result;
+          break;
+        case 'int':
+          $parameter = intval($result);
+          break;
+        case 'bool':
+          $parameter = $result == TRUE;
+          break;
+        case 'float':
+          $parameter = floatval($result);
+          break;
+        case 'DateTime':
+        case '\DateTime':
+          if (empty($result)) {
+            $parameter = NULL;
           }
           else {
-            throw New \Exception('Class ' . $type . ' does not derive from \MABI\Model');
+            $parameter = new \DateTime('@' . $result);
           }
-        } catch (\ReflectionException $ex) {
+          break;
+        case '':
+        case 'array':
           $parameter = $result;
-        }
-    }
+      }
+    };
   }
 
   public function loadFromExternalSource($source) {
@@ -283,6 +298,61 @@ class Model {
       $this->load($source, TRUE);
     } catch (InvalidJSONException $ex) {
       $this->app->returnError(DefaultAppErrors::$INVALID_JSON, array('!message' => $ex->getMessage()));
+    }
+  }
+
+  protected function setupFieldInfo() {
+    $this->modelFieldsInfo = array();
+
+    $rClass = new \ReflectionClass($this);
+    $rProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
+    foreach ($rProperties as $rProperty) {
+      $modelFieldInfo = new ModelFieldInfo();
+
+      $modelFieldInfo->name = $rProperty->getName();
+      // Ignores setting any model property with 'internal' or 'system' options if sanitizing the input
+      $fieldOptions = ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field');
+      $modelFieldInfo->isInternal = in_array('internal', $fieldOptions);
+      $modelFieldInfo->isExternal = in_array('external', $fieldOptions);
+      $modelFieldInfo->isSystem = in_array('system', $fieldOptions);
+
+      // Pulls out the type following the pattern @var <TYPE> from the doc comments of the property
+      $varDocs = ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'var');
+      if (empty($varDocs)) {
+        $modelFieldInfo->hasType = false;
+      }
+      else {
+        $modelFieldInfo->hasType = true;
+        $type = $varDocs[0];
+        $matches = array();
+
+        if (preg_match('/(.*)\[\]/', $type, $matches)) {
+          $modelFieldInfo->isArrayType = true;
+
+          // If the type follows the list of type pattern (<TYPE>[]), an array will be generated and filled
+          // with that type
+          $type = $matches[1];
+        }
+        else {
+          $modelFieldInfo->isArrayType = false;
+        }
+
+        $modelFieldInfo->type = $type;
+
+        // Determine whether type is a MABI Model
+        try {
+          $rClass = new \ReflectionClass($type);
+          if ($rClass->isSubclassOf('\MABI\Model')) {
+            $modelFieldInfo->isMABIModel = TRUE;
+          }
+          elseif ($type != 'DateTime' && $type != '\DateTime') {
+            throw New \Exception('Class ' . $type . ' does not derive from \MABI\Model');
+          }
+        } catch (\ReflectionException $ex) {
+          $modelFieldInfo->isMABIModel = FALSE;
+        }
+      }
+      $this->modelFieldsInfo[] = $modelFieldInfo;
     }
   }
 
@@ -303,9 +373,6 @@ class Model {
       }
     }
 
-    $rClass = new \ReflectionClass($this);
-    $rProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
-
     if (!empty($resultArray[$this->idColumn])) {
       if (!$sanitizeArray) {
         $dataConnection = $this->app->getDataConnection($this->connection);
@@ -315,45 +382,39 @@ class Model {
       unset($resultArray[$this->idProperty]);
     }
 
-    foreach ($rProperties as $rProperty) {
-      if (!array_key_exists($rProperty->name, $resultArray)) {
+    foreach ($this->modelFieldsInfo as $modelFieldInfo) {
+      if (!array_key_exists($modelFieldInfo->name, $resultArray)) {
         continue;
       }
 
       // Ignores setting any model property with 'internal' or 'system' options if sanitizing the input
-      $fieldOptions = ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field');
-      if ($sanitizeArray && (in_array('internal', $fieldOptions) || in_array('system', $fieldOptions))) {
-        unset($resultArray[$rProperty->getName()]);
+      if ($sanitizeArray && ($modelFieldInfo->isInternal || $modelFieldInfo->isSystem)) {
+        unset($resultArray[$modelFieldInfo->name]);
         continue;
       }
 
       // Pulls out the type following the pattern @var <TYPE> from the doc comments of the property
-      $varDocs = ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'var');
-      if (empty($varDocs)) {
-        $this->{$rProperty->getName()} = $resultArray[$rProperty->getName()];
+      if (!$modelFieldInfo->hasType) {
+        $this->{$modelFieldInfo->name} = $resultArray[$modelFieldInfo->name];
       }
       else {
-        $type = $varDocs[0];
-        $matches = array();
-
-        if (preg_match('/(.*)\[\]/', $type, $matches)) {
+        if ($modelFieldInfo->isArrayType) {
           // If the type follows the list of type pattern (<TYPE>[]), an array will be generated and filled
           // with that type
-          $type = $matches[1];
           $outArr = array();
-          if (!empty($resultArray[$rProperty->getName()])) {
-            foreach ($resultArray[$rProperty->getName()] as $listResult) {
-              $this->loadField($type, $parameter, $listResult);
+          if (!empty($resultArray[$modelFieldInfo->name])) {
+            foreach ($resultArray[$modelFieldInfo->name] as $listResult) {
+              $this->loadField($modelFieldInfo, $parameter, $listResult);
               $outArr[] = $parameter;
             }
           }
-          $this->{$rProperty->getName()} = $outArr;
+          $this->{$modelFieldInfo->name} = $outArr;
         }
         else {
-          $this->loadField($type, $this->{$rProperty->getName()}, $resultArray[$rProperty->getName()]);
+          $this->loadField($modelFieldInfo, $this->{$modelFieldInfo->name}, $resultArray[$modelFieldInfo->name]);
         }
       }
-      unset($resultArray[$rProperty->getName()]);
+      unset($resultArray[$modelFieldInfo->name]);
     }
 
     $this->_remainingReadResults = $resultArray;
@@ -426,21 +487,26 @@ class Model {
     return $foundModels;
   }
 
-  protected function getPropertyArrayValue($value, $forOutput = FALSE) {
+  /**
+   * @param $value          mixed
+   * @param $modelFieldInfo ModelFieldInfo
+   * @param $forOutput      bool
+   *
+   * @return array|int|null
+   */
+  protected function getPropertyArrayValue($value, $modelFieldInfo, $forOutput = FALSE) {
     if (!is_object($value)) {
       return $value;
     }
     else {
-      $propClass = new \ReflectionClass($value);
-
-      if ($propClass->isSubclassOf('\MABI\Model')) {
+      if ($modelFieldInfo->isMABIModel) {
         /**
          * @var $subModel \MABI\Model
          */
         $subModel = $value;
         return $subModel->getPropertyArray($forOutput);
       }
-      elseif ($propClass->name == 'DateTime' || $propClass == '\DateTime') {
+      elseif ($modelFieldInfo->type == 'DateTime' || $modelFieldInfo->type == '\DateTime') {
         /**
          * @var $date \DateTime
          */
@@ -453,31 +519,26 @@ class Model {
   }
 
   public function getPropertyArray($forOutput = FALSE) {
-    $rClass = new \ReflectionClass($this);
-
     $outArr = array();
-    $rProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
-    foreach ($rProperties as $rProperty) {
+    foreach ($this->modelFieldsInfo as $modelFieldInfo) {
       /*
        * Ignores writing any model property with 'external' option
        */
-      if (!$forOutput && in_array('external', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
-        continue;
-      }
-      if ($forOutput && in_array('internal', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
-        continue;
-      }
-      if (in_array('system', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
+      if (!$forOutput && $modelFieldInfo->isExternal ||
+        $forOutput && $modelFieldInfo->isInternal ||
+        $modelFieldInfo->isSystem
+      ) {
         continue;
       }
 
-      if (is_array($this->{$rProperty->getName()})) {
-        foreach ($this->{$rProperty->getName()} as $k => $v) {
-          $outArr[$rProperty->getName()][$k] = $this->getPropertyArrayValue($v, $forOutput);
+      if (is_array($this->{$modelFieldInfo->name})) {
+        foreach ($this->{$modelFieldInfo->name} as $k => $v) {
+          $outArr[$modelFieldInfo->name][$k] = $this->getPropertyArrayValue($v, $modelFieldInfo, $forOutput);
         }
       }
       else {
-        $outArr[$rProperty->getName()] = $this->getPropertyArrayValue($this->{$rProperty->getName()}, $forOutput);
+        $outArr[$modelFieldInfo->name] = $this->getPropertyArrayValue($this->{$modelFieldInfo->name}, $modelFieldInfo,
+          $forOutput);
       }
     }
     if (!empty($this->{$this->idProperty})) {

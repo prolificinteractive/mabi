@@ -43,8 +43,8 @@ class ExtensionTest extends AppTestCase {
   function testGetModelClasses() {
     $app = new App();
     $newExt = new Extension($app);
-    $app->setModelLoaders(array(new DirectoryModelLoader('TestApp/TestModelDir', 'mabiTesting')));
-    $newExt->setModelLoaders(array(new DirectoryModelLoader('TestApp/TestExtensionDir/TestModelDir', 'mabiTesting\testExtension')));
+    $app->setModelLoaders(array(new DirectoryModelLoader('TestApp/TestModelDir', $app, 'mabiTesting')));
+    $newExt->setModelLoaders(array(new DirectoryModelLoader('TestApp/TestExtensionDir/TestModelDir', $app, 'mabiTesting\testExtension')));
     $app->addExtension($newExt);
 
     $outClasses = $app->getModelClasses();
@@ -61,7 +61,7 @@ class ExtensionTest extends AppTestCase {
 
     $newExt = new Extension($this->app);
 
-    $this->app->setModelLoaders(array(new DirectoryModelLoader(__DIR__ . '/TestApp/TestModelDir', 'mabiTesting')));
+    $this->app->setModelLoaders(array(new DirectoryModelLoader(__DIR__ . '/TestApp/TestModelDir', $this->app, 'mabiTesting')));
 
     $this->app->setMiddlewareDirectories(array(__DIR__ . '/../middleware'));
     $this->app->setControllerLoaders(array(
@@ -89,7 +89,7 @@ class ExtensionTest extends AppTestCase {
   function testGetDocJSON() {
     $this->setUpApp();
 
-    $this->app->setModelLoaders(array(new DirectoryModelLoader(__DIR__ . '/TestApp/TestModelDir', 'mabiTesting')));
+    $this->app->setModelLoaders(array(new DirectoryModelLoader(__DIR__ . '/TestApp/TestModelDir', $this->app, 'mabiTesting')));
 
     $this->app->setControllerLoaders(array(new DirectoryControllerLoader('TestApp/TestControllerDir', $this->app, 'mabiTesting')));
     $parser = new MarkdownParser();

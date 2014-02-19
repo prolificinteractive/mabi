@@ -22,7 +22,9 @@ class SessionControllerTest extends AppTestCase {
 
     $fbData = new \stdClass();
     $fbData->id = $fbId;
-    $fbData->email = $fbEmail;
+    if(!empty($fbEmail)) {
+      $fbData->email = $fbEmail;
+    }
     $fbData->first_name = 'photis';
     $fbData->last_name = 'patriotis';
 
@@ -30,6 +32,21 @@ class SessionControllerTest extends AppTestCase {
     $this->fbIdentityExtension = new FacebookIdentity($this->app, new Identity($this->app, new RESTAccess($this->app)),
       $facebookOnly);
     $this->app->addExtension($this->fbIdentityExtension);
+  }
+  public function testNoEmailInToken() {
+    $this->setUpSessionApp(array(
+      'REQUEST_METHOD' => 'POST',
+      'slim.input' => '{"accessToken":"abcdfacebooktesttokenefgh"}',
+      'PATH_INFO' => '/sessions'
+    ), 1233344556, null);
+
+    $this->app->call();
+    $this->assertEquals(400, $this->app->getResponse()->status());
+    $this->assertNotEmpty($this->app->getResponse()->body());
+    $output = json_decode($this->app->getResponse()->body());
+    $this->assertNotEmpty($output);
+    $this->assertNotEmpty($output->error);
+    $this->assertEquals('1002', $output->error->code);
   }
 
   public function testSuccessfulSessionPostCollection() {

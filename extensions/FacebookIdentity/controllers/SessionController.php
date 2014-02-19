@@ -103,6 +103,10 @@ class SessionController extends \MABI\Identity\SessionController {
      */
     $userModel = call_user_func($this->userModelClass . '::init', $this->getApp());
 
+    if(!isset($fbData->email)) {
+      $this->getApp()->returnError(\MABI\FacebookIdentity\Errors::$EMAIL_REQUIRED);
+    }
+
     if ($userModel->findByField('email', $fbData->email)) {
       $this->getApp()->returnError(\MABI\Identity\Errors::$EMAIL_EXISTS);
     }

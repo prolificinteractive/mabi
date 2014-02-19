@@ -15,6 +15,14 @@ class Errors extends ErrorResponseDictionary {
     )
   );
 
+  public static $EMAIL_REQUIRED = array(
+    'FB_IDENTITY_EMAIL_REQUIRED' => array(
+      'message' => 'The provided facebook token does not have permissions for the user\'s email. This is required.',
+      'httpcode' => 400,
+      'code' => 1002
+    )
+  );
+
   public static $FB_ONLY = array(
     'FB_IDENTITY_ONLY' => array(
       'message' => 'Facebook Connect is the only method allowed to create users.',

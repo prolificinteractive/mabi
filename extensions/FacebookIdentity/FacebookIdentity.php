@@ -22,7 +22,7 @@ class FacebookIdentity extends Extension {
 
     $this->addExtension($identityExtension);
     $this->setModelLoaders(array(
-      new DirectoryModelLoader(__DIR__ . '/models', 'MABI\FacebookIdentity')
+      new DirectoryModelLoader(__DIR__ . '/models', $this, 'MABI\FacebookIdentity')
     ));
     $this->setControllerLoaders(array(
       new DirectoryControllerLoader(__DIR__ . '/controllers', $this, 'MABI\FacebookIdentity')

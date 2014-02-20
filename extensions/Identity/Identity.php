@@ -21,7 +21,7 @@ class Identity extends Extension {
 
     $this->addExtension($restAccessExtension);
     $this->setModelLoaders(array(
-      new DirectoryModelLoader(__DIR__ . '/models', 'MABI\Identity')
+      new DirectoryModelLoader(__DIR__ . '/models', $this, 'MABI\Identity')
     ));
     $this->setControllerLoaders(array(
       new DirectoryControllerLoader(__DIR__ . '/controllers', $this, 'MABI\Identity')

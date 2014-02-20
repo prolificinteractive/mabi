@@ -5,7 +5,6 @@ namespace MABI\Testing;
 include_once 'PHPUnit/Autoload.php';
 include_once __DIR__ . '/../App.php';
 include_once __DIR__ . '/../MongoDataConnection.php';
-include_once __DIR__ . '/../DirectoryControllerLoader.php';
 include_once __DIR__ . '/../GeneratedRESTModelControllerLoader.php';
 include_once __DIR__ . '/../autodocs/MarkdownParser.php';
 

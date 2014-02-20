@@ -66,7 +66,7 @@ class AppTestCase extends \PHPUnit_Framework_TestCase {
    */
   protected $dataConnectionMock;
 
-  public function setUpApp($env = array()) {
+  public function setUpApp($env = array(), $withCache = false) {
     \Slim\Environment::mock($env);
     $this->app = new App();
 
@@ -85,6 +85,10 @@ class AppTestCase extends \PHPUnit_Framework_TestCase {
     );
 
     $this->app->addDataConnection('default', $this->dataConnectionMock);
+
+    if($withCache) {
+      $this->app->addCacheRepository('system', 'file', array('path' => 'TestApp/cache'));
+    }
     $this->app->getErrorResponseDictionary()->overrideErrorResponses(new Errors());
   }
 

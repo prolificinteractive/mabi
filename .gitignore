@@ -1,11 +1,8 @@
 # global .gitignore
 # check out https://github.com/github/gitignore
 
-# CakePHP
-server/admin/app/webroot/files/
-
-# Node JS
-server/image-service/tmp/
+/vendor
+/tests/TestApp/cache/*
 
 ### random Mac/PC folder junk
 
@@ -77,34 +74,3 @@ tmtags
 
 .sass-cache/
 .powenv
-
-### iOS/Mac dev
-
-*~.nib
-*.swp
-
-# files created by Xcode 3 or older
-*.pbxuser
-*.mode1
-*.mode1v3
-*.mode2v3
-*.perspectivev3
-*.xcclassmodel/
-
-# files created by Xcode 4
-xcuserdata/
-
-# build products
-*.build/
-build/
-DerivedData/
-
-
-### Android dev
-
-# files for the dex VM
-*.dex
- 
-# Java class files
-*.class
-

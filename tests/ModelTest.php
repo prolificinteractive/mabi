@@ -19,7 +19,7 @@ class ModelTest extends SampleAppTestCase {
   }
 
   public function testModelLoader() {
-    $modelLoader = new \MABI\DirectoryModelLoader('TestApp/TestModelDir', 'mabiTesting');
+    $modelLoader = new \MABI\DirectoryModelLoader('TestApp/TestModelDir', $this->app, 'mabiTesting');
     $models = $modelLoader->loadModels();
     $this->assertContains('mabiTesting\ModelA', $models);
     $this->assertContains('mabiTesting\ModelB', $models);

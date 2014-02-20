@@ -23,8 +23,8 @@ class ControllerTest extends SampleAppTestCase {
     $this->assertInstanceOf('\mabiTesting\JustAController', $controllers[0]);
   }
 
-  private function setUpControllerApp($env = array()) {
-    $this->setUpApp($env);
+  private function setUpControllerApp($env = array(), $withCache = false) {
+    $this->setUpApp($env, $withCache);
 
     $dirControllerLoader = new \MABI\DirectoryControllerLoader('TestApp/TestControllerDir', $this->app, 'mabiTesting');
     $this->controllerMock = $this->getMock('\mabiTesting\JustAController', array(
@@ -95,6 +95,40 @@ class ControllerTest extends SampleAppTestCase {
     $this->setUpControllerApp(array('REQUEST_METHOD' => 'DELETE', 'PATH_INFO' => '/justa/testfunc'));
     $this->controllerMock->expects($this->once())
       ->method('deleteTestFunc')
+      ->will($this->returnValue('test'));
+    $this->app->call();
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $this->assertEquals('', $this->app->getResponse()->body());
+  }
+
+  protected function removeDirRecursive($dirPath) {
+    foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dirPath, \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST) as $path) {
+      $path->isFile() ? unlink($path->getPathname()) : rmdir($path->getPathname());
+    }
+    rmdir($dirPath);
+  }
+
+  public function testCache() {
+    // Make first call to load all of the caches
+    $this->setUpControllerApp(array('REQUEST_METHOD' => 'POST', 'PATH_INFO' => '/justa'), true);
+    $this->app->getCacheRepository('system')->flush();
+    $this->controllerMock->expects($this->once())
+      ->method('post')
+      ->will($this->returnValue('test'));
+    $this->app->call();
+    $this->assertEquals(200, $this->app->getResponse()->status());
+    $this->assertEquals('', $this->app->getResponse()->body());
+
+    /**
+     * @var $cachedRoutes \MABI\CachedRoute[]
+     */
+    $cacheKey = 'JustAController.MABI\Controller::loadRoutes';
+    $this->assertNotEmpty($this->app->getCacheRepository('system')->get($cacheKey));
+
+    // Call app again to make sure cache calls were run
+    $this->setUpControllerApp(array('REQUEST_METHOD' => 'POST', 'PATH_INFO' => '/justa'), true);
+    $this->controllerMock->expects($this->once())
+      ->method('post')
       ->will($this->returnValue('test'));
     $this->app->call();
     $this->assertEquals(200, $this->app->getResponse()->status());

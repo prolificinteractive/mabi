@@ -42,6 +42,15 @@ class ReflectionHelper {
 }
 
 class DirectoryHelper {
+  /**
+   * todo: docs
+   *
+   * @param string $directory
+   * @param bool   $recursive
+   * @param string $extension
+   *
+   * @return array
+   */
   public static function directoryToArray($directory, $recursive = FALSE, $extension = NULL) {
     $array_items = array();
     if ($handle = opendir($directory)) {

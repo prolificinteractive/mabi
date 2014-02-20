@@ -38,7 +38,18 @@ class DirectoryControllerLoader extends ControllerLoader {
     $this->directory = $directory;
     $this->namespace = empty($namespace) ? '' : $namespace;
 
-    $controllerClassFiles = DirectoryHelper::directoryToArray($this->directory, TRUE, '.php');
+    if (($systemCache = $this->extension->getApp()->getCacheRepository('system')) != NULL &&
+      is_array($controllerClassFiles = $systemCache->get($this->directory . '::fileList'))
+    ) {
+
+    }
+    else {
+      // Make sure all PHP files in the directory are included
+      $controllerClassFiles = DirectoryHelper::directoryToArray($this->directory, TRUE, '.php');
+      if ($systemCache != NULL) {
+        $systemCache->forever($this->directory . '::fileList', $controllerClassFiles);
+      }
+    }
 
     foreach ($controllerClassFiles as $controllerClassFile) {
       include_once $controllerClassFile;

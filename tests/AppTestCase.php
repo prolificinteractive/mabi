@@ -5,7 +5,7 @@ namespace MABI\Testing;
 use MABI\App;
 use mabiTesting\Errors;
 
-include_once 'PHPUnit/Autoload.php';
+include_once __DIR__ . '/../vendor/autoload.php';
 include_once __DIR__ . '/../App.php';
 include_once __DIR__ . '/MockDataConnection.php';
 include_once __DIR__ . '/TestApp/Errors.php';

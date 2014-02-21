@@ -4,7 +4,7 @@ namespace MABI\Testing;
 
 use MABI\Middleware\NoAccess;
 
-include_once 'PHPUnit/Autoload.php';
+include_once __DIR__ . '/../../vendor/autoload.php';
 include_once __DIR__ . '/MiddlewareTestCase.php';
 include_once __DIR__ . '/../../middleware/NoAccess.php';
 include_once __DIR__ . '/../../middleware/SharedSecret.php';

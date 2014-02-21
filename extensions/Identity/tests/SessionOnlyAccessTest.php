@@ -10,7 +10,7 @@ use MABI\RESTAccess\RESTAccess;
 use MABI\Testing\MiddlewareTestCase;
 use MABI\Testing\TableDefinition;
 
-include_once 'PHPUnit/Autoload.php';
+include_once __DIR__ . '/../../../vendor/autoload.php';
 include_once __DIR__ . '/../../../tests/middleware/MiddlewareTestCase.php';
 include_once __DIR__ . '/../../../autodocs/MarkdownParser.php';
 include_once __DIR__ . '/../Identity.php';

@@ -2,7 +2,7 @@
 
 namespace MABI\Testing;
 
-include_once 'PHPUnit/Autoload.php';
+include_once __DIR__ . '/../../vendor/autoload.php';
 include_once __DIR__ . '/MiddlewareTestCase.php';
 include_once __DIR__ . '/../../middleware/AnonymousIdentifier.php';
 

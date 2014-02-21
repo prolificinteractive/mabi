@@ -2,7 +2,7 @@
 
 namespace MABI\EmailSupport\Testing;
 
-include_once 'PHPUnit/Autoload.php';
+include_once __DIR__ . '/../../../vendor/autoload.php';
 include_once __DIR__ . '/../PHPCore.php';
 include_once __DIR__ . '/../TokenTemplate.php';
 

@@ -2,7 +2,7 @@
 
 namespace MABI\RESTAccess\Testing;
 
-include_once 'PHPUnit/Autoload.php';
+include_once __DIR__ . '/../../../vendor/autoload.php';
 include_once __DIR__ . '/../../../tests/middleware/MiddlewareTestCase.php';
 include_once __DIR__ . '/../PostOnly.php';
 

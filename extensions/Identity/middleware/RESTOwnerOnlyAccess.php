@@ -5,6 +5,7 @@ namespace MABI\Identity\Middleware;
 use MABI\DefaultAppErrors;
 use MABI\Middleware;
 use MABI\Identity\Session;
+use MABI\ModelController;
 use MABI\ReflectionHelper;
 
 include_once __DIR__ . '/../../../Middleware.php';
@@ -51,6 +52,11 @@ class RESTOwnerOnlyAccess extends Middleware {
      */
     $session = $this->getApp()->getRequest()->session;
     $restController = $this->getController();
+
+    if (!($restController instanceof ModelController)) {
+      // If this middleware is applied on a non-model controller, owner can't be found and it will always fail auth
+      $this->getApp()->returnError(DefaultAppErrors::$NOT_AUTHORIZED);
+    }
 
     $rClass = new \ReflectionClass($restController->getModelClass());
     // Allow @field owner override otherwise the default owner field is $owner

@@ -194,6 +194,9 @@ class App extends Extension {
     if (!$this->slim->config('debug')) {
       $this->slim->error(array($this, 'errorHandler'));
     }
+    if($this->restTestCall) {
+      $this->slim->restTestCall = $this->restTestCall;
+    }
 
     $this->slim->call();
   }

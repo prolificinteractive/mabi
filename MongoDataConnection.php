@@ -21,27 +21,6 @@ class MongoDataConnection implements DataConnection {
     return $this->db;
   }
 
-  private static function createConnectionName($host, $port, $user, $password, $database, $version) {
-    $connectionName = NULL;
-
-    if ($version >= '1.0.2') {
-      $connectionName = "mongodb://";
-    }
-    else {
-      $connectionName = '';
-    }
-    $hostname = $host . (!empty($port) ? ':' . $port : '');
-
-    if (!empty($user)) {
-      $connectionName .= $user . ':' . $password . '@' . $hostname . '/' . $database;
-    }
-    else {
-      $connectionName .= $hostname;
-    }
-
-    return $connectionName;
-  }
-
   /**
    * todo: docs
    *

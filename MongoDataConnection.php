@@ -45,18 +45,15 @@ class MongoDataConnection implements DataConnection {
   /**
    * todo: docs
    *
-   * @param $host string
-   * @param $port string
-   * @param $database string
-   * @param null $user string
-   * @param null $password string
+   * @param $connectionURI string
    *
    * @return MongoDataConnection
    */
-  public static function create($host, $port, $database, $user = NULL, $password = NULL) {
+  public static function create($connectionURI) {
     $connection = new MongoDataConnection();
-    $connectionName = self::createConnectionName($host, $port, $user, $password, $database, \Mongo::VERSION);
-    $mongo = new \Mongo($connectionName);
+    $database = parse_url($connectionURI, PHP_URL_PATH);
+    $database = ltrim($database, '/');
+    $mongo = new \MongoClient($connectionURI);
     $connection->db = $mongo->selectDB($database);
 
     return $connection;

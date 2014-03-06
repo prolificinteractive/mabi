@@ -253,6 +253,11 @@ class Controller {
       }
 
       if (!empty($action)) {
+        if($this->app->restTestCall) {
+          fwrite(STDERR, print_r(get_class(), TRUE));
+          fwrite(STDERR, print_r("/{$this->base}/{$action}(/?)", TRUE));
+        }
+
         $this->mapRoute($slim, "/{$this->base}/{$action}(/?)", $methodName, $httpMethod, $cachedRoutes);
         $this->mapRoute($slim, "/{$this->base}/{$action}(/:param+)(/?)", $methodName, $httpMethod, $cachedRoutes);
       }
@@ -265,6 +270,10 @@ class Controller {
     }
 
     foreach ($baseMethods as $httpMethod) {
+      if($this->app->restTestCall) {
+        fwrite(STDERR, print_r(get_class(), TRUE));
+        fwrite(STDERR, print_r("/{$this->base}(/?)", TRUE));
+      }
       $this->mapRoute($slim, "/{$this->base}(/?)", $httpMethod['name'], $httpMethod['method'], $cachedRoutes);
     }
 

@@ -56,6 +56,7 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
   protected static $MODELB_1 = array('modelBId' => 1, 'name' => 'test', 'testOwner' => 11);
 
   public function testSuccessfulCall() {
+    $this->app->restTestCall = true;
     $middleware = new RESTOwnerOnlyAccess();
 
     $this->setUpApp(array('PATH_INFO' => '/modelbs/4', 'SESSION' => '111444'),
@@ -77,6 +78,7 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
       ));
 
     $this->app->call();
+    $this->app->restTestCall = false;
 
     $this->assertEquals(200, $this->app->getResponse()->status());
     $this->assertNotEmpty($this->app->getResponse()->body());

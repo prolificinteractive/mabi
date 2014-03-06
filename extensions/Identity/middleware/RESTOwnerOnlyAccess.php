@@ -53,6 +53,8 @@ class RESTOwnerOnlyAccess extends Middleware {
     $session = $this->getApp()->getRequest()->session;
     $restController = $this->getController();
 
+    fwrite(STDERR, print_r(get_class($restController), TRUE));
+    fwrite(STDERR, print_r($this->getApp()->getSlim()->environment(), TRUE));
     if (!($restController instanceof ModelController)) {
       // If this middleware is applied on a non-model controller, owner can't be found and it will always fail auth
       $this->getApp()->returnError(DefaultAppErrors::$NOT_AUTHORIZED);

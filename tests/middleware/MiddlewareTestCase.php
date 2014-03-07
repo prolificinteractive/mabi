@@ -44,14 +44,18 @@ class MiddlewareTestCase extends AppTestCase {
     $dirControllerLoader = new \MABI\DirectoryControllerLoader(__DIR__ . '/../TestApp/TestControllerDir', $this->app,
       'mabiTesting');
     foreach ($dirControllerLoader->getControllers() as $controller) {
-      if (get_class($controller) == $middlewareClass) {
-        $this->controller = $controller;
-        if (!empty($middlewares)) {
-          foreach ($middlewares as $middleware) {
-            $this->controller->addMiddleware($middleware);
-          }
-          $this->controller->addMiddleware(new \MABI\Middleware\AnonymousIdentifier());
+      if (get_class($controller) == $middlewareClass && !empty($middlewares)) {
+        foreach ($middlewares as $middleware) {
+          $controller->addMiddleware($middleware);
         }
+      }
+      $controller->addMiddleware(new \MABI\Middleware\AnonymousIdentifier());
+
+      if (get_class($controller) == 'mabiTesting\JustAController') {
+        $this->controller = $controller;
+      }
+      elseif (get_class($controller) == 'mabiTesting\ModelBController') {
+        $this->restController = $controller;
       }
     }
 

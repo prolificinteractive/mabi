@@ -1219,6 +1219,8 @@ class Slim
           if(!empty($this->restTestCall)) {
             foreach($matchedRoutes as $matchedRoute) {
               fwrite(STDERR, print_r($matchedRoute->getPattern(), TRUE));
+              fwrite(STDERR, print_r(get_class($matchedRoute->getCallable()[0]), TRUE));
+              fwrite(STDERR, print_r($matchedRoute->getCallable()[1], TRUE));
             }
           }
             foreach ($matchedRoutes as $route) {

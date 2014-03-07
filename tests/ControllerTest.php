@@ -18,9 +18,12 @@ class ControllerTest extends SampleAppTestCase {
     $this->setUpApp();
 
     $controllerLoader = new \MABI\DirectoryControllerLoader('TestApp/TestControllerDir', $this->app, 'mabiTesting');
-    $controllers = $controllerLoader->getControllers();
+    $controllers      = $controllerLoader->getControllers();
     $this->assertNotEmpty($controllers);
-    $this->assertInstanceOf('\mabiTesting\JustAController', $controllers[0]);
+    $this->assertThat($controllers[0], $this->logicalOr(
+      $this->isInstanceOf('\mabiTesting\JustAController'),
+      $this->isInstanceOf('\mabiTesting\ModelBController')
+    ));
   }
 
   private function setUpControllerApp($env = array(), $withCache = false) {

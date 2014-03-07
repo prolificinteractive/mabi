@@ -91,7 +91,7 @@ class User extends Model {
     $this->salt = uniqid(mt_rand(), TRUE);
     $this->passHash = Identity::passHash($this->password, $this->salt);
     $this->password = NULL;
-    $this->created = new \DateTime('now');
+    $this->created = new \DateTime('@' . time());
     parent::insert();
   }
 }

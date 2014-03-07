@@ -58,8 +58,7 @@ class DirectoryControllerLoader extends ControllerLoader {
       $this->controllerClasses[] = $controllerClass;
 
       $controller = new $controllerClass($this->extension);
-      $rclass = new \ReflectionClass($controller);
-      if ($rclass->isSubclassOf('\MABI\ModelController')) {
+      if ($controller instanceof ModelController) {
         /**
          * @var $controller \MABI\ModelController
          */

@@ -163,7 +163,7 @@ class UserControllerTest extends AppTestCase {
       ->with('id', 111445, 'sessions');
 
     $userDateUpdate = self::$USER_122;
-    $now = new \DateTime('now');
+    $now = new \DateTime('@' . time());
     $userDateUpdate['lastAccessed'] = $now->getTimestamp();
     $userOtherUpdate = self::$USER_122;
     $userOtherUpdate['firstName'] = 'photis';
@@ -203,7 +203,7 @@ class UserControllerTest extends AppTestCase {
       }));
 
     $userDateUpdate = self::$USER_122;
-    $now = new \DateTime('now');
+    $now = new \DateTime('@' . time());
     $userDateUpdate['lastAccessed'] = $now->getTimestamp();
     $userOtherUpdate = self::$USER_122;
     $userOtherUpdate['firstName'] = 'photis';

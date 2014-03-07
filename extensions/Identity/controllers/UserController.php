@@ -231,7 +231,7 @@ class UserController extends RESTModelController {
       $this->getApp()->returnError(Errors::$PASSWORD_NO_USER_EMAIL);
     }
 
-    $user->lastAccessed = new \DateTime('now');
+    $user->lastAccessed = new \DateTime('@' . time());
     $user->save();
     $authToken = Identity::passHash($user->passHash, $user->lastAccessed->getTimestamp());
 

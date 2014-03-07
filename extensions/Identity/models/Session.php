@@ -80,8 +80,8 @@ class Session extends Model {
   public $authToken;
 
   public function insert() {
-    $this->created = new \DateTime('now');
-    $this->lastAccessed = new \DateTime('now');
+    $this->created = new \DateTime('@' . time());
+    $this->lastAccessed = new \DateTime('@' . time());
     if(!empty($this->user)) {
       $this->userId = $this->user->userId;
     }

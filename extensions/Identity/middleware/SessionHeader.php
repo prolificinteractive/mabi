@@ -31,7 +31,7 @@ class SessionHeader extends Middleware {
     if($foundSession->findById($sessionId)) {
       $this->session = $foundSession;
       $this->getApp()->getRequest()->session = $this->session;
-      $now = new \DateTime('now');
+      $now = new \DateTime('@' . time());
       $this->session->lastAccessed = $now;
 
       $user = User::init($this->getApp());

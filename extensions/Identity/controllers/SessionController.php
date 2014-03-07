@@ -80,7 +80,7 @@ class SessionController extends RESTModelController {
       else {
         $this->getApp()->returnError(Errors::$SESSION_PASSWORD_TOKEN_REQUIRED);
       }
-      $user->lastAccessed = new \DateTime('now');
+      $user->lastAccessed = new \DateTime('@' . time());
       $user->save();
       $this->model->user = $user;
       $this->model->insert();

@@ -13,7 +13,7 @@ class ReadOnlyTest extends MiddlewareTestCase {
 
   public function testStoppedCall() {
     $middleware = new ReadOnly();
-    $this->setUpApp(array('PATH_INFO' => '/modelbs','REQUEST_METHOD' => 'POST'), array($middleware));
+    $this->setUpApp(array('PATH_INFO' => '/modelbs','REQUEST_METHOD' => 'POST'), 'mabiTesting\ModelBController', array($middleware));
 
     $this->app->call();
 
@@ -22,7 +22,7 @@ class ReadOnlyTest extends MiddlewareTestCase {
 
   public function testPassedCall() {
     $middleware = new ReadOnly();
-    $this->setUpApp(array('PATH_INFO' => '/modelbs/1'), array($middleware));
+    $this->setUpApp(array('PATH_INFO' => '/modelbs/1'), 'mabiTesting\ModelBController', array($middleware));
 
     $this->dataConnectionMock->expects($this->once())
       ->method('findOneByField')
@@ -39,7 +39,7 @@ class ReadOnlyTest extends MiddlewareTestCase {
 
   public function testSkipDocs() {
     $middleware = new ReadOnly();
-    $this->setUpApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware));
+    $this->setUpApp(array('PATH_INFO' => '/justa/testfunc'), 'mabiTesting\JustAController', array($middleware));
 
     $docArray = array(
       'HTTPMethod' => 'test',
@@ -56,7 +56,7 @@ class ReadOnlyTest extends MiddlewareTestCase {
 
   public function testFullDocs() {
     $middleware = new ReadOnly();
-    $this->setUpApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware));
+    $this->setUpApp(array('PATH_INFO' => '/justa/testfunc'), 'mabiTesting\JustAController', array($middleware));
 
     $docArray = array(
       'HTTPMethod' => 'test',

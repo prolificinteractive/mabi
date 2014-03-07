@@ -10,7 +10,8 @@ class AnonymousIdentifierTest extends MiddlewareTestCase {
 
   public function testCall() {
     $middleware = new \MABI\Middleware\AnonymousIdentifier();
-    $this->setUpApp(array('ANONUUID' => 'test1', 'PATH_INFO' => '/justa/testfunc'), array($middleware));
+    $this->setUpApp(array('ANONUUID' => 'test1', 'PATH_INFO' => '/justa/testfunc'), 'mabiTesting\JustAController',
+      array($middleware));
 
     $this->app->call();
 
@@ -19,7 +20,8 @@ class AnonymousIdentifierTest extends MiddlewareTestCase {
 
   public function testDocs() {
     $middleware = new \MABI\Middleware\AnonymousIdentifier();
-    $this->setUpApp(array('ANONUUID' => 'test1', 'PATH_INFO' => '/justa/testfunc'), array($middleware));
+    $this->setUpApp(array('ANONUUID' => 'test1', 'PATH_INFO' => '/justa/testfunc'), 'mabiTesting\JustAController',
+      array($middleware));
 
     $docArray = array();
     $rClassMock = $this->getMock('\ReflectionClass', array(), array(), '', FALSE);

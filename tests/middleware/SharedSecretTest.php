@@ -12,7 +12,7 @@ class SharedSecretTest extends MiddlewareTestCase {
     $middleware = new \MABI\Middleware\SharedSecret();
 
     $this->setUpApp(array('PATH_INFO' => '/justa/testfunc', 'SHARED_SECRET' => 'TEST-SECRET-1'),
-      array($middleware));
+      'mabiTesting\JustAController', array($middleware));
 
     $this->dataConnectionMock->expects($this->once())
       ->method('findOneByField')

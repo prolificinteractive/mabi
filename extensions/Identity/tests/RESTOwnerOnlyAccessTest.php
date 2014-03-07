@@ -58,9 +58,8 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
   public function testSuccessfulCall() {
     $middleware = new RESTOwnerOnlyAccess();
 
-    $this->setUpApp(array('PATH_INFO' => '/modelbs/4', 'SESSION' => '111444'),
+    $this->setUpApp(array('PATH_INFO' => '/modelbs/4', 'SESSION' => '111444'), 'mabiTesting\ModelBController',
       array(new SessionHeader(), $middleware));
-    $this->app->restTestCall = true;
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
 
@@ -78,7 +77,6 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
       ));
 
     $this->app->call();
-    $this->app->restTestCall = false;
 
     $this->assertEquals(200, $this->app->getResponse()->status());
     $this->assertNotEmpty($this->app->getResponse()->body());
@@ -90,7 +88,7 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
   public function testNoSessionCall() {
     $middleware = new RESTOwnerOnlyAccess();
 
-    $this->setUpApp(array('PATH_INFO' => '/modelbs/4'),
+    $this->setUpApp(array('PATH_INFO' => '/modelbs/4'), 'mabiTesting\ModelBController',
       array($middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
@@ -105,7 +103,7 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
   public function testWrongOwnerCall() {
     $middleware = new RESTOwnerOnlyAccess();
 
-    $this->setUpApp(array('PATH_INFO' => '/modelbs/4', 'SESSION' => '111445'),
+    $this->setUpApp(array('PATH_INFO' => '/modelbs/4', 'SESSION' => '111445'), 'mabiTesting\ModelBController',
       array(new SessionHeader(), $middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
@@ -133,7 +131,7 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
   public function testWrongOwnerCollectionCall() {
     $middleware = new RESTOwnerOnlyAccess();
 
-    $this->setUpApp(array('PATH_INFO' => '/modelbs', 'SESSION' => '111445'),
+    $this->setUpApp(array('PATH_INFO' => '/modelbs', 'SESSION' => '111445'), 'mabiTesting\ModelBController',
       array(new SessionHeader(), $middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
@@ -160,7 +158,7 @@ class RESTOwnerOnlyAccessTest extends MiddlewareTestCase {
     $middleware = new RESTOwnerOnlyAccess();
     $sessHeaderMiddleware = new SessionHeader();
 
-    $this->setUpApp(array('PATH_INFO' => '/modelbs/4', 'SESSION' => '111444'),
+    $this->setUpApp(array('PATH_INFO' => '/modelbs/4', 'SESSION' => '111444'), 'mabiTesting\ModelBController',
       array($sessHeaderMiddleware, $middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);

@@ -13,7 +13,7 @@ class NoAccessTest extends MiddlewareTestCase {
 
   public function testStoppedCall() {
     $middleware = new NoAccess();
-    $this->setUpApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware));
+    $this->setUpApp(array('PATH_INFO' => '/justa/testfunc'), 'mabiTesting\JustAController', array($middleware));
 
     $this->app->call();
 
@@ -22,7 +22,7 @@ class NoAccessTest extends MiddlewareTestCase {
 
   public function testDocs() {
     $middleware = new NoAccess();
-    $this->setUpApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware));
+    $this->setUpApp(array('PATH_INFO' => '/justa/testfunc'), 'mabiTesting\JustAController', array($middleware));
 
     $docArray = array(
       'parameters' => array(

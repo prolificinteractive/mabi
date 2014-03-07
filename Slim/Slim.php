@@ -1216,7 +1216,7 @@ class Slim
             $this->applyHook('slim.before.router');
             $dispatched = false;
             $matchedRoutes = $this->router->getMatchedRoutes($this->request->getMethod(), $this->request->getResourceUri());
-          if($this->restTestCall) {
+          if(!empty($this->restTestCall)) {
             foreach($matchedRoutes as $matchedRoute) {
               fwrite(STDERR, print_r($matchedRoute->getPattern(), TRUE));
             }

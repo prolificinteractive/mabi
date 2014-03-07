@@ -53,7 +53,7 @@ class RESTOwnerOnlyAccess extends Middleware {
     $session = $this->getApp()->getRequest()->session;
     $restController = $this->getController();
 
-    if($this->app->restTestCall) {
+    if(!empty($this->getApp()->restTestCall)) {
       fwrite(STDERR, print_r(get_class($restController), TRUE));
       fwrite(STDERR, print_r($this->getApp()->getSlim()->environment(), TRUE));
     }

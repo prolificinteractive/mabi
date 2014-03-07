@@ -41,7 +41,7 @@ class SessionOnlyAccessTest extends MiddlewareTestCase {
   public function testSuccessfulCall() {
     $middleware = new SessionOnlyAccess();
 
-    $this->setUpApp(array('PATH_INFO' => '/modelbs/4', 'SESSION' => '111444'), 'mabiTesting\ModelBController',
+    $this->setUpApp(array('PATH_INFO' => '/modelbs/4', 'SESSION' => '111444'),
       array(new SessionHeader(), $middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
@@ -73,7 +73,7 @@ class SessionOnlyAccessTest extends MiddlewareTestCase {
   public function testNoSessionCall() {
     $middleware = new SessionOnlyAccess();
 
-    $this->setUpApp(array('PATH_INFO' => '/modelbs/4'), 'mabiTesting\ModelBController',
+    $this->setUpApp(array('PATH_INFO' => '/modelbs/4'),
       array($middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
@@ -119,7 +119,7 @@ class SessionOnlyAccessTest extends MiddlewareTestCase {
     $middleware = new SessionOnlyAccess();
     $sessHeaderMiddleware = new SessionHeader();
 
-    $this->setUpApp(array('PATH_INFO' => '/modelbs/4', 'SESSION' => '111444'), 'mabiTesting\ModelBController',
+    $this->setUpApp(array('PATH_INFO' => '/modelbs/4', 'SESSION' => '111444'),
       array($sessHeaderMiddleware, $middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);

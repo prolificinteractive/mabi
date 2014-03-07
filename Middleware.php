@@ -6,9 +6,9 @@ include_once __DIR__ . '/Controller.php';
 
 abstract class Middleware {
   /**
-   * @var \MABI\Controller
+   * @var \MABI\App
    */
-  protected $controller;
+  protected $app;
 
   /**
    * @var \MABI\Middleware Reference to the next downstream middleware
@@ -16,29 +16,18 @@ abstract class Middleware {
   protected $next;
 
   /**
-   * todo: docs
-   *
-   * @param  \MABI\Controller $controller
+   * @param \MABI\App $app
    */
-  public function setController($controller) {
-    $this->controller = $controller;
+  public function setApp($app) {
+    $this->app = $app;
   }
 
   public function getRouteCallable() {
-    return $this->getController()->getApp()->getSlim()->router()->getCurrentRoute()->getCallable();
+    return $this->app->getSlim()->router()->getCurrentRoute()->getCallable();
   }
 
   public function getApp() {
-    return $this->getController()->getApp();
-  }
-
-  /**
-   * todo: docs
-   *
-   * @return \MABI\Controller
-   */
-  public function getController() {
-    return $this->controller;
+    return $this->app;
   }
 
   /**

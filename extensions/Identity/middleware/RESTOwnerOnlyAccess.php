@@ -51,7 +51,7 @@ class RESTOwnerOnlyAccess extends Middleware {
      * @var $session \MABI\Identity\Session
      */
     $session = $this->getApp()->getRequest()->session;
-    $restController = $this->getController();
+    $restController = $this->getApp()->getActiveContoller();
 
     if (!($restController instanceof ModelController)) {
       // If this middleware is applied on a non-model controller, owner can't be found and it will always fail auth

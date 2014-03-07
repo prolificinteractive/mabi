@@ -12,8 +12,7 @@ class APIApplicationOnlyAccessTest extends MiddlewareTestCase {
   public function testStoppedCall() {
     $middleware = new \MABI\Middleware\SharedSecret();
     $middleware2 = new \MABI\Middleware\APIApplicationOnlyAccess();
-    $this->setUpApp(array('PATH_INFO' => '/justa/testfunc'), 'mabiTesting\JustAController',
-      array($middleware, $middleware2));
+    $this->setUpApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware, $middleware2));
 
     $this->app->call();
 
@@ -25,7 +24,7 @@ class APIApplicationOnlyAccessTest extends MiddlewareTestCase {
     $middleware2 = new \MABI\Middleware\APIApplicationOnlyAccess();
 
     $this->setUpApp(array('PATH_INFO' => '/justa/testfunc', 'SHARED_SECRET' => 'TEST-SECRET-1'),
-      'mabiTesting\JustAController', array($middleware, $middleware2));
+      array($middleware, $middleware2));
 
     $this->dataConnectionMock->expects($this->once())
       ->method('findOneByField')
@@ -42,8 +41,7 @@ class APIApplicationOnlyAccessTest extends MiddlewareTestCase {
 
   public function testDocs() {
     $middleware = new \MABI\Middleware\APIApplicationOnlyAccess();
-    $this->setUpApp(array('PATH_INFO' => '/justa/testfunc'), 'mabiTesting\JustAController',
-      array($middleware));
+    $this->setUpApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware));
 
     $docArray = array(
       'parameters' => array(

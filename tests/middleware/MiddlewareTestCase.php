@@ -36,18 +36,17 @@ class MiddlewareTestCase extends AppTestCase {
    * @param array $env
    * @param array $middlewares
    */
-  public function setUpApp($env = array(), $middlewareClass = null, $middlewares = array()) {
+  public function setUpApp($env = array(), $middlewares = array()) {
     parent::setUpApp($env);
 
-    $this->app->setModelLoaders(array(new \MABI\DirectoryModelLoader(__DIR__ . '/../TestApp/TestModelDir', $this->app, 'mabiTesting')));
+    $this->app->setModelLoaders(array(new \MABI\DirectoryModelLoader(__DIR__ . '/../TestApp/TestModelDir', $this->app,
+      'mabiTesting')));
 
     $dirControllerLoader = new \MABI\DirectoryControllerLoader(__DIR__ . '/../TestApp/TestControllerDir', $this->app,
       'mabiTesting');
     foreach ($dirControllerLoader->getControllers() as $controller) {
-      if (get_class($controller) == $middlewareClass && !empty($middlewares)) {
-        foreach ($middlewares as $middleware) {
-          $controller->addMiddleware($middleware);
-        }
+      foreach ($middlewares as $middleware) {
+        $controller->addMiddleware($middleware);
       }
       $controller->addMiddleware(new \MABI\Middleware\AnonymousIdentifier());
 

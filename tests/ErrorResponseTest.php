@@ -52,8 +52,7 @@ class ErrorResponseTest extends MiddlewareTestCase {
   public function testErrorOverride() {
     $middleware = new \MABI\Middleware\SharedSecret();
     $middleware2 = new \MABI\Middleware\APIApplicationOnlyAccess();
-    $this->setUpApp(array('PATH_INFO' => '/justa/testfunc'), 'mabiTesting\JustAController',
-      array($middleware, $middleware2));
+    $this->setUpApp(array('PATH_INFO' => '/justa/testfunc'), array($middleware, $middleware2));
 
     $this->app->call();
 

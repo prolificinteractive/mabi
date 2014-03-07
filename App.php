@@ -64,6 +64,11 @@ class App extends Extension {
   protected $cacheRepositories = array();
 
   /**
+   * @var \MABI\Controller
+   */
+  protected $activeContoller = NULL;
+
+  /**
    * @return \MABI\ErrorResponseDictionary
    */
   public function getErrorResponseDictionary() {
@@ -79,6 +84,20 @@ class App extends Extension {
     }
 
     return self::$singletonApp;
+  }
+
+  /**
+   * @param \MABI\Controller $activeContoller
+   */
+  public function setActiveContoller($activeContoller) {
+    $this->activeContoller = $activeContoller;
+  }
+
+  /**
+   * @return \MABI\Controller
+   */
+  public function getActiveContoller() {
+    return $this->activeContoller;
   }
 
   /**

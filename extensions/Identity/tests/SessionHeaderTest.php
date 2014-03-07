@@ -36,8 +36,7 @@ class SessionHeaderTest extends MiddlewareTestCase {
   public function testCall() {
     $middleware = new SessionHeader();
 
-    $this->setUpApp(array('PATH_INFO' => '/modelbs', 'SESSION' => '111444'), 'mabiTesting\ModelBController',
-      array($middleware));
+    $this->setUpApp(array('PATH_INFO' => '/modelbs', 'SESSION' => '111444'), array($middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
 
@@ -72,8 +71,7 @@ class SessionHeaderTest extends MiddlewareTestCase {
   public function testDocs() {
     $middleware = new SessionHeader();
 
-    $this->setUpApp(array('PATH_INFO' => '/modelbs', 'SESSION' => '111444'), 'mabiTesting\ModelBController',
-      array($middleware));
+    $this->setUpApp(array('PATH_INFO' => '/modelbs', 'SESSION' => '111444'), array($middleware));
     $identity = new Identity($this->app, new RESTAccess($this->app));
     $this->app->addExtension($identity);
 

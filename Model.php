@@ -585,8 +585,9 @@ class Model {
     if ($this->idColumn != $this->idProperty && isset($propArray[$this->idProperty])) {
       unset($propArray[$this->idProperty]);
     }
-    $dataConnection->save($this->table, $propArray, $this->idColumn,
+    $resultArray = $dataConnection->save($this->table, $propArray, $this->idColumn,
       $dataConnection->convertToNativeId($this->{$this->idProperty}));
+    $this->loadIdFromResultArray($resultArray);
   }
 
   /**

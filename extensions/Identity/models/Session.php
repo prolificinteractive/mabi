@@ -85,7 +85,7 @@ class Session extends Model {
     $this->created = new \DateTime('now');
     $this->lastAccessed = new \DateTime('now');
     if(!empty($this->user)) {
-      $this->userId = $this->user->userId;
+      $this->userId = $this->user->{$this->user->idProperty};
     }
     $this->email = NULL;
     $this->password = NULL;

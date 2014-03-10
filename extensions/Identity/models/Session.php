@@ -95,9 +95,6 @@ class Session extends Model {
   public function loadUser () {
     $user = call_user_func($this->userModelClass . '::init',$this->app);
     $user->findById($this->userId);
-    $user->lastAccessed = $this->lastAccessed;
-    $user->save();
-
     $this->user = $user;
   }
 }

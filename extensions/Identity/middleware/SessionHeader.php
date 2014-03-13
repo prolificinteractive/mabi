@@ -33,13 +33,9 @@ class SessionHeader extends Middleware {
       $this->getApp()->getRequest()->session = $this->session;
       $now = new \DateTime('@' . time());
       $this->session->lastAccessed = $now;
-
-      $user = User::init($this->getApp());
-      $user->findById($this->session->userId);
-      $user->lastAccessed = $now;
-      $user->save();
-
-      $this->session->user = $user;
+      $this->session->loadUser();
+      $this->session->user->lastAccessed = $this->session->lastAccessed;
+      $this->session->user->save();
     }
 
     if (!empty($this->next)) {

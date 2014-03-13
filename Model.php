@@ -199,6 +199,16 @@ class Model {
   }
 
   /**
+   * Model count
+   *
+   * @return int model count
+   */
+  public function count() {
+    $count = $this->app->getDataConnection($this->connection)->count($this->table);
+    return $count;
+  }
+
+  /**
    * todo: docs
    *
    * @return Model[]

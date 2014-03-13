@@ -65,6 +65,7 @@ class ModelTest extends SampleAppTestCase {
      */
     $amodel = \mabiTesting\ModelA::init($this->app);
     $amodel->findByField('init_id', '2');
+    $this->assertEmpty($amodel->_remainingReadResults);
     $this->assertNotEmpty($amodel);
     $this->assertNotEmpty($amodel->partner);
     $this->assertNotEmpty($amodel->partner->name);

@@ -12,9 +12,9 @@ use MABI\Parser;
  * Manages the endpoints for the User model. This includes creating a new user using a POST to the collection, and
  * getting, updating and deleting the user information.
  *
- * @middleware \MABI\RESTAccess\PostAndObjectOnly
- * @middleware \MABI\Identity\Middleware\SessionHeader
- * @middleware \MABI\Identity\Middleware\RESTOwnerOnlyAccess
+ * @middleware("\MABI\RESTAccess\PostAndObjectOnly")
+ * @middleware("\MABI\Identity\Middleware\SessionHeader")
+ * @middleware("\MABI\Identity\Middleware\RESTOwnerOnlyAccess")
  */
 class UserController extends \MABI\Identity\UserController {
 

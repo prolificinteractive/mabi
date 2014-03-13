@@ -9,7 +9,7 @@ include_once __DIR__ . '/../../../Controller.php';
 /**
  * Class JustAController
  *
- * @middleware MABI\Middleware\AnonymousIdentifier
+ * @middleware("MABI\Middleware\AnonymousIdentifier")
  * @package mabiTesting
  */
 class JustAController extends Controller {

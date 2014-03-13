@@ -18,9 +18,9 @@ use \MABI\RESTModelController;
  *
  * There is no expiration mechanism built into the sessions, but this can be done in a custom implementation.
  *
- * @middleware \MABI\RESTAccess\PostAndObjectOnly
- * @middleware \MABI\Identity\Middleware\SessionHeader
- * @middleware \MABI\Identity\Middleware\RESTOwnerOnlyAccess
+ * @middleware("\MABI\RESTAccess\PostAndObjectOnly")
+ * @middleware("\MABI\Identity\Middleware\SessionHeader")
+ * @middleware("\MABI\Identity\Middleware\RESTOwnerOnlyAccess")
  */
 class SessionController extends RESTModelController {
 

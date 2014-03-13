@@ -115,13 +115,19 @@ class Controller {
 
     $rClass = new \ReflectionClass(get_called_class());
 
-    // Load middlewares from @middleware directive
+    // Load middlewares from @middleware annotation
     $middlewareFiles = array();
-    $middlewares = ReflectionHelper::getDocDirective($rClass->getDocComment(), 'middleware');
-    foreach ($middlewares as $middlewareClass) {
-      $middlewareFile = ReflectionHelper::stripClassName($middlewareClass) . '.php';
-      $this->addMiddlewareByClass($middlewareClass, $middlewareFile);
-      $middlewareFiles[$middlewareClass] = $middlewareFile;
+
+    $annotations = $this->getApp()->getAnnotationReader()->getClassAnnotations($rClass);
+    foreach ($annotations as $annotation) {
+      if ($annotation instanceof \MABI\Annotations\Middleware) {
+        /**
+         * @var $annotation \MABI\Annotations\Middleware
+         */
+        $middlewareFile = ReflectionHelper::stripClassName($annotation->getClass()) . '.php';
+        $this->addMiddlewareByClass($annotation->getClass(), $middlewareFile);
+        $middlewareFiles[$annotation->getClass()] = $middlewareFile;
+      }
     }
 
     if (empty($this->documentationName)) {

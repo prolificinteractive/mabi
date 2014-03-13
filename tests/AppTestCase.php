@@ -80,7 +80,8 @@ class AppTestCase extends \PHPUnit_Framework_TestCase {
         'clearAll',
         'getNewId',
         'findAll',
-        'findAllByField'
+        'findAllByField',
+        'count'
       )
     );
 

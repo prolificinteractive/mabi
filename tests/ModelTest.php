@@ -238,6 +238,21 @@ class ModelTest extends SampleAppTestCase {
     $fmodel->loadFromExternalSource('null');
   }
 
+  public function testCount(){
+    $count = 12;
+    $this->dataConnectionMock->expects($this->once())
+      ->method('count')
+      ->with('modelas')
+      ->will($this->returnValue($count));
+
+    /**
+     * @var $amodel \mabiTesting\ModelA
+     */
+    $amodel = \mabiTesting\ModelA::init($this->app);
+    $response_count = $amodel->count($amodel);
+    $this->assertEquals(12, $response_count);
+  }
+
   // todo: public function testInsertAllFieldTypes() {
   // todo: test external, system, and internal fields
   // todo: test remaining results

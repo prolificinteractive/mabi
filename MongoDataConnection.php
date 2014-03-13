@@ -152,4 +152,14 @@ class MongoDataConnection implements DataConnection {
   function deleteByField($field, $value, $table) {
     $this->db->selectCollection($table)->remove(array($field => $value));
   }
+
+  /**
+   *
+   * @return int model count
+   */
+  public function count($table) {
+    $collection = $this->db->selectCollection($table);
+    $count      = $collection->find()->count();
+    return $count;
+  }
 }

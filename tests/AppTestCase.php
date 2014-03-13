@@ -66,7 +66,26 @@ class AppTestCase extends \PHPUnit_Framework_TestCase {
    */
   protected $dataConnectionMock;
 
+  private function timeOverrides($namespaces = array()) {
+    static $overridden = FALSE;
+
+    if (!$overridden) {
+      $returnTime = time();
+      foreach ($namespaces as $namespace) {
+        eval("namespace $namespace; function time() { return $returnTime; }");
+      }
+      $overridden = TRUE;
+    }
+  }
+
   public function setUpApp($env = array(), $withCache = false) {
+    $this->timeOverrides(array(
+      'MABI\FacebookIdentity\Testing',
+      'Slim\Http',
+      'MABI\Identity',
+      'MABI\Identity\Middleware',
+      'MABI\Identity\Testing',
+    ));
     \Slim\Environment::mock($env);
     $this->app = new App();
 
@@ -80,7 +99,8 @@ class AppTestCase extends \PHPUnit_Framework_TestCase {
         'clearAll',
         'getNewId',
         'findAll',
-        'findAllByField'
+        'findAllByField',
+        'count'
       )
     );
 

@@ -199,6 +199,16 @@ class Model {
   }
 
   /**
+   * Model count
+   *
+   * @return int model count
+   */
+  public function count() {
+    $count = $this->app->getDataConnection($this->connection)->count($this->table);
+    return $count;
+  }
+
+  /**
    * todo: docs
    *
    * @return Model[]
@@ -357,6 +367,23 @@ class Model {
   }
 
   /**
+   * Checks if an ID exists in a result array and if so, loads it into the model's idProperty
+   *
+   * @param $resultArray   array Associative array that maps to the model
+   * @param $sanitizeArray bool Whether to clean up $resultArray
+   */
+  protected function loadIdFromResultArray(&$resultArray, $sanitizeArray = FALSE) {
+    if (!empty($resultArray[$this->idColumn])) {
+      if (!$sanitizeArray) {
+        $dataConnection            = $this->app->getDataConnection($this->connection);
+        $this->{$this->idProperty} = $dataConnection->convertFromNativeId($resultArray[$this->idColumn]);
+      }
+      unset($resultArray[$this->idColumn]);
+      unset($resultArray[$this->idProperty]);
+    }
+  }
+
+  /**
    * Loads the data for the model from a PHP array or a json string into the current model object using reflection
    * and MABI annotations.
    *
@@ -373,14 +400,7 @@ class Model {
       }
     }
 
-    if (!empty($resultArray[$this->idColumn])) {
-      if (!$sanitizeArray) {
-        $dataConnection = $this->app->getDataConnection($this->connection);
-        $this->{$this->idProperty} = $dataConnection->convertFromNativeId($resultArray[$this->idColumn]);
-      }
-      unset($resultArray[$this->idColumn]);
-      unset($resultArray[$this->idProperty]);
-    }
+    $this->loadIdFromResultArray($resultArray, $sanitizeArray);
 
     foreach ($this->modelFieldsInfo as $modelFieldInfo) {
       if (!array_key_exists($modelFieldInfo->name, $resultArray)) {
@@ -562,8 +582,8 @@ class Model {
    */
   public function insert() {
     $dataConnection = $this->app->getDataConnection($this->connection);
-    $propArray = $dataConnection->insert($this->table, $this->getPropertyArray());
-    $this->load($propArray);
+    $resultArray = $dataConnection->insert($this->table, $this->getPropertyArray());
+    $this->loadIdFromResultArray($resultArray);
   }
 
   /**
@@ -575,9 +595,9 @@ class Model {
     if ($this->idColumn != $this->idProperty && isset($propArray[$this->idProperty])) {
       unset($propArray[$this->idProperty]);
     }
-    $dataConnection->save($this->table, $propArray, $this->idColumn,
+    $resultArray = $dataConnection->save($this->table, $propArray, $this->idColumn,
       $dataConnection->convertToNativeId($this->{$this->idProperty}));
-    $this->load($propArray);
+    $this->loadIdFromResultArray($resultArray);
   }
 
   /**

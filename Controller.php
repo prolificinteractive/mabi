@@ -174,7 +174,7 @@ class Controller {
         $prevMiddleware->setNextMiddleware($currMiddleware);
       }
       $prevMiddleware = $currMiddleware;
-      $currMiddleware->setController($this);
+      $currMiddleware->setApp($this->getApp());
     }
   }
 
@@ -186,6 +186,7 @@ class Controller {
    * An overridable function that is called before a route executes middleware
    */
   public function preMiddleware() {
+    $this->getApp()->setActiveContoller($this);
   }
 
   /**

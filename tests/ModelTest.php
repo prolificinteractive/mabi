@@ -65,6 +65,7 @@ class ModelTest extends SampleAppTestCase {
      */
     $amodel = \mabiTesting\ModelA::init($this->app);
     $amodel->findByField('init_id', '2');
+    $this->assertEmpty($amodel->_remainingReadResults);
     $this->assertNotEmpty($amodel);
     $this->assertNotEmpty($amodel->partner);
     $this->assertNotEmpty($amodel->partner->name);
@@ -236,6 +237,21 @@ class ModelTest extends SampleAppTestCase {
      */
     $fmodel = \mabiTesting\FullModel::init($this->app);
     $fmodel->loadFromExternalSource('null');
+  }
+
+  public function testCount(){
+    $count = 12;
+    $this->dataConnectionMock->expects($this->once())
+      ->method('count')
+      ->with('modelas')
+      ->will($this->returnValue($count));
+
+    /**
+     * @var $amodel \mabiTesting\ModelA
+     */
+    $amodel = \mabiTesting\ModelA::init($this->app);
+    $response_count = $amodel->count($amodel);
+    $this->assertEquals(12, $response_count);
   }
 
   // todo: public function testInsertAllFieldTypes() {

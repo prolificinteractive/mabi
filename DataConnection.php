@@ -26,4 +26,7 @@ interface DataConnection {
   function clearAll($table);
 
   function query($table, $query);
+
+  function count($table);
+
 }

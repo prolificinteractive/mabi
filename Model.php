@@ -282,6 +282,7 @@ class Model {
           $parameter = intval($result);
           break;
         case 'bool':
+        case 'boolean':
           $parameter = $result == TRUE;
           break;
         case 'float':

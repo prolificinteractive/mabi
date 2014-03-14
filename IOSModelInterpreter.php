@@ -34,6 +34,7 @@ class IOSModelInterpreter {
         $type = 'Integer 32';
         break;
       case 'bool':
+      case 'boolean':
         $type = 'Boolean';
         break;
       case 'float':

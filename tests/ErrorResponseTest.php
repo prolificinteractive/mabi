@@ -2,6 +2,7 @@
 
 namespace MABI\Testing;
 
+include_once __DIR__ . '/../vendor/autoload.php';
 include_once __DIR__ . '/middleware/MiddlewareTestCase.php';
 include_once __DIR__ . '/../middleware/APIApplicationOnlyAccess.php';
 include_once __DIR__ . '/../middleware/SharedSecret.php';

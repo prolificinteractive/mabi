@@ -34,6 +34,18 @@ final class AnnotationReader extends SimpleAnnotationReader {
    */
   public function __construct($debug = FALSE) {
     parent::__construct();
+    include_once __DIR__ . '/Annotations/Docs/AttachModel.php';
+    include_once __DIR__ . '/Annotations/Docs/Param.php';
+    include_once __DIR__ . '/Annotations/Docs/ShowModel.php';
+    include_once __DIR__ . '/Annotations/Endpoint/Ignore.php';
+    include_once __DIR__ . '/Annotations/Field/External.php';
+    include_once __DIR__ . '/Annotations/Field/Id.php';
+    include_once __DIR__ . '/Annotations/Field/Internal.php';
+    include_once __DIR__ . '/Annotations/Field/Owner.php';
+    include_once __DIR__ . '/Annotations/Field/SharedSecret.php';
+    include_once __DIR__ . '/Annotations/Field/System.php';
+    include_once __DIR__ . '/Annotations/Model/Application.php';
+    include_once __DIR__ . '/Annotations/Model/NoController.php';
     include_once __DIR__ . '/Annotations/Middleware.php';
     $this->addNamespace('MABI\Annotations');
     $this->debug = (Boolean) $debug;

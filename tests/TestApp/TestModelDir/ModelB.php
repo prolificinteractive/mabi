@@ -7,7 +7,7 @@ class ModelB extends \MABI\Model {
   public $name;
   /**
    * @var string
-   * @field owner
+   * @Field\owner
    */
   public $testOwner;
 }

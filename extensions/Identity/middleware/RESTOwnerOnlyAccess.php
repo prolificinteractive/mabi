@@ -61,8 +61,9 @@ class RESTOwnerOnlyAccess extends Middleware {
     $rClass = new \ReflectionClass($restController->getModelClass());
     // Allow @field owner override otherwise the default owner field is $owner
     $ownerProperty = 'owner';
+    $annotationReader = $this->getApp()->getAnnotationReader();
     foreach ($rClass->getProperties() as $rProperty) {
-      if (in_array('owner', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
+      if ($annotationReader->getPropertyAnnotation($rProperty, 'MABI\Annotations\Field\Owner')) {
         $ownerProperty = $rProperty->getName();
         break;
       }

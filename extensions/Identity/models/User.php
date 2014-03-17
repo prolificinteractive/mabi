@@ -9,8 +9,8 @@ use MABI\Model;
 class User extends Model {
 
   /**
-   * @field owner
-   * @field id
+   * @Field\owner
+   * @Field\id
    * @var string
    */
   public $userId;
@@ -55,7 +55,7 @@ class User extends Model {
    *
    * @var string
    *
-   * @field internal
+   * @Field\internal
    */
   public $passHash;
 
@@ -64,7 +64,7 @@ class User extends Model {
    *
    * @var string
    *
-   * @field internal
+   * @Field\internal
    */
   public $salt;
 
@@ -74,7 +74,7 @@ class User extends Model {
    *
    * @var string
    *
-   * @field external
+   * @Field\external
    */
   public $password;
 
@@ -83,7 +83,7 @@ class User extends Model {
    *
    * @var string
    *
-   * @field external
+   * @Field\external
    */
   public $newSessionId;
 

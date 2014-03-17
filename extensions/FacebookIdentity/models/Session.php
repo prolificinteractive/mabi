@@ -10,7 +10,7 @@ class Session extends \MABI\Identity\Session {
    * POSTs to create new sessions. Otherwise it will always be NULL.
    *
    * @var string
-   * @field external
+   * @Field\external
    */
   public $accessToken;
 
@@ -20,7 +20,7 @@ class Session extends \MABI\Identity\Session {
    * new session creation.
    *
    * @var bool
-   * @field external
+   * @Field\external
    */
   public $newUserCreated;
 }

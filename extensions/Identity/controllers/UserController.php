@@ -8,7 +8,7 @@ use \MABI\EmailSupport;
 use \MABI\RESTModelController;
 
 /**
- * @docs show-model
+ * @Docs\ShowModel
  *
  * Manages the endpoints for the User model. This includes creating a new user using a POST to the collection, and
  * getting, updating and deleting the user information.
@@ -46,7 +46,7 @@ class UserController extends RESTModelController {
 
   /**
    * @return \MABI\EmailSupport\Template
-   * @endpoint ignore
+   * @Endpoint\Ignore
    */
   public function getForgotEmailTemplate()
   {
@@ -55,7 +55,7 @@ class UserController extends RESTModelController {
 
   /**
    * @return \MABI\EmailSupport\Provider
-   * @endpoint ignore
+   * @Endpoint\Ignore
    */
   public function getEmailProvider() {
     return $this->emailProvider;
@@ -100,7 +100,7 @@ class UserController extends RESTModelController {
    * }
    * ~~~
    *
-   * @docs-param user string body required A user object to create in the database
+   * @Docs\Param(“user”,type=”string”,location=”body”,required=true,description=”A user object to create in the database”)
    *
    * @throws \Slim\Exception\Stop
    */
@@ -149,7 +149,7 @@ class UserController extends RESTModelController {
    * }
    * ~~~
    *
-   * @docs-param user string body required A user object to create in the database
+   * @Docs\Param(“user”,type=”string”,location=”body”,required=true,description=”A user object to create in the database”)
    *
    * @param $id string The id of the user you are trying to update
    */
@@ -207,7 +207,7 @@ class UserController extends RESTModelController {
    * }
    * ~~~
    *
-   * @docs-param email string body required json object containing a user's email
+   * @Docs\Param(“email”,type=”string”,location=”body”,required=true,description=”json object containing a user's email”)
    */
   public function postForgotPassword() {
     if ($this->getEmailProvider() == null) {

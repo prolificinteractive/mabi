@@ -7,7 +7,7 @@ include_once __DIR__ . '/../../Identity/controllers/UserController.php';
 use MABI\Parser;
 
 /**
- * @docs show-model
+ * @Docs\ShowModel
  *
  * Manages the endpoints for the User model. This includes creating a new user using a POST to the collection, and
  * getting, updating and deleting the user information.
@@ -25,7 +25,7 @@ class UserController extends \MABI\Identity\UserController {
 
   /**
    * @return boolean
-   * @endpoint ignore
+   * @Endpoint\Ignore
    */
   public function getFacebookOnly() {
     return $this->facebookOnly;
@@ -73,7 +73,7 @@ class UserController extends \MABI\Identity\UserController {
    * }
    * ~~~
    *
-   * @docs-param user string body required A user object to create in the database
+   * @Docs\Param(“user”,type=”string”,location=”body”,required=true,description=”A user object to create in the database”)
    *
    * @throws \Slim\Exception\Stop
    */
@@ -96,7 +96,7 @@ class UserController extends \MABI\Identity\UserController {
    * }
    * ~~~
    *
-   * @docs-param email string body required json object containing a user's email
+   * @Docs\Param(“email”,type=”string”,location=”body”,required=true,description=”json object containing a user's email”)
    */
   public function postForgotPassword() {
     if ($this->getFacebookOnly()) {
@@ -108,7 +108,7 @@ class UserController extends \MABI\Identity\UserController {
   }
 
   /**
-   * @endpoint ignore
+   * @Endpoint\Ignore
    *
    * @param Parser $parser
    *

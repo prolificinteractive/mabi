@@ -1,16 +1,16 @@
 <?php
 
-namespace MABI\Annotations;
+namespace MABI\Annotations\Docs;
 
 /**
- * Annotation that assigns a middleware automatically to a controller
+ * Annotation
  *
  * @author Photis Patriotis (ppatriotis@gmail.com)
  *
  * @Annotation
  * @Target({"CLASS"})
  */
-class Middleware {
+class AttachModel {
   /**
    * @var string
    * @Required

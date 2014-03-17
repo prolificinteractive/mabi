@@ -103,6 +103,11 @@ class ControllerTest extends SampleAppTestCase {
     $this->app->call();
     $this->assertEquals(200, $this->app->getResponse()->status());
     $this->assertEquals('', $this->app->getResponse()->body());
+
+    // Test ignored function
+    $this->setUpControllerApp(array('PATH_INFO' => '/justa/somethingthatshouldnotbegotten'));
+    $this->app->call();
+    $this->assertEquals(404, $this->app->getResponse()->status());
   }
 
   protected function removeDirRecursive($dirPath) {

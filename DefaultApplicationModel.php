@@ -5,7 +5,7 @@ namespace MABI;
 include_once __DIR__ . '/Model.php';
 
 /**
- * @restful NoController
+ * @Model\NoController
  */
 class DefaultApplicationModel extends Model {
   protected $table = 'applications';

@@ -96,13 +96,14 @@ class IOSModelInterpreter {
 
     $rClass = new \ReflectionClass($mabiModel);
 
+    $annotationReader = $mabiModel->getApp()->getAnnotationReader();
     $rProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
     foreach ($rProperties as $rProperty) {
       /*
        * Ignores writing any model property with 'internal' or 'system' option
        */
-      if (in_array('internal', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field')) ||
-        in_array('system', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))
+      if ($annotationReader->getPropertyAnnotation($rProperty, 'MABI\Annotations\Field\Internal') != NULL ||
+        $annotationReader->getPropertyAnnotation($rProperty, 'MABI\Annotations\Field\System') != NULL
       ) {
         continue;
       }

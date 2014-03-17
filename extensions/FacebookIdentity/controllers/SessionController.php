@@ -6,7 +6,7 @@ include_once __DIR__ . '/../../../RESTModelController.php';
 include_once __DIR__ . '/../../Identity/controllers/SessionController.php';
 
 /**
- * @docs show-model
+ * @Docs\ShowModel
  *
  * Manages the endpoints for the maintaining authenticated sessions for Users. These are required for many
  * calls that secure user information or must identify the user. The endpoints include creating a new session
@@ -58,7 +58,7 @@ class SessionController extends \MABI\Identity\SessionController {
 
   /**
    * @return boolean
-   * @endpoint ignore
+   * @Endpoint\Ignore
    */
   public function getFacebookOnly() {
     return $this->facebookOnly;
@@ -77,7 +77,7 @@ class SessionController extends \MABI\Identity\SessionController {
    * @param string $access_token The facebook connect access token
    *
    * @return mixed
-   * @endpoint ignore
+   * @Endpoint\Ignore
    */
   public function getFBInfo($access_token) {
     // If there is mock data for testing purposes, return this instead of contacting facebook
@@ -156,7 +156,7 @@ class SessionController extends \MABI\Identity\SessionController {
    * }
    * ~~~
    *
-   * @docs-param session string body required A session object (with email & password or email & authToken or accessToken filled in)
+   * @Docs\Param(“session”,type=”string”,location=”body”,required=true,description=”A session object (with email & password or email & authToken or accessToken filled in)”)
    *
    * @throws \Slim\Exception\Stop
    */

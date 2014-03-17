@@ -72,7 +72,7 @@ class Model {
   protected $writeAccess;
 
   /**
-   * @field system
+   * @Field\system
    * @var array
    */
   public $_remainingReadResults;
@@ -107,6 +107,13 @@ class Model {
 
   public function setId($id) {
     $this->{$this->idProperty} = $id;
+  }
+
+  /**
+   * @return \MABI\App
+   */
+  public function getApp() {
+    return $this->app;
   }
 
   /**
@@ -168,11 +175,12 @@ class Model {
       //
       $rClass = new \ReflectionClass($newModelObj);
       $rProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
+      $annotationReader = $app->getAnnotationReader();
       foreach ($rProperties as $rProperty) {
         /*
-         * Looks for the '@field id' directive to set as the id property
+         * Looks for the '@field\id' directive to set as the id property
          */
-        if (in_array('id', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))) {
+        if ($annotationReader->getPropertyAnnotation($rProperty, 'MABI\Annotations\Field\Id')) {
           $newModelObj->idProperty = $rProperty->getName();
           break;
         }
@@ -316,15 +324,15 @@ class Model {
 
     $rClass = new \ReflectionClass($this);
     $rProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
+    $annotationReader = $this->getApp()->getAnnotationReader();
     foreach ($rProperties as $rProperty) {
       $modelFieldInfo = new ModelFieldInfo();
 
       $modelFieldInfo->name = $rProperty->getName();
       // Ignores setting any model property with 'internal' or 'system' options if sanitizing the input
-      $fieldOptions = ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field');
-      $modelFieldInfo->isInternal = in_array('internal', $fieldOptions);
-      $modelFieldInfo->isExternal = in_array('external', $fieldOptions);
-      $modelFieldInfo->isSystem = in_array('system', $fieldOptions);
+      $modelFieldInfo->isInternal = $annotationReader->getPropertyAnnotation($rProperty, 'MABI\Annotations\Field\Internal') ? true : false;
+      $modelFieldInfo->isExternal = $annotationReader->getPropertyAnnotation($rProperty, 'MABI\Annotations\Field\External') ? true : false;
+      $modelFieldInfo->isSystem = $annotationReader->getPropertyAnnotation($rProperty, 'MABI\Annotations\Field\System') ? true : false;
 
       // Pulls out the type following the pattern @var <TYPE> from the doc comments of the property
       $varDocs = ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'var');
@@ -626,12 +634,13 @@ class Model {
 
     $rClass = new \ReflectionClass($this);
     $rProperties = $rClass->getProperties(\ReflectionProperty::IS_PUBLIC);
+    $annotationReader = $this->getApp()->getAnnotationReader();
     foreach ($rProperties as $rProperty) {
       /*
        * Ignores writing any model property with 'internal' or 'system' options
        */
-      if (in_array('internal', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field')) ||
-        in_array('system', ReflectionHelper::getDocDirective($rProperty->getDocComment(), 'field'))
+      if ($annotationReader->getPropertyAnnotation($rProperty, 'MABI\Annotations\Field\Internal') ||
+        $annotationReader->getPropertyAnnotation($rProperty, 'MABI\Annotations\Field\System')
       ) {
         continue;
       }

@@ -51,7 +51,7 @@ class SessionController extends RESTModelController {
    *     "authToken": string
    * }
    *
-   * @Docs\Param(“session”,type=”string”,location=”body”,required=true,description=”A session object (with email & password or email & authToken filled in)”)
+   * @Docs\Param("session",type="string",location="body",required=true,description="A session object (with email & password or email & authToken filled in)")
    *
    * @throws \Slim\Exception\Stop
    */

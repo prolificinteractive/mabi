@@ -69,7 +69,7 @@ class RESTModelController extends ModelController {
   /**
    * @param $id
    *
-   * @Docs\Param(“body”,type=”string”,location=”body”,required=true,description=”The object to update in the database”)
+   * @Docs\Param("body",type="string",location="body",required=true,description="The object to update in the database")
    */
   public function _restPutResource($id) {
     $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());

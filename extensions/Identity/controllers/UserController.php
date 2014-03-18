@@ -100,7 +100,7 @@ class UserController extends RESTModelController {
    * }
    * ~~~
    *
-   * @Docs\Param(“user”,type=”string”,location=”body”,required=true,description=”A user object to create in the database”)
+   * @Docs\Param("user",type="string",location="body",required=true,description="A user object to create in the database")
    *
    * @throws \Slim\Exception\Stop
    */
@@ -149,7 +149,7 @@ class UserController extends RESTModelController {
    * }
    * ~~~
    *
-   * @Docs\Param(“user”,type=”string”,location=”body”,required=true,description=”A user object to create in the database”)
+   * @Docs\Param("user",type="string",location="body",required=true,description="A user object to create in the database")
    *
    * @param $id string The id of the user you are trying to update
    */
@@ -207,7 +207,7 @@ class UserController extends RESTModelController {
    * }
    * ~~~
    *
-   * @Docs\Param(“email”,type=”string”,location=”body”,required=true,description=”json object containing a user's email”)
+   * @Docs\Param("email",type="string",location="body",required=true,description="json object containing a user's email")
    */
   public function postForgotPassword() {
     if ($this->getEmailProvider() == null) {

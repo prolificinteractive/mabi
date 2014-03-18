@@ -156,7 +156,7 @@ class SessionController extends \MABI\Identity\SessionController {
    * }
    * ~~~
    *
-   * @Docs\Param(“session”,type=”string”,location=”body”,required=true,description=”A session object (with email & password or email & authToken or accessToken filled in)”)
+   * @Docs\Param("session",type="string",location="body",required=true,description="A session object (with email & password or email & authToken or accessToken filled in)")
    *
    * @throws \Slim\Exception\Stop
    */

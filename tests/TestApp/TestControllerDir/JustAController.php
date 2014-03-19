@@ -9,7 +9,7 @@ include_once __DIR__ . '/../../../Controller.php';
 /**
  * Class JustAController
  *
- * @middleware MABI\Middleware\AnonymousIdentifier
+ * @middleware("MABI\Middleware\AnonymousIdentifier")
  * @package mabiTesting
  */
 class JustAController extends Controller {
@@ -51,5 +51,12 @@ class JustAController extends Controller {
 
   public function getCustomError3() {
     $this->getApp()->returnError('TEST_NEW_ERROR', array('!replacement' => 'a replacement string'));
+  }
+
+  /**
+   * @Endpoint\Ignore
+   */
+  public function getSomethingThatShouldNotBeGotten() {
+
   }
 }

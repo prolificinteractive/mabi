@@ -2,6 +2,7 @@
 
 namespace MABI\FacebookIdentity\Testing;
 
+include_once __DIR__ . '/../../../vendor/autoload.php';
 include_once __DIR__ . '/../FacebookIdentity.php';
 include_once __DIR__ . '/../../Identity/Identity.php';
 include_once __DIR__ . '/../../../tests/AppTestCase.php';

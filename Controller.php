@@ -48,7 +48,7 @@ class Controller {
   protected $documentationName = NULL;
 
   /**
-   * @endpoint ignore
+   * @Endpoint\Ignore
    * @return string
    */
   public function getBase() {
@@ -66,7 +66,7 @@ class Controller {
   protected $middlewares = array();
 
   /**
-   * @endpoint ignore
+   * @Endpoint\Ignore
    * @return \MABI\App
    */
   public function getApp() {
@@ -74,7 +74,7 @@ class Controller {
   }
 
   /**
-   * @endpoint ignore
+   * @Endpoint\Ignore
    * @return \MABI\Extension
    */
   public function getExtension() {
@@ -82,7 +82,7 @@ class Controller {
   }
 
   /**
-   * @endpoint ignore
+   * @Endpoint\Ignore
    * @return array|Middleware[]
    */
   public function getMiddlewares() {
@@ -115,13 +115,19 @@ class Controller {
 
     $rClass = new \ReflectionClass(get_called_class());
 
-    // Load middlewares from @middleware directive
+    // Load middlewares from @middleware annotation
     $middlewareFiles = array();
-    $middlewares = ReflectionHelper::getDocDirective($rClass->getDocComment(), 'middleware');
-    foreach ($middlewares as $middlewareClass) {
-      $middlewareFile = ReflectionHelper::stripClassName($middlewareClass) . '.php';
-      $this->addMiddlewareByClass($middlewareClass, $middlewareFile);
-      $middlewareFiles[$middlewareClass] = $middlewareFile;
+
+    $annotations = $this->getApp()->getAnnotationReader()->getClassAnnotations($rClass);
+    foreach ($annotations as $annotation) {
+      if ($annotation instanceof \MABI\Annotations\Middleware) {
+        /**
+         * @var $annotation \MABI\Annotations\Middleware
+         */
+        $middlewareFile = ReflectionHelper::stripClassName($annotation->value) . '.php';
+        $this->addMiddlewareByClass($annotation->value, $middlewareFile);
+        $middlewareFiles[$annotation->value] = $middlewareFile;
+      }
     }
 
     if (empty($this->documentationName)) {
@@ -224,12 +230,13 @@ class Controller {
       $cachedRoutes = array();
     }
 
+    $annotationReader = $this->getApp()->getAnnotationReader();
     $rClass = new \ReflectionClass($this);
     $rMethods = $rClass->getMethods(\ReflectionMethod::IS_PUBLIC);
     $baseMethods = array();
     foreach ($rMethods as $rMethod) {
-      // If there is a '@endpoint ignore' property, the function is not served as an endpoint
-      if (in_array('ignore', ReflectionHelper::getDocDirective($rMethod->getDocComment(), 'endpoint'))) {
+      // If there is a '@endpoint\ignore' annotation, the function should not be served as an endpoint
+      if ($annotationReader->getMethodAnnotation($rMethod, 'MABI\Annotations\Endpoint\Ignore')) {
         continue;
       }
 
@@ -275,24 +282,30 @@ class Controller {
   }
 
   /**
-   * Add in parameters specified using @docs-param
+   * Add in parameters specified using @Docs\Param
    *
-   * @param $rMethod
+   * @param \ReflectionMethod $rMethod
    *
    * @return array
    */
   protected function getDocParameters(\ReflectionMethod $rMethod) {
     $parameters = array();
-    $docsParameters = ReflectionHelper::getDocDirective($rMethod->getDocComment(), 'docs-param');
-    foreach ($docsParameters as $docsParameter) {
-      $paramComponents = explode(' ', $docsParameter, 5);
-      $parameters[] = array(
-        'Name' => $paramComponents[0],
-        'Type' => $paramComponents[1],
-        'Location' => $paramComponents[2],
-        'Required' => $paramComponents[3] == 'required' ? 'Y' : 'N',
-        'Description' => $paramComponents[4]
-      );
+
+    $annotationReader = $this->getApp()->getAnnotationReader();
+    $methodAnnotations = $annotationReader->getMethodAnnotations($rMethod);
+    foreach ($methodAnnotations as $methodAnnotation) {
+      if ($methodAnnotation instanceof \MABI\Annotations\Docs\Param) {
+        /**
+         * @var $methodAnnotation \MABI\Annotations\Docs\Param
+         */
+        $parameters[] = array(
+          'Name' => $methodAnnotation->value,
+          'Type' => $methodAnnotation->type,
+          'Location' => $methodAnnotation->location,
+          'Required' => $methodAnnotation->required ? 'Y' : 'N',
+          'Description' => $methodAnnotation->description
+        );
+      }
     }
 
     return $parameters;
@@ -303,7 +316,7 @@ class Controller {
    *
    * @param Parser $parser
    *
-   * @endpoint ignore
+   * @Endpoint\Ignore
    * @return array
    */
   public function getDocJSON(Parser $parser) {
@@ -316,11 +329,13 @@ class Controller {
     $doc['name'] = $this->documentationName;
     $doc['description'] = $parser->parse(ReflectionHelper::getDocText($rClass->getDocComment()));
 
+    $annotationReader = $this->getApp()->getAnnotationReader();
+
     // Adding documentation for custom controller actions
     $rMethods = $rClass->getMethods(\ReflectionMethod::IS_PUBLIC);
     foreach ($rMethods as $rMethod) {
-      // If there is a '@endpoint ignore' property, the function is not served as an endpoint
-      if (in_array('ignore', ReflectionHelper::getDocDirective($rMethod->getDocComment(), 'endpoint'))) {
+      // If there is a '@endpoint\ignore' annotation, the function should not be served as an endpoint
+      if ($annotationReader->getMethodAnnotation($rMethod, 'MABI\Annotations\Endpoint\Ignore')) {
         continue;
       }
 
@@ -366,12 +381,17 @@ class Controller {
       }
     }
 
-    foreach(ReflectionHelper::getDocDirective($rClass->getDocComment(), 'docs-attach-model') as $includeModelClass) {
-      /**
-       * @var $model \MABI\Model
-       */
-      $model = call_user_func($includeModelClass . '::init', $this->getApp());
-      $doc['models'][] = $model->getDocOutput($parser);
+    // Attaches optional models onto docs
+    $classAnnotations = $annotationReader->getClassAnnotations($rClass, 'MABI\Annotations\Docs\AttachModel');
+    foreach ($classAnnotations as $classAnnotation) {
+      if ($classAnnotation instanceof \MABI\Annotations\Docs\AttachModel) {
+        /**
+         * @var $model           \MABI\Model
+         * @var $classAnnotation \MABI\Annotations\Docs\AttachModel
+         */
+        $model           = call_user_func($classAnnotation->value . '::init', $this->getApp());
+        $doc['models'][] = $model->getDocOutput($parser);
+      }
     }
 
     return $doc;

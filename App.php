@@ -6,6 +6,7 @@ include_once __DIR__ . '/Slim/Slim.php';
 include_once __DIR__ . '/Extension.php';
 include_once __DIR__ . '/ErrorResponse.php';
 include_once __DIR__ . '/DefaultAppErrors.php';
+include_once __DIR__ . '/AnnotationReader.php';
 
 use Illuminate\Cache\ApcStore;
 use Illuminate\Cache\ApcWrapper;
@@ -26,6 +27,26 @@ class App extends Extension {
    * @var \Slim\Slim;
    */
   protected $slim;
+
+  /**
+   * @var AnnotationReader
+   */
+  protected $annotationReader;
+
+  /**
+   * @var App
+   */
+  protected static $singletonApp = NULL;
+
+  /**
+   * @var ErrorResponseDictionary
+   */
+  protected $errorResponseDictionary = NULL;
+
+  /**
+   * @var \Illuminate\Cache\Repository[]
+   */
+  protected $cacheRepositories = array();
 
   /**
    * @return \Slim\Slim
@@ -49,19 +70,11 @@ class App extends Extension {
   }
 
   /**
-   * @var App
+   * @return \MABI\AnnotationReader
    */
-  protected static $singletonApp = NULL;
-
-  /**
-   * @var ErrorResponseDictionary
-   */
-  protected $errorResponseDictionary = NULL;
-
-  /**
-   * @var \Illuminate\Cache\Repository[]
-   */
-  protected $cacheRepositories = array();
+  public function getAnnotationReader() {
+    return $this->annotationReader;
+  }
 
   /**
    * @var \MABI\Controller
@@ -113,6 +126,7 @@ class App extends Extension {
     }
     $this->slim = new Slim();
     $this->errorResponseDictionary = new DefaultAppErrors();
+    $this->annotationReader = new AnnotationReader();
     parent::__construct($this);
   }
 
@@ -140,6 +154,9 @@ class App extends Extension {
         return;
     }
     $this->cacheRepositories[$name] = new Repository($cacheStore);
+    if($name == 'system') {
+      $this->annotationReader->setCacheRepository($this->cacheRepositories[$name]);
+    }
   }
 
   /**

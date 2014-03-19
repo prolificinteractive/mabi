@@ -16,7 +16,7 @@ class ModelController extends Controller {
   protected $model = NULL;
 
   /**
-   * @endpoint ignore
+   * @Endpoint\Ignore
    * @return string
    */
   public function getModelClass() {
@@ -24,7 +24,7 @@ class ModelController extends Controller {
   }
 
   /**
-   * @endpoint ignore
+   * @Endpoint\Ignore
    * @return \MABI\Model
    */
   public function getModel() {
@@ -66,8 +66,9 @@ class ModelController extends Controller {
     $doc = parent::getDocJSON($parser);
 
     $rClass = new \ReflectionClass(get_called_class());
+    $annotationReader = $this->getApp()->getAnnotationReader();
 
-    if (in_array('show-model', ReflectionHelper::getDocDirective($rClass->getDocComment(), 'docs'))) {
+    if ($annotationReader->getClassAnnotation($rClass, '\MABI\Annotations\Docs\ShowModel')) {
       /**
        * @var $model \MABI\Model
        */

@@ -33,14 +33,14 @@ class SharedSecret extends \MABI\Middleware {
     $mabi = $this->getApp();
 
     $modelClasses = $mabi->getModelClasses();
+    $annotationReader = $this->getApp()->getAnnotationReader();
     foreach ($modelClasses as $modelClass) {
       if (ReflectionHelper::stripClassName($modelClass) == 'Application') {
         $applicationModelClass = $modelClass;
       }
 
       $rClass = new \ReflectionClass($modelClass);
-      $modelOptions = ReflectionHelper::getDocDirective($rClass->getDocComment(), 'model');
-      if (in_array('ApplicationModel', $modelOptions)) {
+      if ($annotationReader->getClassAnnotation($rClass, 'MABI\Annotations\Model\Application')) {
         $applicationModelClass = $modelClass;
         break;
       }
@@ -52,8 +52,7 @@ class SharedSecret extends \MABI\Middleware {
     $sharedSecretProp = 'sharedSecret';
     foreach ($modelProps as $modelProp) {
       $rProp = new \ReflectionProperty($applicationModelClass, $modelProp->name);
-      $propOptions = ReflectionHelper::getDocDirective($rProp->getDocComment(), 'field');
-      if (in_array('SharedSecret', $propOptions)) {
+      if ($annotationReader->getPropertyAnnotation($rProp, 'MABI\Annotations\Field\SharedSecret')) {
         $sharedSecretProp = $modelProp->name;
         break;
       }

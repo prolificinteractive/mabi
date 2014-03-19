@@ -69,7 +69,7 @@ class RESTModelController extends ModelController {
   /**
    * @param $id
    *
-   * @docs-param body string body required The object to update in the database
+   * @Docs\Param("body",type="string",location="body",required=true,description="The object to update in the database")
    */
   public function _restPutResource($id) {
     $this->model->loadFromExternalSource($this->getApp()->getRequest()->getBody());
@@ -91,8 +91,8 @@ class RESTModelController extends ModelController {
     $this->model->findById($route->getParam('id'));
   }
 
-  private function mapRestRoute(\Slim\Slim $slim, $path, $methodName, $httpMethod, &$cachedRoutes = NULL) {
-    $slim->map($path,
+  private function mapRestRoute($path, $methodName, $httpMethod, &$cachedRoutes = NULL) {
+    $this->getApp()->getSlim()->map($path,
       array($this, 'preMiddleware'),
       array($this, '_readModel'),
       array($this, '_runControllerMiddlewares'),
@@ -104,16 +104,16 @@ class RESTModelController extends ModelController {
     }
   }
 
-  protected function addStandardRestRoute(\Slim\Slim $slim, $httpMethod, &$cachedRoutes) {
+  protected function addStandardRestRoute($httpMethod, &$cachedRoutes) {
     $methodName = '_rest' . ucwords(strtolower($httpMethod)) . 'Resource';
 
     $rMethod = new \ReflectionMethod(get_called_class(), $methodName);
     // If there is a '@endpoint ignore' property, the function is not served as an endpoint
-    if (in_array('ignore', ReflectionHelper::getDocDirective($rMethod->getDocComment(), 'endpoint'))) {
+    if ($this->getApp()->getAnnotationReader()->getMethodAnnotation($rMethod, 'MABI\Annotations\Endpoint\Ignore')) {
       return;
     }
 
-    $this->mapRestRoute($slim, "/{$this->base}/:id(/?)", $methodName, $httpMethod, $cachedRoutes);
+    $this->mapRestRoute("/{$this->base}/:id(/?)", $methodName, $httpMethod, $cachedRoutes);
   }
 
   /**
@@ -130,7 +130,7 @@ class RESTModelController extends ModelController {
       is_array($cachedRoutes = $systemCache->get($cacheKey))) {
       // Get routes from cache
       foreach($cachedRoutes as $cachedRoute) {
-        $this->mapRestRoute($slim, $cachedRoute->path, $cachedRoute->method, $cachedRoute->httpMethod);
+        $this->mapRestRoute($cachedRoute->path, $cachedRoute->method, $cachedRoute->httpMethod);
       }
       return;
     } else {
@@ -150,9 +150,9 @@ class RESTModelController extends ModelController {
      */
 
     // todo: add API versioning
-    $this->addStandardRestRoute($slim, \Slim\Http\Request::METHOD_GET, $cachedRoutes);
-    $this->addStandardRestRoute($slim, \Slim\Http\Request::METHOD_PUT, $cachedRoutes);
-    $this->addStandardRestRoute($slim, \Slim\Http\Request::METHOD_DELETE, $cachedRoutes);
+    $this->addStandardRestRoute(\Slim\Http\Request::METHOD_GET, $cachedRoutes);
+    $this->addStandardRestRoute(\Slim\Http\Request::METHOD_PUT, $cachedRoutes);
+    $this->addStandardRestRoute(\Slim\Http\Request::METHOD_DELETE, $cachedRoutes);
 
     /**
      * Gets other automatically generated routes following the pattern:
@@ -161,9 +161,10 @@ class RESTModelController extends ModelController {
      */
     $rClass = new \ReflectionClass($this);
     $rMethods = $rClass->getMethods(\ReflectionMethod::IS_PUBLIC);
+    $annotationReader = $this->getApp()->getAnnotationReader();
     foreach ($rMethods as $rMethod) {
       // If there is a '@endpoint ignore' property, the function is not served as an endpoint
-      if (in_array('ignore', ReflectionHelper::getDocDirective($rMethod->getDocComment(), 'endpoint'))) {
+      if ($annotationReader->getMethodAnnotation($rMethod, 'MABI\Annotations\Endpoint\Ignore')) {
         continue;
       }
 
@@ -188,8 +189,8 @@ class RESTModelController extends ModelController {
       }
 
       if (!empty($action)) {
-        $this->mapRestRoute($slim, "/{$this->base}/:id/{$action}(/?)", $methodName, $httpMethod, $cachedRoutes);
-        $this->mapRestRoute($slim, "/{$this->base}/:id/{$action}(/:param+)(/?)", $methodName, $httpMethod, $cachedRoutes);
+        $this->mapRestRoute("/{$this->base}/:id/{$action}(/?)", $methodName, $httpMethod, $cachedRoutes);
+        $this->mapRestRoute("/{$this->base}/:id/{$action}(/:param+)(/?)", $methodName, $httpMethod, $cachedRoutes);
       }
     }
 
@@ -202,9 +203,10 @@ class RESTModelController extends ModelController {
     $methodDoc = array();
 
     $rMethod = new \ReflectionMethod(get_called_class(), $method);
+    $annotationReader = $this->getApp()->getAnnotationReader();
     $docComment = $rMethod->getDocComment();
     // If there is a '@endpoint ignore' property, the function is not served as an endpoint
-    if (in_array('ignore', ReflectionHelper::getDocDirective($docComment, 'endpoint'))) {
+    if ($annotationReader->getMethodAnnotation($rMethod, 'MABI\Annotations\Endpoint\Ignore')) {
       return $methodDoc;
     }
 
@@ -236,7 +238,7 @@ class RESTModelController extends ModelController {
    *
    * @param Parser $parser
    *
-   * @endpoint ignore
+   * @Endpoint\Ignore
    * @return array
    */
   public function getDocJSON(Parser $parser) {
@@ -277,10 +279,11 @@ class RESTModelController extends ModelController {
 
     // Add documentation for custom rest actions
     $rMethods = $rClass->getMethods(\ReflectionMethod::IS_PUBLIC);
+    $annotationReader = $this->getApp()->getAnnotationReader();
     foreach ($rMethods as $rMethod) {
       $docComment = $rMethod->getDocComment();
       // If there is a '@endpoint ignore' property, the function is not served as an endpoint
-      if (in_array('ignore', ReflectionHelper::getDocDirective($docComment, 'endpoint'))) {
+      if ($annotationReader->getMethodAnnotation($rMethod, 'MABI\Annotations\Endpoint\Ignore')) {
         continue;
       }
 

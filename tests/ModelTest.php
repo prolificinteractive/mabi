@@ -2,6 +2,7 @@
 
 namespace MABI\Testing;
 
+include_once __DIR__ . '/../vendor/autoload.php';
 include_once __DIR__ . '/../Model.php';
 include_once __DIR__ . '/../DirectoryModelLoader.php';
 include_once __DIR__ . '/../DataConnection.php';

@@ -34,24 +34,35 @@ class GeneratedRESTModelControllerLoader extends ControllerLoader {
    */
   protected $controllers = array();
 
-  public function __construct($modelClasses, $extension) {
+  public function __construct(array $modelClasses,Extension $extension) {
     $this->extension = $extension;
     $this->modelClasses = $modelClasses;
 
+    $annotationReader = $extension->getApp()->getAnnotationReader();
+
     foreach ($this->modelClasses as $modelClass) {
       $rClass = new \ReflectionClass($modelClass);
-      $properties = ReflectionHelper::getDocDirective($rClass->getDocComment(), 'model');
-      if (!in_array('NoController', $properties)) {
+
+      if (!$annotationReader->getClassAnnotation($rClass, 'MABI\Annotations\Model\NoController')) {
+        // If annotation is present, do not generate controller
+
         /**
          * @var $controller Controller
          */
         $controller = RESTModelController::generate($modelClass, $this->extension);
 
         // Load the middleware that's specified in the Model
-        $middlewares = ReflectionHelper::getDocDirective($rClass->getDocComment(), 'middleware');
-        foreach ($middlewares as $middlewareClass) {
-          $controller->addMiddlewareByClass($middlewareClass);
+        $annotations = $annotationReader->getClassAnnotations($rClass);
+        foreach ($annotations as $annotation) {
+          if ($annotation instanceof \MABI\Annotations\Middleware) {
+            /**
+             * @var $annotation \MABI\Annotations\Middleware
+             */
+            $middlewareFile = ReflectionHelper::stripClassName($annotation->value) . '.php';
+            $controller->addMiddlewareByClass($annotation->value, $middlewareFile);
+          }
         }
+
         $this->controllers[] = $controller;
       }
     }

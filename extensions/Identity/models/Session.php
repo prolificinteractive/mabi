@@ -14,7 +14,7 @@ class Session extends Model {
    * Identifies the authenticated session. This id is included in the request header for various endpoints
    * to identify which session the client is using.
    *
-   * @field id
+   * @Field\id
    * @var string
    */
   public $sessionId;
@@ -23,7 +23,7 @@ class Session extends Model {
    * When the session was created
    *
    * @var \DateTime
-   * @field internal
+   * @Field\internal
    */
   public $created;
 
@@ -31,7 +31,7 @@ class Session extends Model {
    * The last time the session was accessed. This is updated whenever the session is read from the header
    * if using the \MABI\Identity\SessionHeader middleware.
    *
-   * @field internal
+   * @Field\internal
    * @var \DateTime
    */
   public $lastAccessed;
@@ -40,7 +40,7 @@ class Session extends Model {
    * The ID of the user which this session is authenticated for
    *
    * @var string
-   * @field owner
+   * @Field\owner
    */
   public $userId;
 
@@ -50,7 +50,7 @@ class Session extends Model {
    * requests so only the userId field is filled.
    *
    * @var \MABI\Identity\User
-   * @field external
+   * @Field\external
    */
   public $user;
 
@@ -59,7 +59,7 @@ class Session extends Model {
    * new sessions. Otherwise it will always be NULL.
    *
    * @var string
-   * @field external
+   * @Field\external
    */
   public $email;
 
@@ -68,7 +68,7 @@ class Session extends Model {
    * to create new sessions. Otherwise it will always be NULL.
    *
    * @var string
-   * @field external
+   * @Field\external
    */
   public $password;
 
@@ -77,7 +77,7 @@ class Session extends Model {
    * to create new sessions. Otherwise it will always be NULL.
    *
    * @var string
-   * @field external
+   * @Field\external
    */
   public $authToken;
 

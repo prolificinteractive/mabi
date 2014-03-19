@@ -2,6 +2,7 @@
 
 namespace MABI\Identity\Testing;
 
+include_once __DIR__ . '/../../../vendor/autoload.php';
 include_once __DIR__ . '/../Identity.php';
 include_once __DIR__ . '/../../../tests/AppTestCase.php';
 include_once __DIR__ . '/../../EmailSupport/Mandrill.php';

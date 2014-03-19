@@ -40,19 +40,19 @@ class FullModel extends \MABI\Model {
 
   /**
    * @var string
-   * @field internal
+   * @Field\internal
    */
   public $internalField;
 
   /**
    * @var string
-   * @field external
+   * @Field\external
    */
   public $externalField;
 
   /**
    * @var string
-   * @field system
+   * @Field\system
    */
   public $systemField;
 }

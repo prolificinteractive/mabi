@@ -8,6 +8,7 @@ use MABI\DirectoryControllerLoader;
 use MABI\DirectoryModelLoader;
 use MABI\Extension;
 
+include_once __DIR__ . '/../vendor/autoload.php';
 include_once __DIR__ . '/../Extension.php';
 include_once __DIR__ . '/../DirectoryModelLoader.php';
 include_once __DIR__ . '/../DirectoryControllerLoader.php';

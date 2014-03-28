@@ -40,14 +40,10 @@ class Param {
   public $description;
 
   function __construct(array $values) {
-    if(empty($values['type'])) {
-      $this->type = 'string';
-    }
-    if(empty($values['location'])) {
-      $this->location = 'body';
-    }
-    if(empty($values['required'])) {
-      $this->required = false;
-    }
+    empty($values['type']) ? $this->type = 'string' : $this->type = $values['type'];
+    empty($values['location']) ? $this->location = 'body' : $this->location = $values['location'];
+    empty($values['required']) ? $this->required = FALSE : $this->required = $values['required'];
+    empty($values['value']) ? $this->value = FALSE : $this->value = $values['value'];
+    empty($values['description']) ? $this->description = FALSE : $this->description = $values['description'];
   }
 }

@@ -9,6 +9,13 @@ namespace MABI\Annotations\Docs;
  *
  * @Annotation
  * @Target({"METHOD"})
+ * @Attributes({
+ *   @Attribute("value",  required = true,  type = "array"),
+ *   @Attribute("literal", required = false, type = "array"),
+ *   @Attribute("literal", required = false, type = "array"),
+ *   @Attribute("literal", required = false, type = "array"),
+ *   @Attribute("literal", required = false, type = "array")
+ * })
  */
 class Param {
   /**
@@ -65,7 +72,7 @@ class Param {
 
   public function setProperty($property, $property_value, $available) {
     if (!in_array($property_value, $available)) {
-      throw AnnotationException::enumeratorError('type', 'Docs\\Param', 'class...', $available, $property_value);
+      throw AnnotationException::enumeratorError($property, 'Docs\\Param', 'class...', $available, $property_value);
     }
     else {
       $this->{$property} = $property_value;

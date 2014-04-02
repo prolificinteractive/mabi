@@ -41,7 +41,7 @@ class Param {
 
   function __construct(array $values) {
     if (empty($values['value'])) {
-      throw AnnotationException::requiredError("value", "Docs\\Param", 'on class...expects', "a(n) string.");
+      throw AnnotationException::requiredError("value", "Docs\\Param", 'class...expects', "a(n) string.");
     }
     else {
       $this->value = $values['value'];
@@ -54,6 +54,5 @@ class Param {
     $this->type     = empty($values['type']) ? 'string' : $values['type'];
     $this->location = empty($values['location']) ? 'body' : $values['location'];
     $this->required = empty($values['required']) ? FALSE : $values['required'];
-  }
   }
 }

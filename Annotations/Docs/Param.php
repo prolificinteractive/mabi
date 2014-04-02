@@ -40,10 +40,20 @@ class Param {
   public $description;
 
   function __construct(array $values) {
-    empty($values['type']) ? $this->type = 'string' : $this->type = $values['type'];
-    empty($values['location']) ? $this->location = 'body' : $this->location = $values['location'];
-    empty($values['required']) ? $this->required = FALSE : $this->required = $values['required'];
-    empty($values['value']) ? $this->value = FALSE : $this->value = $values['value'];
-    empty($values['description']) ? $this->description = FALSE : $this->description = $values['description'];
+    if (empty($values['value'])) {
+      throw AnnotationException::requiredError("value", "Docs\\Param", 'on class...expects', "a(n) string.");
+    }
+    else {
+      $this->value = $values['value'];
+    }
+
+    if (!empty($values['description'])) {
+      $this->description = $values['description'];
+    }
+
+    $this->type     = empty($values['type']) ? 'string' : $values['type'];
+    $this->location = empty($values['location']) ? 'body' : $values['location'];
+    $this->required = empty($values['required']) ? FALSE : $values['required'];
+  }
   }
 }

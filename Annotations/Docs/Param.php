@@ -72,7 +72,7 @@ class Param {
 
   public function setProperty($property, $property_value, $available) {
     if (!in_array($property_value, $available)) {
-      throw AnnotationException::enumeratorError($property, 'Docs\\Param', 'class...', $available, $property_value);
+      throw AnnotationException::enumeratorError($property, 'Docs\\Param', 'a method', $available, $property_value);
     }
     else {
       $this->{$property} = $property_value;

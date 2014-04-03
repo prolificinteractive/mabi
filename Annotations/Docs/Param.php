@@ -9,6 +9,13 @@ namespace MABI\Annotations\Docs;
  *
  * @Annotation
  * @Target({"METHOD"})
+ * @Attributes({
+ *   @Attribute("value",  required = true,  type = "string"),
+ *   @Attribute("type", required = false, type = "string"),
+ *   @Attribute("location", required = false, type = "string"),
+ *   @Attribute("required", required = false, type = "boolean"),
+ *   @Attribute("description", required = false, type = "string")
+ * })
  */
 class Param {
   /**
@@ -40,14 +47,35 @@ class Param {
   public $description;
 
   function __construct(array $values) {
-    if(empty($values['type'])) {
+    if (!empty($values['description'])) {
+      $this->description = $values['description'];
+    }
+
+    if (empty($values['type'])) {
       $this->type = 'string';
     }
-    if(empty($values['location'])) {
+    else {
+      $available = array('string', 'int', 'float', 'bool', 'file');
+      $this->setProperty('type', $values['type'], $available);
+    }
+
+    if (empty($values['location'])) {
       $this->location = 'body';
     }
-    if(empty($values['required'])) {
-      $this->required = false;
+    else {
+      $available = array('url', 'body', 'header', 'query');
+      $this->setProperty('location', $values['location'], $available);
+    }
+
+    $this->required = empty($values['required']) ? FALSE : $values['required'];
+  }
+
+  public function setProperty($property, $property_value, $available) {
+    if (!in_array($property_value, $available)) {
+      throw AnnotationException::enumeratorError($property, 'Docs\\Param', 'a method', $available, $property_value);
+    }
+    else {
+      $this->{$property} = $property_value;
     }
   }
 }

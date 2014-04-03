@@ -108,7 +108,7 @@ class RESTModelController extends ModelController {
     $methodName = '_rest' . ucwords(strtolower($httpMethod)) . 'Resource';
 
     $rMethod = new \ReflectionMethod(get_called_class(), $methodName);
-    // If there is a '@endpoint ignore' property, the function is not served as an endpoint
+    // If there is a '@Endpoint\Ignore' property, the function is not served as an endpoint
     if ($this->getApp()->getAnnotationReader()->getMethodAnnotation($rMethod, 'MABI\Annotations\Endpoint\Ignore')) {
       return;
     }
@@ -163,7 +163,7 @@ class RESTModelController extends ModelController {
     $rMethods = $rClass->getMethods(\ReflectionMethod::IS_PUBLIC);
     $annotationReader = $this->getApp()->getAnnotationReader();
     foreach ($rMethods as $rMethod) {
-      // If there is a '@endpoint ignore' property, the function is not served as an endpoint
+      // If there is a '@Endpoint\Ignore' property, the function is not served as an endpoint
       if ($annotationReader->getMethodAnnotation($rMethod, 'MABI\Annotations\Endpoint\Ignore')) {
         continue;
       }
@@ -205,7 +205,7 @@ class RESTModelController extends ModelController {
     $rMethod = new \ReflectionMethod(get_called_class(), $method);
     $annotationReader = $this->getApp()->getAnnotationReader();
     $docComment = $rMethod->getDocComment();
-    // If there is a '@endpoint ignore' property, the function is not served as an endpoint
+    // If there is a '@Endpoint\Ignore' property, the function is not served as an endpoint
     if ($annotationReader->getMethodAnnotation($rMethod, 'MABI\Annotations\Endpoint\Ignore')) {
       return $methodDoc;
     }
@@ -282,7 +282,7 @@ class RESTModelController extends ModelController {
     $annotationReader = $this->getApp()->getAnnotationReader();
     foreach ($rMethods as $rMethod) {
       $docComment = $rMethod->getDocComment();
-      // If there is a '@endpoint ignore' property, the function is not served as an endpoint
+      // If there is a '@Endpoint\Ignore' property, the function is not served as an endpoint
       if ($annotationReader->getMethodAnnotation($rMethod, 'MABI\Annotations\Endpoint\Ignore')) {
         continue;
       }

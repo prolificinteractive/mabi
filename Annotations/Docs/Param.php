@@ -11,10 +11,10 @@ namespace MABI\Annotations\Docs;
  * @Target({"METHOD"})
  * @Attributes({
  *   @Attribute("value",  required = true,  type = "array"),
- *   @Attribute("literal", required = false, type = "array"),
- *   @Attribute("literal", required = false, type = "array"),
- *   @Attribute("literal", required = false, type = "array"),
- *   @Attribute("literal", required = false, type = "array")
+ *   @Attribute("type", required = false, type = "string"),
+ *   @Attribute("location", required = false, type = "string"),
+ *   @Attribute("required", required = false, type = "boolean"),
+ *   @Attribute("description", required = false, type = "string")
  * })
  */
 class Param {

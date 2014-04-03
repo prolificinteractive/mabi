@@ -10,7 +10,7 @@ namespace MABI\Annotations\Docs;
  * @Annotation
  * @Target({"METHOD"})
  * @Attributes({
- *   @Attribute("value",  required = true,  type = "array"),
+ *   @Attribute("value",  required = true,  type = "string"),
  *   @Attribute("type", required = false, type = "string"),
  *   @Attribute("location", required = false, type = "string"),
  *   @Attribute("required", required = false, type = "boolean"),

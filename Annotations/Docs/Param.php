@@ -68,6 +68,7 @@ class Param {
     }
 
     $this->required = empty($values['required']) ? FALSE : $values['required'];
+    $this->value = $values['value'];
   }
 
   public function setProperty($property, $property_value, $available) {

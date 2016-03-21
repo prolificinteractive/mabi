@@ -6,31 +6,46 @@ include_once __DIR__ . '/DataTemplate.php';
 
 class MandrillTemplate extends DataTemplate {
 
-  function __construct($templateName, $subject, $data = array())
-  {
+  /**
+   * MandrillTemplate constructor.
+   *
+   * @param string $templateName
+   * @param string $subject
+   * @param array $data
+   * @param array $attachments
+   */
+  function __construct($templateName, $subject, $data = array(), $attachments = array()) {
     $this->templateName = $templateName;
-    $this->subject = $subject;
-    $this->data = $data;
+    $this->subject      = $subject;
+    $this->data         = $data;
+    $this->attachments  = $attachments;
   }
 
-  public function getMessage()
-  {
+  /**
+   * @throws \Exception
+   */
+  public function getMessage() {
     throw new \Exception('MandrillTemplates cannot use this method');
   }
 
   /**
    * @return string
    */
-  public function getSubject()
-  {
+  public function getSubject() {
     $this->subject;
   }
 
   /**
    * @return string
    */
-  public function getTemplateName()
-  {
+  public function getTemplateName() {
     return $this->templateName;
+  }
+
+  /**
+   * @return array
+   */
+  public function getAttachments() {
+    return $this->attachments;
   }
 }

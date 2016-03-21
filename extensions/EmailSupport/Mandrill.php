@@ -32,14 +32,17 @@ class Mandrill implements Provider {
 
 
   public function __construct($apiKey, $senderEmail, $senderName) {
-    $this->apiKey = $apiKey;
+    $this->apiKey      = $apiKey;
     $this->senderEmail = $senderEmail;
-    $this->senderName = $senderName;
+    $this->senderName  = $senderName;
   }
 
   /**
-   * @param $to string
-   * @param $template Template
+   * @param string   $to
+   * @param Template $template
+   *
+   * @return mixed
+   * @throws \Exception
    */
   public function sendEmail($to, $template) {
     if (get_class($template) == 'MABI\EmailSupport\MandrillTemplate') {
@@ -47,9 +50,26 @@ class Mandrill implements Provider {
         $to,
         $template->getSubject(),
         $template->getTemplateName(),
-        $template->getData());
+        $template->getData(),
+        $template->getAttachments());
     }
-    return $this->sendEmailRequest($to, $template->getSubject(), $template->getMessage());
+    return $this->sendEmailRequest(
+      $to,
+      $template->getSubject(),
+      $template->getMessage(),
+      $template->getAttachments());
+  }
+
+  /**
+   * Adds the array of attachments, if there is one
+   *
+   * @param $post_data
+   * @param $attachments
+   */
+  private function addAttachments(&$post_data, $attachments) {
+    if (!empty($attachments)) {
+      $post_data['message']['attachments'] = $attachments;
+    }
   }
 
   /**
@@ -57,27 +77,29 @@ class Mandrill implements Provider {
    * @param $subject
    * @param $templateName
    * @param $vars
+   * @param $attachments
+   *
    * @return mixed
    * @throws \Exception
    */
-  private function sendEmailTemplateRequest($email, $subject, $templateName, $vars) {
+  private function sendEmailTemplateRequest($email, $subject, $templateName, $vars, $attachments = array()) {
 
     $url = 'https://mandrillapp.com/api/1.0/messages/send-template.json';
 
     $post_data = array(
-      'key' => $this->apiKey,
-      'template_name' => $templateName,
+      'key'              => $this->apiKey,
+      'template_name'    => $templateName,
       'template_content' => array(),
-      'message' => array(
-        'subject' => $subject,
+      'message'          => array(
+        'subject'    => $subject,
         'from_email' => $this->senderEmail,
-        'from_name' => $this->senderName,
-        'to' => array(
+        'from_name'  => $this->senderName,
+        'to'         => array(
           array(
             'email' => $email
           )
         ),
-        'merge' => true,
+        'merge'      => TRUE,
         'merge_vars' => array(
           array(
             "rcpt" => $email,
@@ -86,6 +108,8 @@ class Mandrill implements Provider {
         )
       )
     );
+
+    $this->addAttachments($post_data, $attachments);
 
     $post_data = json_encode($post_data);
 
@@ -96,7 +120,7 @@ class Mandrill implements Provider {
     curl_setopt($ch, CURLOPT_POST, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
 
-    $output = curl_exec($ch);
+    $output      = curl_exec($ch);
     $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
     curl_close($ch);
@@ -104,7 +128,8 @@ class Mandrill implements Provider {
     $output = json_decode($output);
     if ($http_status == '200') {
       return $output[0];
-    } else {
+    }
+    else {
       if ($output->code = -1) {
         throw new \Exception('Mandrill failed to send the email template.');
       }
@@ -115,27 +140,31 @@ class Mandrill implements Provider {
    * @param $toEmail
    * @param $subject
    * @param $message
+   * @param $attachments
+   *
    * @return mixed
    * @throws \Exception
    */
-  private function sendEmailRequest($toEmail, $subject, $message) {
+  private function sendEmailRequest($toEmail, $subject, $message, $attachments = array()) {
 
     $url = "https://mandrillapp.com/api/1.0/messages/send.json";
 
-    $post_data = array (
-      'key' => $this->apiKey,
+    $post_data = array(
+      'key'     => $this->apiKey,
       'message' => array(
-        'html' => $message,
-        'subject' => $subject,
+        'html'       => $message,
+        'subject'    => $subject,
         'from_email' => $this->senderEmail,
-        'from_name' => $this->senderName,
-        'to' => array(
+        'from_name'  => $this->senderName,
+        'to'         => array(
           array(
             'email' => $toEmail
           )
         )
       )
     );
+
+    $this->addAttachments($post_data, $attachments);
 
     $post_data = json_encode($post_data);
 
@@ -146,7 +175,7 @@ class Mandrill implements Provider {
     curl_setopt($ch, CURLOPT_POST, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
 
-    $output = curl_exec($ch);
+    $output      = curl_exec($ch);
     $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
     curl_close($ch);
@@ -154,7 +183,8 @@ class Mandrill implements Provider {
     $output = json_decode($output);
     if ($http_status == '200') {
       return $output[0];
-    } else {
+    }
+    else {
       if ($output->code = -1) {
         throw new \Exception('Mandrill failed to send the email');
       }

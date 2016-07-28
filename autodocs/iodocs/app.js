@@ -306,6 +306,13 @@ function processRequest(req, res, next) {
             path: apiConfig.publicPath + methodURL// + ((paramString.length > 0) ? '?' + paramString : "")
         };
 
+    if (apiConfig.enableCookie) {
+        if (config.debug) {
+            console.log("enabled cookies")
+        }
+        options.headers['Cookie'] = req.headers.cookie;
+    }
+
     if (['POST','DELETE','PUT'].indexOf(httpMethod) !== -1) {
         if(reqFiles) {
             var files2Post = {};
@@ -603,6 +610,11 @@ function processRequest(req, res, next) {
                 req.call = url.parse(options.host + options.path);
                 req.call = url.format(req.call);
 
+                if (apiConfig.enableCookie && req.resultHeaders['set-cookie']) {
+                    var cookie = parseCookie(req.resultHeaders['set-cookie'][0], apiConfig);
+                    res.cookie(cookie.key, cookie.value, cookie.options);
+                }
+
                 // Response body
                 req.result = body;
 
@@ -780,4 +792,22 @@ function getFormDataForPost(fields, files) {
         }
     };
     return params;
+}
+
+function parseCookie (rc, apiConfig) {
+    var list = {options: {}};
+    rc && rc.split(';').forEach(function (cookie, index) {
+        var parts = cookie.split('=');
+        if (index == 0) {
+            list.key = parts.shift().trim();
+            list.value = decodeURIComponent(parts.join('='));
+            if (apiConfig.cookiesToHeader && list.key in apiConfig.cookiesToHeader) {
+                apiConfig.headers[apiConfig.cookiesToHeader[list.key]] = list.value;
+            }
+        } else {
+            list.options[parts.shift().trim()] = decodeURIComponent(parts.join('='));
+        }
+    });
+
+    return list;
 }

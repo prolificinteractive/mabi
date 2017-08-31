@@ -162,4 +162,14 @@ class MongoDataConnection implements DataConnection {
     $count      = $collection->find()->count();
     return $count;
   }
+
+  /**
+   * @param array $query Array with find parameters
+   * @return int model count
+   */
+  public function countWithQuery($table, $query) {
+    $collection = $this->db->selectCollection($table);
+    $count      = $collection->find($query)->count();
+    return $count;
+  }
 }

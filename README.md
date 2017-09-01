@@ -1,4 +1,4 @@
-[![Coverage Status](https://coveralls.io/repos/prolificinteractive/mabi/badge.png)](https://coveralls.io/r/prolificinteractive/mabi)
+[![Coverage Status](https://coveralls.io/repos/automateddecision/mabi/badge.png)](https://coveralls.io/r/automateddecision/mabi)
 
 Start your REST Mobile APIs Fast and Grow It
 ====
@@ -21,7 +21,7 @@ Coming soon...
 
 Documentation
 ====
-Take a look at this project's [wiki](https://github.com/prolificinteractive/mabi/wiki).
+Take a look at this project's [wiki](https://github.com/automateddecision/mabi/wiki).
 
 Contributing
 ====

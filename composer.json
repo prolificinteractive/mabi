@@ -1,9 +1,9 @@
 {
-  "name": "prolificinteractive/mabi",
+  "name": "automateddecision/mabi",
   "description": "A Mobile API Framework",
-  "homepage": "https://github.com/prolificinteractive/mabi",
+  "homepage": "https://github.com/automateddecision/mabi",
   "keywords": [
-    "mobile", "api", "framework", "php", "prolificinteractive"
+    "mobile", "api", "framework", "php", "automateddecision"
   ],
   "license": "MIT",
   "authors": [

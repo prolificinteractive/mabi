@@ -199,7 +199,7 @@ class App extends Extension {
           array('code' => $appCode, 'message' => $errorResponse->getFormattedMessage($replacementArray))
     ));
     $this->getResponse()->status($errorResponse->getHttpcode());
-    throw new Stop($errorResponse->getFormattedMessage($replacementArray));
+    throw new Stop($errorResponse->getFormattedMessage($replacementArray), $appCode);
   }
 
   public function errorHandler($e) {

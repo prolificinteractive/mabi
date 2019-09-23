@@ -1,5 +1,3 @@
-[![Coverage Status](https://coveralls.io/repos/automateddecision/mabi/badge.png)](https://coveralls.io/r/automateddecision/mabi)
-
 Start your REST Mobile APIs Fast and Grow It
 ====
 A Mobile API Framework that will help you get a REST API off the ground quickly and help it grow along with your
@@ -21,7 +19,7 @@ Coming soon...
 
 Documentation
 ====
-Take a look at this project's [wiki](https://github.com/automateddecision/mabi/wiki).
+Take a look at this project's [wiki](https://github.com/prolificinteractive/mabi/wiki).
 
 Contributing
 ====

@@ -29,4 +29,6 @@ interface DataConnection {
 
   function count($table);
 
+  function countWithQuery($table, $query);
+
 }

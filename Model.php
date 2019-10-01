@@ -217,6 +217,16 @@ class Model {
   }
 
   /**
+   * @param $query array
+   * @return int model count
+   */
+  public function countWithQuery($query) {
+    $dataConnection = $this->app->getDataConnection($this->connection);
+    $count = $dataConnection->countWithQuery($this->table, $query);
+    return $count;
+  }
+
+  /**
    * todo: docs
    *
    * @return Model[]
